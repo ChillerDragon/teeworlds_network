@@ -2,6 +2,8 @@
 
 require 'socket'
 
+require 'huffman_tw'
+
 # randomize this
 MY_TOKEN = [0x73, 0x34, 0xB4, 0xA0]
 
@@ -58,6 +60,7 @@ class TwClient
     @state = NET_CONNSTATE_OFFLINE
     @ip = 'localhost'
     @port = 8303
+    @huffman = Huffman.new
   end
 
   # turn byte array into hex string
@@ -281,7 +284,17 @@ class TwClient
       # parse msg with bit flips instead
       on_message(msg, data[(header_size + 1)..])
     elsif get_byte(data, 0) == '10' # size 7 flags compression
-      # puts "we f*cked this compressed"
+      payload = data[header_size..]
+      # puts "payload   compressed: " + str_hex(payload)
+      payload = @huffman.decompress(payload.unpack("C*"))
+      # puts "payload decompressed: " + str_hex(payload.pack("C*"))
+
+      # debug this datatype
+      # the byte 0x11 is being sent
+      # the tw server somehow reads 8 as NETMSG_SNAPSINGLE
+      # and ruby gets 17 here which is the decimal of 0x11
+      msg = payload[2]
+      puts "msg=#{msg} msgtype=#{msg.class} payloadtype=#{payload.class}"
       if @server_info.nil?
         send_msg_startinfo
       else # assume snap reply with input to keep alive
