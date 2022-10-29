@@ -256,14 +256,6 @@ class TwClient
     puts str_hex(data)
   end
 
-  def process_connless_packet(data)
-    puts "connless packet with data:"
-    puts str_hex(data)
-    msg = data[CONTROL_HEADER_SIZE].unpack("C*").first
-    puts "msg: #{msg} type: #{msg.class}"
-    on_ctrl_message(msg, data[(CONTROL_HEADER_SIZE + 1)..])
-  end
-
   def tick
     # puts "tick"
     begin
@@ -279,14 +271,12 @@ class TwClient
     puts packet.to_s
     gets
 
-    # process non-connless packets
-    if !packet.flags_connless
-      process_server_packet(data)
-    end
-
     # process connless packets data
-    if packet.flags_connless
-      process_connless_packet(data)
+    if packet.flags_control
+      msg = data[CONTROL_HEADER_SIZE].unpack("C*").first
+      on_ctrl_message(msg, data[(CONTROL_HEADER_SIZE + 1)..])
+    else # process non-connless packets
+      process_server_packet(data)
     end
 
     # # check flags properly instead
