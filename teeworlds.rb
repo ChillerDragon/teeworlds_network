@@ -4,6 +4,11 @@ require 'socket'
 
 require 'huffman_tw'
 
+require_relative 'lib/string'
+require_relative 'lib/array'
+require_relative 'lib/bytes'
+require_relative 'lib/packet'
+
 # randomize this
 MY_TOKEN = [0x73, 0x34, 0xB4, 0xA0]
 
@@ -35,6 +40,8 @@ NET_CONNSTATE_ERROR = 5
 
 NET_MAX_PACKETSIZE = 1400
 
+CONTROL_HEADER_SIZE = 7
+
 class ServerInfo
   attr_reader :version, :name, :map, :gametype
 
@@ -61,24 +68,7 @@ class TwClient
     @ip = 'localhost'
     @port = 8303
     @huffman = Huffman.new
-  end
-
-  # turn byte array into hex string
-  def str_hex(data)
-    data.unpack("H*").first.scan(/../).join(' ').upcase
-  end
-
-  # turn hex string to byte array
-  def str_bytes(str)
-    str.scan(/../).map{ |b| b.to_i(16) }
-  end
-
-  def bytes_to_str(data)
-    data.unpack("H*").join('')
-  end
-
-  def get_byte(data, start = 0, num = 1)
-    data[start...(start+num)].unpack("H*").join('').upcase
+    @packet_flags = {}
   end
 
   def send_msg(data)
@@ -188,18 +178,6 @@ class TwClient
     end
   end
 
-  # CClient::ProcessConnlessPacket
-  def on_ctrl_message(msg, data)
-    case msg
-    when NET_CTRLMSG_TOKEN then on_msg_token(data)
-    when NET_CTRLMSG_ACCEPT then on_msg_accept
-    when NET_CTRLMSG_CLOSE then on_msg_close
-    else
-        puts "Uknown control message #{msg}"
-        exit(1)
-    end
-  end
-
   def on_motd(data)
     puts "motd: #{get_strings(data)}"
   end
@@ -261,6 +239,31 @@ class TwClient
     end
   end
 
+  # CClient::ProcessConnlessPacket
+  def on_ctrl_message(msg, data)
+    case msg
+    when NET_CTRLMSG_TOKEN then on_msg_token(data)
+    when NET_CTRLMSG_ACCEPT then on_msg_accept
+    when NET_CTRLMSG_CLOSE then on_msg_close
+    else
+        puts "Uknown control message #{msg}"
+        exit(1)
+    end
+  end
+
+  def process_server_packet(data)
+    puts "server packet with data:"
+    puts str_hex(data)
+  end
+
+  def process_connless_packet(data)
+    puts "connless packet with data:"
+    puts str_hex(data)
+    msg = data[CONTROL_HEADER_SIZE].unpack("C*").first
+    puts "msg: #{msg} type: #{msg.class}"
+    on_ctrl_message(msg, data[(CONTROL_HEADER_SIZE + 1)..])
+  end
+
   def tick
     # puts "tick"
     begin
@@ -271,38 +274,45 @@ class TwClient
     return unless pck
 
     data = pck.first
-    # puts "data: #{str_hex(data)}"
 
-    # bit operate the first header byte
-    # instead of assuming size 7
-    header_size = 7
+    packet = Packet.new(data)
+    puts packet.to_s
+    gets
 
-    msg = get_byte(data, header_size)
-
-    # check flags properly instead
-    if get_byte(data, 0) == '00'
-      # parse msg with bit flips instead
-      on_message(msg, data[(header_size + 1)..])
-    elsif get_byte(data, 0) == '10' # size 7 flags compression
-      payload = data[header_size..]
-      # puts "payload   compressed: " + str_hex(payload)
-      payload = @huffman.decompress(payload.unpack("C*"))
-      # puts "payload decompressed: " + str_hex(payload.pack("C*"))
-
-      # debug this datatype
-      # the byte 0x11 is being sent
-      # the tw server somehow reads 8 as NETMSG_SNAPSINGLE
-      # and ruby gets 17 here which is the decimal of 0x11
-      msg = payload[2]
-      puts "msg=#{msg} msgtype=#{msg.class} payloadtype=#{payload.class}"
-      if @server_info.nil?
-        send_msg_startinfo
-      else # assume snap reply with input to keep alive
-        send_input
-      end
-    else
-      on_ctrl_message(msg.to_i(16), data[(header_size + 1)..])
+    # process non-connless packets
+    if !packet.flags_connless
+      process_server_packet(data)
     end
+
+    # process connless packets data
+    if packet.flags_connless
+      process_connless_packet(data)
+    end
+
+    # # check flags properly instead
+    # if get_byte(data, 0) == '00'
+    #   # parse msg with bit flips instead
+    #   on_message(msg, data[(header_size + 1)..])
+    # elsif get_byte(data, 0) == '10' # size 7 flags compression
+    #   payload = data[header_size..]
+    #   # puts "payload   compressed: " + str_hex(payload)
+    #   payload = @huffman.decompress(payload.unpack("C*"))
+    #   # puts "payload decompressed: " + str_hex(payload.pack("C*"))
+
+    #   # debug this datatype
+    #   # the byte 0x11 is being sent
+    #   # the tw server somehow reads 8 as NETMSG_SNAPSINGLE
+    #   # and ruby gets 17 here which is the decimal of 0x11
+    #   msg = payload[2]
+    #   puts "msg=#{msg} msgtype=#{msg.class} payloadtype=#{payload.class}"
+    #   if @server_info.nil?
+    #     send_msg_startinfo
+    #   else # assume snap reply with input to keep alive
+    #     send_input
+    #   end
+    # else
+    #   on_ctrl_message(msg.to_i(16), data[(header_size + 1)..])
+    # end
   end
 
   def disconnect
