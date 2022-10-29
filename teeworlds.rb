@@ -35,12 +35,26 @@ class TwClient
     @ip = 'localhost'
     @port = 8303
     @packet_flags = {}
+    @ticks = 0
   end
 
   def send_msg(data)
     # size and flags
     header = [0x00, 0x00, 0x01] + str_bytes(@token)
     msg = header + data
+    @s.send(msg.pack('C*'), 0, @ip, @port)
+  end
+
+  # does not help because server
+  # drops the invalid acks
+  # so we have to finally
+  # create a proper
+  # sendpacket() method
+  # that sends a proper header
+  def send_ctrl_keepalive()
+    # size and flags
+    header = [0x04, 0x0A, 0x00] + str_bytes(@token)
+    msg = header + [NET_CTRLMSG_KEEPALIVE]
     @s.send(msg.pack('C*'), 0, @ip, @port)
   end
 
@@ -261,6 +275,11 @@ class TwClient
       on_ctrl_message(msg, data[(PACKET_HEADER_SIZE + 1)..])
     else # process non-connless packets
       process_server_packet(packet.payload)
+    end
+
+    @ticks += 1
+    if @ticks % 10 == 0
+      send_ctrl_keepalive
     end
   end
 
