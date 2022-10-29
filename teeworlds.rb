@@ -7,6 +7,7 @@ require_relative 'lib/array'
 require_relative 'lib/bytes'
 require_relative 'lib/network'
 require_relative 'lib/packet'
+require_relative 'lib/chunk'
 
 class ServerInfo
   attr_reader :version, :name, :map, :gametype
@@ -216,35 +217,28 @@ class TwClient
     end
   end
 
+  def process_chunk(chunk)
+    if !chunk.sys
+      puts "todo non sys chunks. skipped msg: #{chunk.msg}"
+      return
+    end
+    puts "proccess chunk with msg: #{chunk.msg}"
+    case chunk.msg
+    when NETMSG_MAP_CHANGE
+      send_msg_ready
+    when NETMSG_CON_READY
+      send_msg_startinfo
+    else
+      puts "Unsupported system msg: #{chunk.msg}"
+      exit(1)
+    end
+  end
+
   def process_server_packet(data)
-    puts "server packet with payload:"
-    puts str_hex(data)
-
-    # todo: getting flags and size out of the chunk header is a must
-    #       the server responds to the clients ready packet with a compressed payload
-    #       the content are 3 chunks
-    #         - game.sv_motd
-    #         - game.sv_server_settings
-    #         - sys.con_ready
-    #
-    #       The decompressed payload looks like this:
-    #       40 02 02 02 00 40 07 03 22 01 00 01 00 01 08 40 01 04 0B
-    #       < SV MOTD    > < SV SERVER SETTINGS        > < READY   >
-    #       size=2         size=7                        size=1
-    #       msg=motd       kickvote=true                 msg  =   0B
-    #       payload=""     kickmin...                             v
-    #                                                             5
-
-    # msg = data[CHUNK_HEADER_SIZE].unpack("C*").first
-    # msg >>= 1
-    # puts "msg: #{msg} type: #{msg.class}"
-    # case msg
-    # when NETMSG_MAP_CHANGE
-    #   send_msg_ready
-    # else
-    #   puts "Unsupported msg: #{msg}"
-    #   exit(1)
-    # end
+    chunks = BigChungusTheChunkGetter.get_chunks(data)
+    chunks.each do |chunk|
+      process_chunk(chunk)
+    end
   end
 
   def tick
@@ -268,31 +262,6 @@ class TwClient
     else # process non-connless packets
       process_server_packet(packet.payload)
     end
-
-    # # check flags properly instead
-    # if get_byte(data, 0) == '00'
-    #   # parse msg with bit flips instead
-    #   on_message(msg, data[(header_size + 1)..])
-    # elsif get_byte(data, 0) == '10' # size 7 flags compression
-    #   payload = data[header_size..]
-    #   # puts "payload   compressed: " + str_hex(payload)
-    #   payload = @huffman.decompress(payload.unpack("C*"))
-    #   # puts "payload decompressed: " + str_hex(payload.pack("C*"))
-
-    #   # debug this datatype
-    #   # the byte 0x11 is being sent
-    #   # the tw server somehow reads 8 as NETMSG_SNAPSINGLE
-    #   # and ruby gets 17 here which is the decimal of 0x11
-    #   msg = payload[2]
-    #   puts "msg=#{msg} msgtype=#{msg.class} payloadtype=#{payload.class}"
-    #   if @server_info.nil?
-    #     send_msg_startinfo
-    #   else # assume snap reply with input to keep alive
-    #     send_input
-    #   end
-    # else
-    #   on_ctrl_message(msg.to_i(16), data[(header_size + 1)..])
-    # end
   end
 
   def disconnect
