@@ -2,45 +2,11 @@
 
 require 'socket'
 
-require 'huffman_tw'
-
 require_relative 'lib/string'
 require_relative 'lib/array'
 require_relative 'lib/bytes'
+require_relative 'lib/network'
 require_relative 'lib/packet'
-
-# randomize this
-MY_TOKEN = [0x73, 0x34, 0xB4, 0xA0]
-
-MSG_TOKEN = [0x04, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x05] + MY_TOKEN + Array.new(512, 0x00)
-MSG_INFO = [0x40, 0x19, 0x01, 0x03, 0x30, 0x2E, 0x37, 0x20, 0x38, 0x30, 0x32, 0x66, # @...0.7 802f
-            0x31, 0x62, 0x65, 0x36, 0x30, 0x61, 0x30, 0x35, 0x36, 0x36, 0x35, 0x66, # 1be60a05665f
-            0x00, 0x00, 0x85, 0x1C]
-MSG_STARTINFO = [0x41, 0x19, 0x03, 0x36, 0x6E, 0x61, 0x6D, 0x65 , 0x6C, 0x65, 0x73, 0x73, # A..6nameless
-                  0x20, 0x6D, 0x65, 0x00, 0x00, 0x40, 0x67, 0x72 , 0x65, 0x65, 0x6E, 0x73, # me..@greens
-                  0x77, 0x61, 0x72, 0x64, 0x00, 0x64, 0x75, 0x6F , 0x64, 0x6F, 0x6E, 0x6E, # ward.duodonn
-                  0x79, 0x00, 0x00, 0x73, 0x74, 0x61, 0x6E, 0x64 , 0x61, 0x72, 0x64, 0x00, # y..standard
-                  0x73, 0x74, 0x61, 0x6E, 0x64, 0x61, 0x72, 0x64 , 0x00, 0x73, 0x74, 0x61, # standard.sta
-                  0x6E, 0x64, 0x61, 0x72, 0x64, 0x00, 0x01, 0x01 , 0x00, 0x00, 0x00, 0x00, # ndard.......
-                  0x80, 0xFC, 0xAF, 0x05, 0xEB, 0x83, 0xD0, 0x0A , 0x80, 0xFE, 0x07, 0x80, # ............
-                  0xFE, 0x07, 0x80, 0xFE, 0x07, 0x80, 0xFE, 0x07]
-
-
-NET_CTRLMSG_CONNECT = 0x01
-NET_CTRLMSG_ACCEPT = 0x02
-NET_CTRLMSG_CLOSE = 0x04
-NET_CTRLMSG_TOKEN = 0x05
-
-NET_CONNSTATE_OFFLINE = 0
-NET_CONNSTATE_TOKEN = 1
-NET_CONNSTATE_CONNECT = 2
-NET_CONNSTATE_PENDING = 3
-NET_CONNSTATE_ONLINE = 4
-NET_CONNSTATE_ERROR = 5
-
-NET_MAX_PACKETSIZE = 1400
-
-CONTROL_HEADER_SIZE = 7
 
 class ServerInfo
   attr_reader :version, :name, :map, :gametype
@@ -67,7 +33,6 @@ class TwClient
     @state = NET_CONNSTATE_OFFLINE
     @ip = 'localhost'
     @port = 8303
-    @huffman = Huffman.new
     @packet_flags = {}
   end
 
@@ -252,8 +217,34 @@ class TwClient
   end
 
   def process_server_packet(data)
-    puts "server packet with data:"
+    puts "server packet with payload:"
     puts str_hex(data)
+
+    # todo: getting flags and size out of the chunk header is a must
+    #       the server responds to the clients ready packet with a compressed payload
+    #       the content are 3 chunks
+    #         - game.sv_motd
+    #         - game.sv_server_settings
+    #         - sys.con_ready
+    #
+    #       The decompressed payload looks like this:
+    #       40 02 02 02 00 40 07 03 22 01 00 01 00 01 08 40 01 04 0B
+    #       < SV MOTD    > < SV SERVER SETTINGS        > < READY   >
+    #       size=2         size=7                        size=1
+    #       msg=motd       kickvote=true                 msg  =   0B
+    #       payload=""     kickmin...                             v
+    #                                                             5
+
+    # msg = data[CHUNK_HEADER_SIZE].unpack("C*").first
+    # msg >>= 1
+    # puts "msg: #{msg} type: #{msg.class}"
+    # case msg
+    # when NETMSG_MAP_CHANGE
+    #   send_msg_ready
+    # else
+    #   puts "Unsupported msg: #{msg}"
+    #   exit(1)
+    # end
   end
 
   def tick
@@ -269,14 +260,13 @@ class TwClient
 
     packet = Packet.new(data)
     puts packet.to_s
-    gets
 
     # process connless packets data
     if packet.flags_control
-      msg = data[CONTROL_HEADER_SIZE].unpack("C*").first
-      on_ctrl_message(msg, data[(CONTROL_HEADER_SIZE + 1)..])
+      msg = data[PACKET_HEADER_SIZE].unpack("C*").first
+      on_ctrl_message(msg, data[(PACKET_HEADER_SIZE + 1)..])
     else # process non-connless packets
-      process_server_packet(data)
+      process_server_packet(packet.payload)
     end
 
     # # check flags properly instead

@@ -1,12 +1,23 @@
+require 'huffman_tw'
+
 # Class holding the parsed packet data
 class Packet
   attr_reader :flags
+  attr_reader :payload
 
   def initialize(data)
+    # @data and @payload
+    # are strings representing the raw bytes
     @data = data
+    @huffman = Huffman.new
     @flags = {}
     flags_byte = data[0].unpack("B*")
     parse_flags(flags_byte.first[2..5])
+    @payload = data[PACKET_HEADER_SIZE..]
+    if flags_compressed
+      @payload = @huffman.decompress(@payload.unpack("C*"))
+      @payload = @payload.pack("C*")
+    end
   end
 
   def annotate_first_row(bytes)
@@ -43,10 +54,14 @@ class Packet
     # and creates a hash out of it
     @flags = {}
     @flags[:connection] = four_bit_str[0] == '1'
-    @flags[:not_compressed] = four_bit_str[1] == '1'
-    @flags[:no_resend] = four_bit_str[2] == '1'
+    @flags[:compressed] = four_bit_str[1] == '1'
+    @flags[:resend] = four_bit_str[2] == '1'
     @flags[:control] = four_bit_str[3] == '1'
     @flags
+  end
+
+  def flags_compressed()
+    @flags[:compressed]
   end
 
   def flags_connless()
