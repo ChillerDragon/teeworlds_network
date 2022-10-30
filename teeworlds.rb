@@ -57,18 +57,12 @@ class NetBase
     end
     puts "header bytes: #{str_hex(header.pack("C*"))}"
 
-    # header = [0x00, 0x00, 0x01] + str_bytes(@server_token)
     header = header + str_bytes(@server_token)
     data = (header + payload).pack('C*')
     @s.send(data, 0, @ip, @port)
 
     p = Packet.new(data, '>')
     puts p.to_s
-
-    # if flags[:test]
-    #   puts "arg_flags: #{flags}"
-    #   gets
-    # end
   end
 end
 
@@ -93,7 +87,7 @@ class TwClient
   end
 
   def send_ctrl_keepalive()
-    @netbase.send_packet([NET_CTRLMSG_KEEPALIVE], 0, control: true, test: true)
+    @netbase.send_packet([NET_CTRLMSG_KEEPALIVE], 0, control: true)
   end
 
   def send_msg_connect()
