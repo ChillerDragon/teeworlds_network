@@ -45,23 +45,26 @@ class NetBase
     # // TTTTTTTT
     # // TTTTTTTT
     flags_bits = PacketFlags.new(flags).bits
+    num_chunks = 0 # todo
     header_bits =
-      '00' + # unused flags?      # ff
-      flags_bits +                # ffff
-      @ack.to_s(2).rjust(10, '0') # aa aaaa aaaa
+      '00' + # unused flags?           # ff
+      flags_bits +                     #    ffff
+      @ack.to_s(2).rjust(10, '0') +    #        aa aaaa aaaa
+      num_chunks.to_s(2).rjust(8, '0') # NNNN NNNN
 
-    puts "header bits: #{header_bits}"
-    header = header_bits.chars.groups_of(4).map do |four_bits|
-      four_bits.join('').to_i(2)
+    # puts "header bits: #{header_bits}"
+    header = header_bits.chars.groups_of(8).map do |eight_bits|
+      eight_bits.join('').to_i(2)
     end
-    puts "header bytes: #{str_hex(header.pack("C*"))}"
+    # puts "header bytes: #{str_hex(header.pack("C*"))}"
 
-    header = [0x00, 0x00, 0x01] + str_bytes(@server_token)
+    # header = [0x00, 0x00, 0x01] + str_bytes(@server_token)
+    header = header + str_bytes(@server_token)
     data = (header + payload).pack('C*')
     @s.send(data, 0, @ip, @port)
 
     p = Packet.new(data, '>')
-    puts p
+    puts p.to_s
   end
 end
 
@@ -85,17 +88,8 @@ class TwClient
     @netbase.send_packet(data)
   end
 
-  # does not help because server
-  # drops the invalid acks
-  # so we have to finally
-  # create a proper
-  # sendpacket() method
-  # that sends a proper header
   def send_ctrl_keepalive()
-    # size and flags
-    header = [0x04, 0x0A, 0x00] + str_bytes(@token)
-    msg = header + [NET_CTRLMSG_KEEPALIVE]
-    @s.send(msg.pack('C*'), 0, @ip, @port)
+    @netbase.send_packet([NET_CTRLMSG_KEEPALIVE])
   end
 
   def send_msg_connect()
@@ -195,6 +189,8 @@ class TwClient
     send_ctrl_with_token
     loop do
       tick
+      # todo: proper tick speed sleep
+      sleep 0.001
     end
   end
 
@@ -212,6 +208,7 @@ class TwClient
     when NET_CTRLMSG_TOKEN then on_msg_token(data)
     when NET_CTRLMSG_ACCEPT then on_msg_accept
     when NET_CTRLMSG_CLOSE then on_msg_close
+    when NET_CTRLMSG_KEEPALIVE then # silently ignore keepalive
     else
         puts "Uknown control message #{msg}"
         exit(1)
