@@ -8,21 +8,7 @@ require_relative 'lib/bytes'
 require_relative 'lib/network'
 require_relative 'lib/packet'
 require_relative 'lib/chunk'
-
-class ServerInfo
-  attr_reader :version, :name, :map, :gametype
-
-  def initialize(infos)
-    @version = infos[0]
-    @name = infos[1]
-    @map = infos[2]
-    @gametype = infos[3]
-  end
-
-  def to_s
-    "version=#{@version} gametype=#{gametype} map=#{map} name=#{name}"
-  end
-end
+require_relative 'lib/server_info'
 
 class TwClient
   attr_reader :state
@@ -149,11 +135,9 @@ class TwClient
     @ip = ip
     @port = port
     puts "connecting to #{@ip}:#{@port} .."
-    # s.bind("127.0.0.1", 7878)
     @s.connect(ip, port)
     send_ctrl_with_token
     loop do
-    # 10.times do
       tick
     end
   end
@@ -162,61 +146,8 @@ class TwClient
     puts "motd: #{get_strings(data)}"
   end
 
-  # wat is dis?
-  def on_what(what, data)
-    case what
-    when '32'
-      # hex 32
-      on_msg_map_change(data)
-    when '01' # dont know what that is but client responds with enter game
-      send_enter_game
-    when '27' # DM server name and gametype as strings
-      @server_info = ServerInfo.new(get_strings(data)[1..])
-      puts @server_info
-    when '28' # CTF server name and gametype as strings
-      @server_info = ServerInfo.new(get_strings(data)[1..])
-      puts @server_info
-    when '06'
-      # $nameless me@greenswardduodonnystandardstandardstandard
-      puts get_strings(data)
-    when '31'
-      # 1ctf]
-    when '12'
-      # got this when connecting to blchill
-      # 3xNPY&@!7usAy?B0{<94\BlmapChill1=L{:'m[Pnb̨Ϧ7https://maps.zillyhuhn.com/BlmapChill_313db8824c7bcc3aa22793dad56d5b50ad6eee629307df01cca896cfa603c137.map@8BlmapChill1=L{:'m[Pnb̨Ϧ7
-      send_msg_ready
-    when '13'
-      # idk some garbage
-    else
-      puts "Unkown what #{what}"
-      puts "hex: #{str_hex(data)}"
-      puts "raw: #{data}"
-      exit
-    end
-  end
-
   def on_playerinfo(data)
     puts "playerinfo: #{get_strings(data).join(', ')}"
-  end
-
-  # CClient::ProcessServerPacket
-  def on_message(msg, data)
-    what = get_byte(data)
-    puts "msg=#{msg} what=#{what}"
-    # data = data[1..]
-    case msg
-    when '40' then on_what(what, data)
-    when 'C0' then on_what(what, data)
-    when '52' then puts "got 0x52 is this keep alive idk? ignoring it"
-    when 'C1' then on_playerinfo(data)
-    when '41' then on_playerinfo(data)
-    when '43' then on_motd(data)
-    else
-      puts "Unkown message #{msg}"
-      puts "hex: #{str_hex(data)}"
-      puts "raw: #{data}"
-      exit (1)
-    end
   end
 
   # CClient::ProcessConnlessPacket
