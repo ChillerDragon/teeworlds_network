@@ -10,6 +10,35 @@ require_relative 'lib/packet'
 require_relative 'lib/chunk'
 require_relative 'lib/server_info'
 
+class NetBase
+  attr_accessor :client_token, :server_token
+
+  def initialize
+    @ip = nil
+    @port = nil
+    @s = nil
+  end
+
+  def connect(socket, ip, port)
+    @s = socket
+    @ip = ip
+    @port = port
+  end
+
+  ##
+  # Sends a packing setting the proper header for you
+  #
+  # @param payload [Array] The Integer list representing the data after the header
+  def send_packet(payload)
+    header = [0x00, 0x00, 0x01] + str_bytes(@server_token)
+    data = (header + payload).pack('C*')
+    @s.send(data, 0, @ip, @port)
+
+    p = Packet.new(data, '>')
+    puts p
+  end
+end
+
 class TwClient
   attr_reader :state
 
@@ -22,13 +51,12 @@ class TwClient
     @port = 8303
     @packet_flags = {}
     @ticks = 0
+    @netbase = NetBase.new
+    @netbase.client_token = @client_token
   end
 
   def send_msg(data)
-    # size and flags
-    header = [0x00, 0x00, 0x01] + str_bytes(@token)
-    msg = header + data
-    @s.send(msg.pack('C*'), 0, @ip, @port)
+    @netbase.send_packet(data)
   end
 
   # does not help because server
@@ -94,6 +122,7 @@ class TwClient
 
   def on_msg_token(data)
       @token = bytes_to_str(data)
+      @netbase.server_token = @token
       puts "Got token #{@token}"
       send_msg_connect()
   end
@@ -136,6 +165,7 @@ class TwClient
     @port = port
     puts "connecting to #{@ip}:#{@port} .."
     @s.connect(ip, port)
+    @netbase.connect(@s, @ip, @port)
     send_ctrl_with_token
     loop do
       tick
@@ -197,7 +227,7 @@ class TwClient
 
     data = pck.first
 
-    packet = Packet.new(data)
+    packet = Packet.new(data, '<')
     puts packet.to_s
 
     # process connless packets data
