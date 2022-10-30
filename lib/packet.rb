@@ -19,10 +19,10 @@ class PacketFlags
 
   def parse_hash(hash)
     bits = ''
-    bits += hash[:connection] == '1' ? '1' : '0'
-    bits += hash[:compressed] == '1' ? '1' : '0'
-    bits += hash[:resend] == '1' ? '1' : '0'
-    bits += hash[:control] == '1' ? '1' : '0'
+    bits += hash[:connection] ? '1' : '0'
+    bits += hash[:compressed] ? '1' : '0'
+    bits += hash[:resend] ? '1' : '0'
+    bits += hash[:control] ? '1' : '0'
     bits
   end
 
@@ -102,5 +102,9 @@ class Packet
   def flags_control()
     @flags[:control]
   end
+end
+
+def todo_add_rspec_test
+  p PacketFlags.new(control: true).bits == "0001"
 end
 

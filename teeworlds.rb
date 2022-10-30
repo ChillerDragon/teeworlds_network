@@ -32,7 +32,7 @@ class NetBase
   #
   # @param payload [Array] The Integer list representing the data after the header
   # @param flags [Hash] Packet header flags for more details check the class +PacketFlags+
-  def send_packet(payload, flags = {})
+  def send_packet(payload, num_chunks = 1, flags = {})
     # unsigned char flags_ack;    // 6bit flags, 2bit ack
     # unsigned char ack;          // 8bit ack
     # unsigned char numchunks;    // 8bit chunks
@@ -45,18 +45,17 @@ class NetBase
     # // TTTTTTTT
     # // TTTTTTTT
     flags_bits = PacketFlags.new(flags).bits
-    num_chunks = 1 # todo
     header_bits =
       '00' + # unused flags?           # ff
       flags_bits +                     #    ffff
       @ack.to_s(2).rjust(10, '0') +    #        aa aaaa aaaa
       num_chunks.to_s(2).rjust(8, '0') # NNNN NNNN
 
-    # puts "header bits: #{header_bits}"
+    puts "header bits: #{header_bits}"
     header = header_bits.chars.groups_of(8).map do |eight_bits|
       eight_bits.join('').to_i(2)
     end
-    # puts "header bytes: #{str_hex(header.pack("C*"))}"
+    puts "header bytes: #{str_hex(header.pack("C*"))}"
 
     # header = [0x00, 0x00, 0x01] + str_bytes(@server_token)
     header = header + str_bytes(@server_token)
@@ -65,6 +64,11 @@ class NetBase
 
     p = Packet.new(data, '>')
     puts p.to_s
+
+    # if flags[:test]
+    #   puts "arg_flags: #{flags}"
+    #   gets
+    # end
   end
 end
 
@@ -89,7 +93,7 @@ class TwClient
   end
 
   def send_ctrl_keepalive()
-    @netbase.send_packet([NET_CTRLMSG_KEEPALIVE])
+    @netbase.send_packet([NET_CTRLMSG_KEEPALIVE], 0, control: true, test: true)
   end
 
   def send_msg_connect()
@@ -120,9 +124,7 @@ class TwClient
   end
 
   def send_enter_game()
-    header = [0x00, 0x07, 0x01] + str_bytes(@token)
-    msg = header + [0x40, 0x01, 0x04, 0x27]
-    @s.send(msg.pack('C*'), 0, @ip, @port)
+    @netbase.send_packet([0x40, 0x01, 0x04, 0x27])
   end
 
   def send_input
