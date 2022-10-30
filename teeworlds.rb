@@ -45,7 +45,7 @@ class NetBase
     # // TTTTTTTT
     # // TTTTTTTT
     flags_bits = PacketFlags.new(flags).bits
-    num_chunks = 0 # todo
+    num_chunks = 1 # todo
     header_bits =
       '00' + # unused flags?           # ff
       flags_bits +                     #    ffff
@@ -215,15 +215,25 @@ class TwClient
     end
   end
 
+  def on_message(chunk)
+    case chunk.msg
+    when NETMSGTYPE_SV_READYTOENTER then send_enter_game
+    else
+      puts "todo non sys chunks. skipped msg: #{chunk.msg}"
+    end
+  end
+
   def process_chunk(chunk)
     if !chunk.sys
-      puts "todo non sys chunks. skipped msg: #{chunk.msg}"
+      on_message(chunk)
       return
     end
     puts "proccess chunk with msg: #{chunk.msg}"
     case chunk.msg
     when NETMSG_MAP_CHANGE
       send_msg_ready
+    when NETMSG_SERVERINFO
+      puts "ignore server info for now"
     when NETMSG_CON_READY
       send_msg_startinfo
     else
@@ -266,7 +276,7 @@ class TwClient
     end
 
     @ticks += 1
-    if @ticks % 10 == 0
+    if @ticks % 8 == 0
       send_ctrl_keepalive
     end
   end
