@@ -11,25 +11,51 @@ require_relative 'lib/chunk'
 require_relative 'lib/server_info'
 
 class NetBase
-  attr_accessor :client_token, :server_token
+  attr_accessor :client_token, :server_token, :ack
 
   def initialize
     @ip = nil
     @port = nil
     @s = nil
+    @ack = 0
   end
 
   def connect(socket, ip, port)
     @s = socket
     @ip = ip
     @port = port
+    @ack = 0
   end
 
   ##
   # Sends a packing setting the proper header for you
   #
   # @param payload [Array] The Integer list representing the data after the header
-  def send_packet(payload)
+  # @param flags [Hash] Packet header flags for more details check the class +PacketFlags+
+  def send_packet(payload, flags = {})
+    # unsigned char flags_ack;    // 6bit flags, 2bit ack
+    # unsigned char ack;          // 8bit ack
+    # unsigned char numchunks;    // 8bit chunks
+    # unsigned char token[4];     // 32bit token
+    # // ffffffaa
+    # // aaaaaaaa
+    # // NNNNNNNN
+    # // TTTTTTTT
+    # // TTTTTTTT
+    # // TTTTTTTT
+    # // TTTTTTTT
+    flags_bits = PacketFlags.new(flags).bits
+    header_bits =
+      '00' + # unused flags?      # ff
+      flags_bits +                # ffff
+      @ack.to_s(2).rjust(10, '0') # aa aaaa aaaa
+
+    puts "header bits: #{header_bits}"
+    header = header_bits.chars.groups_of(4).map do |four_bits|
+      four_bits.join('').to_i(2)
+    end
+    puts "header bytes: #{str_hex(header.pack("C*"))}"
+
     header = [0x00, 0x00, 0x01] + str_bytes(@server_token)
     data = (header + payload).pack('C*')
     @s.send(data, 0, @ip, @port)
@@ -212,6 +238,10 @@ class TwClient
   def process_server_packet(data)
     chunks = BigChungusTheChunkGetter.get_chunks(data)
     chunks.each do |chunk|
+      if chunk.flags_vital
+        @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
+        puts "got ack: #{@netbase.ack}"
+      end
       process_chunk(chunk)
     end
   end

@@ -3,7 +3,7 @@ require_relative 'network'
 require_relative 'bytes'
 
 class NetChunk
-  attr_reader :next, :data, :msg, :sys
+  attr_reader :next, :data, :msg, :sys, :flags
 
   def initialize(data)
     @next = nil
@@ -36,6 +36,14 @@ class NetChunk
 
     # sequence number
     # in da third byte but who needs seq?!
+  end
+
+  def flags_vital
+    @flags[:vital]
+  end
+
+  def flags_resend
+    @flags[:resend]
   end
 end
 
