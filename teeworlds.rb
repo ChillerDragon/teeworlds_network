@@ -220,7 +220,15 @@ class TwClient
   end
 
   def on_chat(chunk)
-    # todo
+    #   06     01     00     40      41  00
+    #   msg    mode   cl_id  trgt    A   nullbyte?
+    #          all           -1
+    mode = chunk.data[1]
+    client_id = chunk.data[2]
+    target = chunk.data[3]
+    msg = chunk.data[4..]
+
+    puts "chat: #{msg}"
   end
 
   def on_message(chunk)
