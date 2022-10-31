@@ -217,7 +217,7 @@ class TwClient
   end
 
   def on_emoticon(chunk)
-    puts "Got emoticon flags: #{chunk.flags}"
+    # puts "Got emoticon flags: #{chunk.flags}"
   end
 
   def on_chat(chunk)
@@ -258,6 +258,8 @@ class TwClient
       puts "ignore server info for now"
     when NETMSG_CON_READY
       send_msg_startinfo
+    when NETMSG_NULL
+      # should we be in alert here?
     else
       puts "Unsupported system msg: #{chunk.msg}"
       exit(1)
