@@ -211,9 +211,24 @@ class TwClient
     end
   end
 
+  def on_player_join(chunk)
+    puts "Got playerinfo flags: #{chunk.flags}"
+  end
+
+  def on_emoticon(chunk)
+    puts "Got emoticon flags: #{chunk.flags}"
+  end
+
+  def on_chat(chunk)
+    # todo
+  end
+
   def on_message(chunk)
     case chunk.msg
     when NETMSGTYPE_SV_READYTOENTER then send_enter_game
+    when NETMSGTYPE_SV_CLIENTINFO then on_player_join(chunk)
+    when NETMSGTYPE_SV_EMOTICON then on_emoticon(chunk)
+    when NETMSGTYPE_SV_CHAT then on_chat(chunk)
     else
       puts "todo non sys chunks. skipped msg: #{chunk.msg}"
     end
@@ -241,7 +256,7 @@ class TwClient
   def process_server_packet(data)
     chunks = BigChungusTheChunkGetter.get_chunks(data)
     chunks.each do |chunk|
-      if chunk.flags_vital
+      if chunk.flags_vital && !chunk.flags_resend
         @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
         puts "got ack: #{@netbase.ack}"
       end
