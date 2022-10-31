@@ -51,25 +51,26 @@ class NetBase
       @ack.to_s(2).rjust(10, '0') +    #        aa aaaa aaaa
       num_chunks.to_s(2).rjust(8, '0') # NNNN NNNN
 
-    puts "header bits: #{header_bits}"
     header = header_bits.chars.groups_of(8).map do |eight_bits|
       eight_bits.join('').to_i(2)
     end
-    puts "header bytes: #{str_hex(header.pack("C*"))}"
 
     header = header + str_bytes(@server_token)
     data = (header + payload).pack('C*')
     @s.send(data, 0, @ip, @port)
 
-    p = Packet.new(data, '>')
-    puts p.to_s
+    if @verbose
+      p = Packet.new(data, '>')
+      puts p.to_s
+    end
   end
 end
 
 class TwClient
   attr_reader :state
 
-  def initialize
+  def initialize(options = {})
+    @verbose = options[:verbose] || false
     @client_token = MY_TOKEN.map { |b| b.to_s(16) }.join('')
     puts "client token #{@client_token}"
     @s = UDPSocket.new
@@ -238,7 +239,9 @@ class TwClient
     when NETMSGTYPE_SV_EMOTICON then on_emoticon(chunk)
     when NETMSGTYPE_SV_CHAT then on_chat(chunk)
     else
-      puts "todo non sys chunks. skipped msg: #{chunk.msg}"
+      if @verbose
+        puts "todo non sys chunks. skipped msg: #{chunk.msg}"
+      end
     end
   end
 
@@ -266,7 +269,9 @@ class TwClient
     chunks.each do |chunk|
       if chunk.flags_vital && !chunk.flags_resend
         @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
-        puts "got ack: #{@netbase.ack}"
+        if @verbose
+          puts "got ack: #{@netbase.ack}"
+        end
       end
       process_chunk(chunk)
     end
@@ -284,7 +289,9 @@ class TwClient
     data = pck.first
 
     packet = Packet.new(data, '<')
-    puts packet.to_s
+    if @verbose
+      puts packet.to_s
+    end
 
     # process connless packets data
     if packet.flags_control
@@ -305,7 +312,21 @@ class TwClient
   end
 end
 
-client = TwClient.new
+verbose = false
 
+ARGV.reverse_each do |arg|
+  if arg == '--help' || arg == '-h'
+    puts "usage: teeworlds.rb [OPTIONS] [host] [port]"
+    echo "options:"
+    echo "  --help|-h        show this help"
+    echo "  --verbose|-v     verbose output"
+    exit(0)
+  elsif arg == '--verbose' || arg == '-v'
+    verbose = true
+    ARGV.pop
+  end
+end
+
+client = TwClient.new(verbose: verbose)
 client.connect(ARGV[0] || "localhost", ARGV[1] ? ARGV[1].to_i : 8303)
 
