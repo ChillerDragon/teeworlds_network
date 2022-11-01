@@ -119,7 +119,9 @@ class TwClient
   end
 
   def send_enter_game()
-    @netbase.send_packet([0x40, 0x01, 0x04, 0x27])
+    @netbase.send_packet(
+      NetChunk.create_vital_header({vital: true}, 1) +
+      [pack_msg_id(NETMSG_READY)])
   end
 
   ##
@@ -330,9 +332,9 @@ class TwClient
     if @ticks % 8 == 0
       send_ctrl_keepalive
     end
-    # if @ticks % 20 == 0
-    #   send_chat("hello world")
-    # end
+    if @ticks % 20 == 0
+      send_chat("hello world")
+    end
   end
 
   def disconnect

@@ -31,6 +31,14 @@ NETMSG_RCON_LINE = 13     # line that should be printed to the remote console
 NETMSG_RCON_CMD_ADD = 14
 NETMSG_RCON_CMD_REM = 15
 
+# sent by client
+NETMSG_READY = 18
+NETMSG_ENTERGAME = 19
+NETMSG_INPUT = 20 # contains the inputdata from the client
+NETMSG_RCON_CMD = 21
+NETMSG_RCON_AUTH = 22
+NETMSG_REQUEST_MAP_DATA = 23
+
 NETMSG_INVALID = 0
 NETMSGTYPE_SV_MOTD = 1
 NETMSGTYPE_SV_BROADCAST = 2

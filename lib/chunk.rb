@@ -4,7 +4,7 @@ require_relative 'bytes'
 
 class NetChunk
   attr_reader :next, :data, :msg, :sys, :flags
-  @@sent_vital_chunks = 4 # BIG TODO: SEND READY AND SHIT WITH PROPER HEADER
+  @@sent_vital_chunks = 3 # BIG TODO: SEND READY AND SHIT WITH PROPER HEADER
 
   def initialize(data)
     @next = nil
