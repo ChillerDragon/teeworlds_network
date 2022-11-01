@@ -33,3 +33,12 @@ end
 
 client.connect(args[:ip], args[:port])
 
+loop do
+  sleep 2
+  puts "reconnecing .."
+  client.disconnect()
+  sleep 1
+  client.connect(args[:ip], args[:port])
+  sleep 200
+end
+

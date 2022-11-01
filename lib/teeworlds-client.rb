@@ -18,7 +18,6 @@ class TwClient
     @verbose = options[:verbose] || false
     @client_token = MY_TOKEN.map { |b| b.to_s(16) }.join('')
     puts "client token #{@client_token}"
-    @s = UDPSocket.new
     @state = NET_CONNSTATE_OFFLINE
     @ip = 'localhost'
     @port = 8303
@@ -27,6 +26,8 @@ class TwClient
     @netbase = NetBase.new
     @netbase.client_token = @client_token
     @hooks = {}
+    @thread_running = false
+    @signal_disconnect = false
   end
 
   def hook_chat(&block)
@@ -34,20 +35,34 @@ class TwClient
   end
 
   def connect(ip, port)
+    if @thread_running
+      puts "Error: connection thread already running call disconnect() first"
+      return
+    end
     @ip = ip
     @port = port
     puts "connecting to #{@ip}:#{@port} .."
+    @s = UDPSocket.new
     @s.connect(ip, port)
+    puts "client port: #{@s.addr[1]}"
     @netbase.connect(@s, @ip, @port)
+    @token = nil
     send_ctrl_with_token
-    loop do
-      tick
-      # todo: proper tick speed sleep
-      sleep 0.001
+    @thread_running = true
+    Thread.new do
+      p @s
+      until @signal_disconnect
+        tick
+        # todo: proper tick speed sleep
+        sleep 0.001
+      end
+      @thread_running = false
+      @signal_disconnect = false
     end
   end
 
   def disconnect
+    @signal_disconnect = true
     @s.close
   end
 
@@ -264,8 +279,17 @@ class TwClient
     # puts "tick"
     begin
       pck = @s.recvfrom_nonblock(1400)
-    rescue
+    rescue IO::EAGAINWaitReadable
       pck = nil
+    end
+    if pck.nil? && @token.nil?
+      @wait_for_token = @wait_for_token || 0
+      @wait_for_token += 1
+      if @wait_for_token > 6
+        @token = nil
+        send_ctrl_with_token
+        puts "retrying connection ..."
+      end
     end
     return unless pck
 
