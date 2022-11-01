@@ -34,10 +34,13 @@ class TwClient
     @hooks[:chat] = block
   end
 
-  def connect(ip, port)
-    if @thread_running
-      puts "Error: connection thread already running call disconnect() first"
-      return
+  def connect(ip, port, options = {})
+    options[:detach] = options[:detach] || false
+    if options[:detach]
+      if @thread_running
+        puts "Error: connection thread already running call disconnect() first"
+        return
+      end
     end
     @ip = ip
     @port = port
@@ -48,16 +51,13 @@ class TwClient
     @netbase.connect(@s, @ip, @port)
     @token = nil
     send_ctrl_with_token
-    @thread_running = true
-    Thread.new do
-      p @s
-      until @signal_disconnect
-        tick
-        # todo: proper tick speed sleep
-        sleep 0.001
+    if options[:detach]
+      @thread_running = true
+      Thread.new do
+        connection_loop
       end
-      @thread_running = false
-      @signal_disconnect = false
+    else
+      connection_loop
     end
   end
 
@@ -67,6 +67,16 @@ class TwClient
   end
 
   private
+
+  def connection_loop
+      until @signal_disconnect
+        tick
+        # todo: proper tick speed sleep
+        sleep 0.001
+      end
+      @thread_running = false
+      @signal_disconnect = false
+  end
 
   def send_msg(data)
     @netbase.send_packet(data)

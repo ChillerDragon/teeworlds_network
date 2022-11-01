@@ -10,5 +10,5 @@ client.hook_chat do |msg|
   puts "chat: #{msg}"
 end
 
-client.connect('localhost', 8303)
+client.connect('localhost', 8303, detach: false)
 ```
