@@ -1,5 +1,5 @@
 # teeworlds-client
-A teeworlds 0.7 client written in ruby
+A teeworlds 0.7 client library written in ruby
 
 ```ruby
 require_relative 'lib/teeworlds-client'
