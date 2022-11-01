@@ -81,6 +81,7 @@ class TwClient
     @ticks = 0
     @netbase = NetBase.new
     @netbase.client_token = @client_token
+    @hooks = {}
   end
 
   def send_msg(data)
@@ -252,7 +253,9 @@ class TwClient
     target = chunk.data[3]
     msg = chunk.data[4..]
 
-    puts "chat: #{msg}"
+    if @hooks[:chat]
+      @hooks[:chat].call(msg)
+    end
   end
 
   def on_message(chunk)
@@ -335,6 +338,10 @@ class TwClient
     end
   end
 
+  def hook_chat(&block)
+    @hooks[:chat] = block
+  end
+
   def disconnect
     @s.close
   end
@@ -356,5 +363,10 @@ ARGV.reverse_each do |arg|
 end
 
 client = TwClient.new(verbose: verbose)
+
+client.hook_chat do |msg|
+  puts "chat: #{msg}"
+end
+
 client.connect(ARGV[0] || "localhost", ARGV[1] ? ARGV[1].to_i : 8303)
 
