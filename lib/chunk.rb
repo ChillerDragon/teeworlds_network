@@ -4,6 +4,7 @@ require_relative 'bytes'
 
 class NetChunk
   attr_reader :next, :data, :msg, :sys, :flags
+  @@sent_vital_chunks = 4 # BIG TODO: SEND READY AND SHIT WITH PROPER HEADER
 
   def initialize(data)
     @next = nil
@@ -17,6 +18,54 @@ class NetChunk
     @sys = @msg & 1 == 1 ? true : false
     @msg >>= 1
     @next = data[chunk_end..] if data.size > chunk_end
+  end
+
+  ##
+  # Create int array ready to be send over the network
+  #
+  # Given the flags hash (vital/resend)
+  # the size
+  # the sequence number
+  #
+  # It will create a 3 byte chunk header
+  # represented as an Array of 3 integers
+  def self.create_vital_header(flags, size, seq = nil)
+    @@sent_vital_chunks += 1
+    if seq.nil?
+      seq = @@sent_vital_chunks
+    end
+
+    flag_bits = '00'
+    flag_bits[0] = flags[:resend] ? '1' : '0'
+    flag_bits[1] = flags[:vital] ? '1' : '0'
+
+    size_bits = size.to_s(2).rjust(12, '0')
+    # size_bits[0..5]
+    # size_bits[6..]
+
+
+    seq_bits = seq.to_s(2).rjust(10, '0')
+    # seq_bits[0..1]
+    # seq_bits[2..]
+
+    # The vital chunk header is 3 bytes
+    # containing flags, size and sequence
+    # in the following format
+    #
+    # f=flag
+    # s=size
+    # q=sequence
+    #
+    # ffss ssss qqss ssss qqqq qqqq
+    header_bits = 
+      flag_bits +
+      size_bits[0..5] +
+      seq_bits[0..1] +
+      size_bits[6..] +
+      seq_bits[2..]
+    header_bits.chars.groups_of(8).map do |eigth_bits|
+      eigth_bits.join('').to_i(2)
+    end
   end
 
   def parse_header(data)
@@ -103,5 +152,7 @@ def todo_make_this_an_rspec_test
   p chunks[0].sys == true
 end
 
-# todo_make_this_an_rspec_test
+def test2
+  p NetChunk.create_vital_header({vital: true}, 20, 5) == [64, 20, 5]
+end
 
