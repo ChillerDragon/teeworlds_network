@@ -2,69 +2,14 @@
 
 require 'socket'
 
-require_relative 'lib/string'
-require_relative 'lib/array'
-require_relative 'lib/bytes'
-require_relative 'lib/network'
-require_relative 'lib/packet'
-require_relative 'lib/chunk'
-require_relative 'lib/server_info'
-
-class NetBase
-  attr_accessor :client_token, :server_token, :ack
-
-  def initialize
-    @ip = nil
-    @port = nil
-    @s = nil
-    @ack = 0
-  end
-
-  def connect(socket, ip, port)
-    @s = socket
-    @ip = ip
-    @port = port
-    @ack = 0
-  end
-
-  ##
-  # Sends a packing setting the proper header for you
-  #
-  # @param payload [Array] The Integer list representing the data after the header
-  # @param flags [Hash] Packet header flags for more details check the class +PacketFlags+
-  def send_packet(payload, num_chunks = 1, flags = {})
-    # unsigned char flags_ack;    // 6bit flags, 2bit ack
-    # unsigned char ack;          // 8bit ack
-    # unsigned char numchunks;    // 8bit chunks
-    # unsigned char token[4];     // 32bit token
-    # // ffffffaa
-    # // aaaaaaaa
-    # // NNNNNNNN
-    # // TTTTTTTT
-    # // TTTTTTTT
-    # // TTTTTTTT
-    # // TTTTTTTT
-    flags_bits = PacketFlags.new(flags).bits
-    header_bits =
-      '00' + # unused flags?           # ff
-      flags_bits +                     #    ffff
-      @ack.to_s(2).rjust(10, '0') +    #        aa aaaa aaaa
-      num_chunks.to_s(2).rjust(8, '0') # NNNN NNNN
-
-    header = header_bits.chars.groups_of(8).map do |eight_bits|
-      eight_bits.join('').to_i(2)
-    end
-
-    header = header + str_bytes(@server_token)
-    data = (header + payload).pack('C*')
-    @s.send(data, 0, @ip, @port)
-
-    if @verbose || flags[:test]
-      p = Packet.new(data, '>')
-      puts p.to_s
-    end
-  end
-end
+require_relative 'string'
+require_relative 'array'
+require_relative 'bytes'
+require_relative 'network'
+require_relative 'packet'
+require_relative 'chunk'
+require_relative 'server_info'
+require_relative 'net_base'
 
 class TwClient
   attr_reader :state
@@ -83,6 +28,30 @@ class TwClient
     @netbase.client_token = @client_token
     @hooks = {}
   end
+
+  def hook_chat(&block)
+    @hooks[:chat] = block
+  end
+
+  def connect(ip, port)
+    @ip = ip
+    @port = port
+    puts "connecting to #{@ip}:#{@port} .."
+    @s.connect(ip, port)
+    @netbase.connect(@s, @ip, @port)
+    send_ctrl_with_token
+    loop do
+      tick
+      # todo: proper tick speed sleep
+      sleep 0.001
+    end
+  end
+
+  def disconnect
+    @s.close
+  end
+
+  private
 
   def send_msg(data)
     @netbase.send_packet(data)
@@ -199,20 +168,6 @@ class TwClient
     mapname = get_strings(data).first
     puts "map: #{mapname}"
     send_msg_ready()
-  end
-
-  def connect(ip, port)
-    @ip = ip
-    @port = port
-    puts "connecting to #{@ip}:#{@port} .."
-    @s.connect(ip, port)
-    @netbase.connect(@s, @ip, @port)
-    send_ctrl_with_token
-    loop do
-      tick
-      # todo: proper tick speed sleep
-      sleep 0.001
-    end
   end
 
   def on_motd(data)
@@ -337,36 +292,5 @@ class TwClient
       send_chat("hello world")
     end
   end
-
-  def hook_chat(&block)
-    @hooks[:chat] = block
-  end
-
-  def disconnect
-    @s.close
-  end
 end
-
-verbose = false
-
-ARGV.reverse_each do |arg|
-  if arg == '--help' || arg == '-h'
-    puts "usage: teeworlds.rb [OPTIONS] [host] [port]"
-    echo "options:"
-    echo "  --help|-h        show this help"
-    echo "  --verbose|-v     verbose output"
-    exit(0)
-  elsif arg == '--verbose' || arg == '-v'
-    verbose = true
-    ARGV.pop
-  end
-end
-
-client = TwClient.new(verbose: verbose)
-
-client.hook_chat do |msg|
-  puts "chat: #{msg}"
-end
-
-client.connect(ARGV[0] || "localhost", ARGV[1] ? ARGV[1].to_i : 8303)
 
