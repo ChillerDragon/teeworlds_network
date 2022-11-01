@@ -59,7 +59,7 @@ class NetBase
     data = (header + payload).pack('C*')
     @s.send(data, 0, @ip, @port)
 
-    if @verbose
+    if @verbose || flags[:test]
       p = Packet.new(data, '>')
       puts p.to_s
     end
@@ -121,7 +121,7 @@ class TwClient
   def send_enter_game()
     @netbase.send_packet(
       NetChunk.create_vital_header({vital: true}, 1) +
-      [pack_msg_id(NETMSG_READY)])
+      [pack_msg_id(NETMSG_ENTERGAME, true)])
   end
 
   ##
@@ -130,10 +130,8 @@ class TwClient
   # Takes a NETMSGTYPE_CL_* integer
   # and returns a byte that can be send over
   # the network
-  #
-  # todo: does not support system flag yet
-  def pack_msg_id(msg_id)
-    msg_id << 1
+  def pack_msg_id(msg_id, system = false)
+    (msg_id << 1) | (system ? 1 : 0)
   end
 
   def send_chat(str)
