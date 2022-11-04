@@ -110,12 +110,15 @@ class Unpacker
     if first[0] == '1'
       bits << first[2..]
       bytes = bytes[1..]
+      consumed = 1
       bytes.each do |eigth_bits|
         bits << eigth_bits[1..]
+        consumed += 1
 
         break if eigth_bits[0] == '0'
       end
       bits = bits.reverse
+      @data = @data[consumed..]
     else # single byte
       bits = [first[2..]]
       @data = @data[1..]
@@ -151,7 +154,7 @@ def todo_make_this_rspec_test
   # p Packer.pack_str("A") == [65, 0]
 end
 
-todo_make_this_rspec_test
+# todo_make_this_rspec_test
 
 def todo_also_rspec_unpacker
   # u = Unpacker.new([0x41, 0x41, 0x00, 0x42, 0x42, 0x00])
@@ -171,7 +174,12 @@ def todo_also_rspec_unpacker
   # end
 
   # u = Unpacker.new([128, 1])
-  # p u.get_int()
+  # p u.get_int() == 64
+
+  u = Unpacker.new([128, 1, 128, 1])
+  p u.get_int() == 64
+  p u.get_int() == 64
+  # p u.get_int() == nil
 
   # (-128..128).each do |i|
   #   u = Unpacker.new(Packer.pack_int(i))
@@ -189,5 +197,5 @@ def todo_also_rspec_unpacker
   # p u.get_int()
 end
 
-# todo_also_rspec_unpacker
+todo_also_rspec_unpacker
 
