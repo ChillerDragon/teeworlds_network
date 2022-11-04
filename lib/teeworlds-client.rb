@@ -38,6 +38,8 @@ class TwClient
         return
       end
     end
+    disconnect
+    @signal_disconnect = false
     @ticks = 0
     # me trying to write cool code
     @client_token = (1..4).to_a.map { |_| rand(0..255) }
@@ -66,9 +68,13 @@ class TwClient
   end
 
   def disconnect
-    @netbase.send_packet([NET_CTRLMSG_CLOSE], 0, control: true)
+    unless @netbase.nil?
+      @netbase.send_packet([NET_CTRLMSG_CLOSE], 0, control: true)
+    end
+    unless @s.nil?
+      @s.close
+    end
     @signal_disconnect = true
-    @s.close
   end
 
   private

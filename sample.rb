@@ -31,11 +31,11 @@ client.hook_chat do |msg|
   puts "chat: #{msg}"
 end
 
+# connect and detach thread
 client.connect(args[:ip], args[:port], detach: true)
 
+# after 2 seconds reconnect
+# and block the main thread
 sleep 2
-client.disconnect()
-
-sleep 1
 client.connect(args[:ip], args[:port], detach: false)
 
