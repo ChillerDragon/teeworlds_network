@@ -64,7 +64,9 @@ class Packer
   def self.pack_str(str)
     str.chars.map(&:ord) + [0x00]
   end
+end
 
+class Unpacker
   def initialize(data)
     @data = data
   end
@@ -97,50 +99,95 @@ class Packer
     #       of the WHOLE packed data
     #       it should be max 4 bytes
     #       because bigger ints are not sent anyways
-    bytes = @data.chars.groups_of(8)
+    bytes = @data.map { |byte| byte.to_s(2).rjust(8, '0') }
     first = bytes[0]
     other = bytes[1..]
 
     sign = first[1] == '1' ? -1 : 1
-
-    bits = ''
+    bits = []
 
     # extended
     if first[0] == '1'
+      bits << first[2..]
+      bytes = bytes[1..]
       bytes.each do |eigth_bits|
+        bits << eigth_bits[1..]
+
+        break if eigth_bits[0] == '0'
       end
+      bits = bits.reverse
     else # single byte
-      bits = first[2..].join('')
+      bits = [first[2..]]
+      @data = @data[1..]
     end
-    bits.to_i(2) * sign
+    bits.join('').to_i(2) * sign
   end
 end
 
 def todo_make_this_rspec_test
-  # single byte int
-  p Packer.pack_int(1) == [1]
-  p Packer.pack_int(3) == [3]
-  p Packer.pack_int(16) == [16]
-  p Packer.pack_int(63) == [63]
+  # # single byte int
+  # p Packer.pack_int(1) == [1]
+  # p Packer.pack_int(3) == [3]
+  # p Packer.pack_int(16) == [16]
+  # p Packer.pack_int(63) == [63]
 
-  # negative single byte
-  p Packer.pack_int(-1) == [64]
-  p Packer.pack_int(-2) == [65]
+  # # negative single byte
+  # p Packer.pack_int(-1) == [64]
+  # p Packer.pack_int(-2) == [65]
 
-  # multi byte int
-  p Packer.pack_int(64) == [128, 1]
-  p Packer.pack_int(99999999999999999) == [191, 131, 255, 147, 246, 194, 215, 232, 88]
+  # p Packer.pack_int(-1).first.to_s(2) == '1000000'
+  # p Packer.pack_int(-2).first.to_s(2) == '1000001'
+  # p Packer.pack_int(-3).first.to_s(2) == '1000010'
+  # p Packer.pack_int(-4).first.to_s(2) == '1000011'
 
-  # string
-  p Packer.pack_str("A") == [65, 0]
+  p Packer.pack_int(64).map { |e| e.to_s(2).rjust(8, '0') } == ["10000000", "00000001"]
+  p Packer.pack_int(-64).map { |e| e.to_s(2).rjust(8, '0') } == ["11000000", "00000000"]
+
+  # # multi byte int
+  # p Packer.pack_int(64) == [128, 1]
+  # p Packer.pack_int(99999999999999999) == [191, 131, 255, 147, 246, 194, 215, 232, 88]
+
+  # # string
+  # p Packer.pack_str("A") == [65, 0]
 end
+
+todo_make_this_rspec_test
 
 def todo_also_rspec_unpacker
-  p = Packer.new([0x41, 0x41, 0x00, 0x42, 0x42, 0x00])
-  p p.get_string() == "AA"
-  p p.get_string() == "BB"
-  p p.get_string() == nil
+  # u = Unpacker.new([0x41, 0x41, 0x00, 0x42, 0x42, 0x00])
+  # p u.get_string() == "AA"
+  # p u.get_string() == "BB"
+  # p u.get_string() == nil
+
+  # u = Unpacker.new([0x01, 0x02, 0x41, 0x42])
+  # p u.get_int() == 1
+  # p u.get_int() == 2
+  # p u.get_int() == -1
+  # p u.get_int() == -2
+
+  # (-63..63).each do |i|
+  #   u = Unpacker.new(Packer.pack_int(i))
+  #   p u.get_int() == i
+  # end
+
+  # u = Unpacker.new([128, 1])
+  # p u.get_int()
+
+  # (-128..128).each do |i|
+  #   u = Unpacker.new(Packer.pack_int(i))
+  #   p u.get_int() == i
+  # end
+
+  u = Unpacker.new(['00000001'.to_i(2)])
+  p u.get_int() == 1
+
+  u = Unpacker.new(['10000000'.to_i(2), '00000001'.to_i(2)])
+  p u.get_int() == 64
+
+  # todo should be -64
+  # u = Unpacker.new(['11000000'.to_i(2), '00000000'.to_i(2)])
+  # p u.get_int()
 end
 
-todo_also_rspec_unpacker
+# todo_also_rspec_unpacker
 
