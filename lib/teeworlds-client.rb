@@ -68,6 +68,7 @@ class TwClient
   end
 
   def disconnect
+    puts "disconnecting."
     unless @netbase.nil?
       @netbase.send_packet([NET_CTRLMSG_CLOSE], 0, control: true)
     end

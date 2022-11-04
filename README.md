@@ -10,5 +10,9 @@ client.hook_chat do |msg|
   puts "chat: #{msg}"
 end
 
+Signal.trap('INT') do
+  client.disconnect
+end
+
 client.connect('localhost', 8303, detach: false)
 ```

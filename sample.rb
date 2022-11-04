@@ -31,6 +31,10 @@ client.hook_chat do |msg|
   puts "chat: #{msg}"
 end
 
+Signal.trap('INT') do
+  client.disconnect
+end
+
 # connect and detach thread
 client.connect(args[:ip], args[:port], detach: true)
 
