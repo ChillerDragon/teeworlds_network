@@ -56,6 +56,18 @@ class TeeworldsClient
     @hooks[:chat] = block
   end
 
+  def send_chat(str)
+    @netbase.send_packet(
+      NetChunk.create_vital_header({vital: true}, 4 + str.length) +
+      [
+        pack_msg_id(NETMSGTYPE_CL_SAY),
+        CHAT_ALL,
+        64 # should use TARGET_SERVER (-1) instead of hacking 64 in here
+      ] +
+      Packer.pack_str(str)
+    )
+  end
+
   def connect(ip, port, options = {})
     options[:detach] = options[:detach] || false
     if options[:detach]
@@ -200,18 +212,6 @@ class TeeworldsClient
   # the network
   def pack_msg_id(msg_id, options = {system: false})
     (msg_id << 1) | (options[:system] ? 1 : 0)
-  end
-
-  def send_chat(str)
-    @netbase.send_packet(
-      NetChunk.create_vital_header({vital: true}, 4 + str.length) +
-      [
-        pack_msg_id(NETMSGTYPE_CL_SAY),
-        CHAT_ALL,
-        64 # should use TARGET_SERVER (-1) instead of hacking 64 in here
-      ] +
-      Packer.pack_str(str)
-    )
   end
 
   def send_input
