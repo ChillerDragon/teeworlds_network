@@ -69,6 +69,13 @@ end
 class Unpacker
   def initialize(data)
     @data = data
+    if data.class == String
+      @data = data.unpack("C*")
+    elsif data.class == Array
+      @data = data
+    else
+      raise "Error: Unpacker expects array of integers or byte string"
+    end
   end
 
   def get_string()
@@ -197,5 +204,5 @@ def todo_also_rspec_unpacker
   # p u.get_int()
 end
 
-todo_also_rspec_unpacker
+# todo_also_rspec_unpacker
 

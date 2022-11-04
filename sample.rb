@@ -25,13 +25,13 @@ end
 args[:ip] = args[:ip] || '127.0.0.1'
 args[:port] = args[:port] || 8303
 
-client = TwClient.new(verbose: args[:verbose])
+client = TeeworldsClient.new(verbose: args[:verbose])
 
 client.set_startinfo(
       name: "ruby gamer")
 
 client.hook_chat do |msg|
-  puts "chat: #{msg}"
+  puts "[chat] #{msg}"
 end
 
 Signal.trap('INT') do

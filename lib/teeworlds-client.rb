@@ -11,9 +11,11 @@ require_relative 'chunk'
 require_relative 'server_info'
 require_relative 'net_base'
 require_relative 'packer'
+require_relative 'player'
+require_relative 'game_client'
 
-class TwClient
-  attr_reader :state
+class TeeworldsClient
+  attr_reader :state, :hooks
 
   def initialize(options = {})
     @verbose = options[:verbose] || false
@@ -24,6 +26,7 @@ class TwClient
     @hooks = {}
     @thread_running = false
     @signal_disconnect = false
+    @game_client = GameClient.new(self)
     @start_info = {
       name: "ruby gamer",
       clan: "",
@@ -64,6 +67,7 @@ class TwClient
     disconnect
     @signal_disconnect = false
     @ticks = 0
+    @game_client = GameClient.new(self)
     # me trying to write cool code
     @client_token = (1..4).to_a.map { |_| rand(0..255) }
     @client_token = @client_token.map { |b| b.to_s(16) }.join('')
@@ -286,34 +290,16 @@ class TwClient
     end
   end
 
-  def on_player_join(chunk)
-    puts "Got playerinfo flags: #{chunk.flags}"
-  end
-
   def on_emoticon(chunk)
     # puts "Got emoticon flags: #{chunk.flags}"
-  end
-
-  def on_chat(chunk)
-    #   06     01     00     40      41  00
-    #   msg    mode   cl_id  trgt    A   nullbyte?
-    #          all           -1
-    mode = chunk.data[1]
-    client_id = chunk.data[2]
-    target = chunk.data[3]
-    msg = chunk.data[4..]
-
-    if @hooks[:chat]
-      @hooks[:chat].call(msg)
-    end
   end
 
   def on_message(chunk)
     case chunk.msg
     when NETMSGTYPE_SV_READYTOENTER then send_enter_game
-    when NETMSGTYPE_SV_CLIENTINFO then on_player_join(chunk)
+    when NETMSGTYPE_SV_CLIENTINFO then @game_client.on_player_join(chunk)
     when NETMSGTYPE_SV_EMOTICON then on_emoticon(chunk)
-    when NETMSGTYPE_SV_CHAT then on_chat(chunk)
+    when NETMSGTYPE_SV_CHAT then @game_client.on_chat(chunk)
     else
       if @verbose
         puts "todo non sys chunks. skipped msg: #{chunk.msg}"

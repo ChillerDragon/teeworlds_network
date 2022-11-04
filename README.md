@@ -6,11 +6,21 @@ A teeworlds 0.7 client library written in ruby
 ```ruby
 require_relative 'lib/teeworlds-client'
 
-client = TwClient.new(verbose: false)
+client = TeeworldsClient.new(verbose: false)
 
 # print all incoming chat messages
+# the variable `msg` holds an instance of the class `ChatMessage` which has the following fields
+#
+# msg.mode
+# msg.client_id
+# msg.target_id
+# msg.message
+# msg.author.id
+# msg.author.team
+# msg.author.name
+# msg.author.clan
 client.hook_chat do |msg|
-  puts "chat: #{msg}"
+  puts "[chat] #{msg}"
 end
 
 # properly disconnect on ctrl+c
@@ -27,7 +37,7 @@ client.connect('localhost', 8303, detach: false)
 ```ruby
 require_relative 'lib/teeworlds-client'
 
-client = TwClient.new(verbose: true)
+client = TeeworldsClient.new(verbose: true)
 
 # connect to localhost and block the current thread
 client.connect('localhost', 8303, detach: false)
@@ -38,7 +48,7 @@ client.connect('localhost', 8303, detach: false)
 ```ruby
 require_relative 'lib/teeworlds-client'
 
-client = TwClient.new(verbose: true)
+client = TeeworldsClient.new(verbose: true)
 
 # connect to localhost and detach a background thread
 client.connect('localhost', 8303, detach: true)
@@ -55,7 +65,7 @@ end
 ```ruby
 require_relative 'lib/teeworlds-client'
 
-client = TwClient.new(verbose: true)
+client = TeeworldsClient.new(verbose: true)
 
 # all keys are optional
 # if not provided they will fall back to the default value
