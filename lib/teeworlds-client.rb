@@ -272,7 +272,13 @@ class TwClient
     end
   end
 
-  def process_server_packet(data)
+  def process_server_packet(packet)
+    data = packet.payload
+    if data.size.zero?
+      puts "Error: packet payload is empty"
+      puts packet.to_s
+      return
+    end
     chunks = BigChungusTheChunkGetter.get_chunks(data)
     chunks.each do |chunk|
       if chunk.flags_vital && !chunk.flags_resend
@@ -315,7 +321,7 @@ class TwClient
       msg = data[PACKET_HEADER_SIZE].unpack("C*").first
       on_ctrl_message(msg, data[(PACKET_HEADER_SIZE + 1)..])
     else # process non-connless packets
-      process_server_packet(packet.payload)
+      process_server_packet(packet)
     end
 
     @ticks += 1
