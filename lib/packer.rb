@@ -64,6 +64,56 @@ class Packer
   def self.pack_str(str)
     str.chars.map(&:ord) + [0x00]
   end
+
+  def initialize(data)
+    @data = data
+  end
+
+  def get_string()
+    return nil if @data.nil?
+
+    str = ''
+    @data.each_with_index do |byte, index|
+      if byte == 0x00
+        if index == @data.length - 1
+          @data = nil
+        else
+          @data = @data[(index + 1)..]
+        end
+        return str
+      end
+      str += byte.chr
+    end
+    # raise "get_string() failed to find null terminator"
+    # return empty string in case of error
+    ''
+  end
+
+  def get_int()
+    return nil if @data.nil?
+
+    # todo: make this more performant
+    #       it should not read in ALL bytes
+    #       of the WHOLE packed data
+    #       it should be max 4 bytes
+    #       because bigger ints are not sent anyways
+    bytes = @data.chars.groups_of(8)
+    first = bytes[0]
+    other = bytes[1..]
+
+    sign = first[1] == '1' ? -1 : 1
+
+    bits = ''
+
+    # extended
+    if first[0] == '1'
+      bytes.each do |eigth_bits|
+      end
+    else # single byte
+      bits = first[2..].join('')
+    end
+    bits.to_i(2) * sign
+  end
 end
 
 def todo_make_this_rspec_test
@@ -84,4 +134,13 @@ def todo_make_this_rspec_test
   # string
   p Packer.pack_str("A") == [65, 0]
 end
+
+def todo_also_rspec_unpacker
+  p = Packer.new([0x41, 0x41, 0x00, 0x42, 0x42, 0x00])
+  p p.get_string() == "AA"
+  p p.get_string() == "BB"
+  p p.get_string() == nil
+end
+
+todo_also_rspec_unpacker
 
