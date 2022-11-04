@@ -4,7 +4,7 @@ require_relative 'bytes'
 
 class NetChunk
   attr_reader :next, :data, :msg, :sys, :flags
-  @@sent_vital_chunks = 1
+  @@sent_vital_chunks = 0
 
   def initialize(data)
     @next = nil

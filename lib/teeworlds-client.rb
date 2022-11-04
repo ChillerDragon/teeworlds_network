@@ -39,7 +39,9 @@ class TwClient
       end
     end
     @ticks = 0
-    @client_token = MY_TOKEN.map { |b| b.to_s(16) }.join('')
+    # me trying to write cool code
+    @client_token = (1..4).to_a.map { |_| rand(0..255) }
+    @client_token = @client_token.map { |b| b.to_s(16) }.join('')
     puts "client token #{@client_token}"
     @netbase = NetBase.new
     @netbase.client_token = @client_token
@@ -99,7 +101,15 @@ class TwClient
   end
 
   def send_info()
-    send_msg(MSG_INFO)
+    data = []
+    data += Packer.pack_str(GAME_NETVERSION)
+    data += Packer.pack_str("password")
+    data += Packer.pack_int(CLIENT_VERSION)
+    msg = NetChunk.create_vital_header({vital: true}, data.size + 1) +
+      [pack_msg_id(NETMSG_INFO, system: true)] +
+      data
+
+    @netbase.send_packet(msg, 1)
   end
 
   def send_msg_startinfo()
@@ -131,7 +141,7 @@ class TwClient
 
     start_info.each do |key, value|
       if value.class == String
-        data += value.chars.map(&:ord) + [0x00]
+        data += Packer.pack_str(value)
       elsif value.class == Integer
         data += Packer.pack_int(value)
       else
@@ -177,7 +187,8 @@ class TwClient
         CHAT_ALL,
         64 # should use TARGET_SERVER (-1) instead of hacking 64 in here
       ] +
-      str.chars.map(&:ord) + [0x00])
+      Packer.pack_str(str)
+    )
   end
 
   def send_input
