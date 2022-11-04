@@ -27,6 +27,9 @@ args[:port] = args[:port] || 8303
 
 client = TwClient.new(verbose: args[:verbose])
 
+client.set_startinfo(
+      name: "ruby gamer")
+
 client.hook_chat do |msg|
   puts "chat: #{msg}"
 end

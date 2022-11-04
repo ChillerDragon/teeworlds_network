@@ -24,6 +24,29 @@ class TwClient
     @hooks = {}
     @thread_running = false
     @signal_disconnect = false
+    @start_info = {
+      name: "ruby gamer",
+      clan: "",
+      country: -1,
+      body: "spiky",
+      marking: "duodonny",
+      decoration: "",
+      hands: "standard",
+      feet: "standard",
+      eyes: "standard",
+      custom_color_body: 0,
+      custom_color_marking: 0,
+      custom_color_decoration: 0,
+      custom_color_hands: 0,
+      custom_color_feet: 0,
+      custom_color_eyes: 0,
+      color_body: 0,
+      color_marking: 0,
+      color_decoration: 0,
+      color_hands: 0,
+      color_feet: 0,
+      color_eyes: 0
+    }
   end
 
   def hook_chat(&block)
@@ -78,6 +101,17 @@ class TwClient
     @signal_disconnect = true
   end
 
+  def set_startinfo(info)
+    info.each do |key, value|
+      unless @start_info.key?(key)
+        puts "Error: invalid start info key '#{key}'"
+        puts "       valid keys: #{@start_info.keys}"
+        exit 1
+      end
+      @start_info[key] = value
+    end
+  end
+
   private
 
   def connection_loop
@@ -122,33 +156,9 @@ class TwClient
   end
 
   def send_msg_startinfo()
-    start_info = {
-      name: "ruby gamer",
-      clan: "",
-      country: 1,
-      body: "spiky",
-      marking: "duodonny",
-      decoration: "",
-      hands: "standard",
-      feet: "standard",
-      eyes: "standard",
-      custom_color_body: 0,
-      custom_color_marking: 0,
-      custom_color_decoration: 0,
-      custom_color_hands: 0,
-      custom_color_feet: 0,
-      custom_color_eyes: 0,
-      color_body: 0,
-      color_marking: 0,
-      color_decoration: 0,
-      color_hands: 0,
-      color_feet: 0,
-      color_eyes: 0
-    }
-
     data = []
 
-    start_info.each do |key, value|
+    @start_info.each do |key, value|
       if value.class == String
         data += Packer.pack_str(value)
       elsif value.class == Integer
