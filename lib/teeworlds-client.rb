@@ -10,6 +10,7 @@ require_relative 'packet'
 require_relative 'chunk'
 require_relative 'server_info'
 require_relative 'net_base'
+require_relative 'packer'
 
 class TwClient
   attr_reader :state
@@ -102,13 +103,48 @@ class TwClient
   end
 
   def send_msg_startinfo()
-    # todo: build startinfo chunk here
+    start_info = {
+      name: "ruby gamer",
+      clan: "",
+      country: 1,
+      body: "spiky",
+      marking: "duodonny",
+      decoration: "",
+      hands: "standard",
+      feet: "standard",
+      eyes: "standard",
+      custom_color_body: 0,
+      custom_color_marking: 0,
+      custom_color_decoration: 0,
+      custom_color_hands: 0,
+      custom_color_feet: 0,
+      custom_color_eyes: 0,
+      color_body: 0,
+      color_marking: 0,
+      color_decoration: 0,
+      color_hands: 0,
+      color_feet: 0,
+      color_eyes: 0
+    }
 
-    # create unused chunk just to bump
-    # the sequence number ._.
-    NetChunk.create_vital_header({vital: true}, 1)
+    data = []
 
-    @netbase.send_packet(MSG_STARTINFO)
+    start_info.each do |key, value|
+      if value.class == String
+        data += value.chars.map(&:ord) + [0x00]
+      elsif value.class == Integer
+        data += Packer.pack_int(value)
+      else
+        puts "Error: invalid startinfo #{key}: #{value}"
+        exit 1
+      end
+    end
+
+    @netbase.send_packet(
+      NetChunk.create_vital_header({vital: true}, data.size + 1) +
+      [pack_msg_id(NETMSGTYPE_CL_STARTINFO, system: false)] +
+      data
+    )
   end
 
   def send_msg_ready()
