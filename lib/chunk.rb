@@ -20,6 +20,10 @@ class NetChunk
     @next = data[chunk_end..] if data.size > chunk_end
   end
 
+  def self.reset
+    @@sent_vital_chunks = 0
+  end
+
   def to_s
     "NetChunk\n" +
     "  msg=#{msg} sys=#{sys}\n" +

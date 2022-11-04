@@ -45,6 +45,7 @@ class TwClient
     puts "client token #{@client_token}"
     @netbase = NetBase.new
     @netbase.client_token = @client_token
+    NetChunk.reset
     @ip = ip
     @port = port
     puts "connecting to #{@ip}:#{@port} .."
@@ -65,6 +66,7 @@ class TwClient
   end
 
   def disconnect
+    @netbase.send_packet([NET_CTRLMSG_CLOSE], 0, control: true)
     @signal_disconnect = true
     @s.close
   end

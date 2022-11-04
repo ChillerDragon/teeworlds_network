@@ -31,14 +31,11 @@ client.hook_chat do |msg|
   puts "chat: #{msg}"
 end
 
-client.connect(args[:ip], args[:port], detach: false)
+client.connect(args[:ip], args[:port], detach: true)
 
-loop do
-  sleep 2
-  puts "reconnecing .."
-  client.disconnect()
-  sleep 1
-  client.connect(args[:ip], args[:port])
-  sleep 200
-end
+sleep 2
+client.disconnect()
+
+sleep 1
+client.connect(args[:ip], args[:port], detach: false)
 
