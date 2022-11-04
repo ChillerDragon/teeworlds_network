@@ -6,6 +6,7 @@ class NetBase
     @port = nil
     @s = nil
     @ack = 0
+    @server_token = [0xFF, 0xFF, 0xFF, 0xFF].map { |b| b.to_s(16) }.join('')
   end
 
   def connect(socket, ip, port)

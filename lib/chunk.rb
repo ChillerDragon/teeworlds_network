@@ -4,7 +4,7 @@ require_relative 'bytes'
 
 class NetChunk
   attr_reader :next, :data, :msg, :sys, :flags
-  @@sent_vital_chunks = 3 # BIG TODO: SEND READY AND SHIT WITH PROPER HEADER
+  @@sent_vital_chunks = 1
 
   def initialize(data)
     @next = nil
@@ -18,6 +18,13 @@ class NetChunk
     @sys = @msg & 1 == 1 ? true : false
     @msg >>= 1
     @next = data[chunk_end..] if data.size > chunk_end
+  end
+
+  def to_s
+    "NetChunk\n" +
+    "  msg=#{msg} sys=#{sys}\n" +
+    "  #{@flags}\n" +
+    "  data: #{str_hex(data)}"
   end
 
   ##

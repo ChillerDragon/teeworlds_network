@@ -16,15 +16,10 @@ class TwClient
 
   def initialize(options = {})
     @verbose = options[:verbose] || false
-    @client_token = MY_TOKEN.map { |b| b.to_s(16) }.join('')
-    puts "client token #{@client_token}"
     @state = NET_CONNSTATE_OFFLINE
     @ip = 'localhost'
     @port = 8303
     @packet_flags = {}
-    @ticks = 0
-    @netbase = NetBase.new
-    @netbase.client_token = @client_token
     @hooks = {}
     @thread_running = false
     @signal_disconnect = false
@@ -42,6 +37,11 @@ class TwClient
         return
       end
     end
+    @ticks = 0
+    @client_token = MY_TOKEN.map { |b| b.to_s(16) }.join('')
+    puts "client token #{@client_token}"
+    @netbase = NetBase.new
+    @netbase.client_token = @client_token
     @ip = ip
     @port = port
     puts "connecting to #{@ip}:#{@port} .."
@@ -87,14 +87,14 @@ class TwClient
   end
 
   def send_msg_connect()
-    header = [0x04, 0x00, 0x00] + str_bytes(@token)
-    msg = header + [NET_CTRLMSG_CONNECT] + str_bytes(@client_token) + Array.new(501, 0x00)
-    @s.send(msg.pack('C*'), 0, @ip, @port)
+    msg = [NET_CTRLMSG_CONNECT] + str_bytes(@client_token) + Array.new(501, 0x00)
+    @netbase.send_packet(msg, 0, control: true)
   end
 
   def send_ctrl_with_token()
     @state = NET_CONNSTATE_TOKEN
-    @s.send(MSG_TOKEN.pack('C*'), 0, @ip, @port)
+    msg = [NET_CTRLMSG_TOKEN] + str_bytes(@client_token) + Array.new(512, 0x00)
+    @netbase.send_packet(msg, 0, control: true)
   end
 
   def send_info()
@@ -102,21 +102,25 @@ class TwClient
   end
 
   def send_msg_startinfo()
-    header = [0x00, 0x04, 0x01] + str_bytes(@token)
-    msg = header + MSG_STARTINFO
-    @s.send(msg.pack('C*'), 0, @ip, @port)
+    # todo: build startinfo chunk here
+
+    # create unused chunk just to bump
+    # the sequence number ._.
+    NetChunk.create_vital_header({vital: true}, 1)
+
+    @netbase.send_packet(MSG_STARTINFO)
   end
 
   def send_msg_ready()
-    header = [0x00, 0x01, 0x01] + str_bytes(@token)
-    msg = header + [0x40, 0x01, 0x02, 0x25]
-    @s.send(msg.pack('C*'), 0, @ip, @port)
+    @netbase.send_packet(
+      NetChunk.create_vital_header({vital: true}, 1) +
+      [pack_msg_id(NETMSG_READY, system: true)])
   end
 
   def send_enter_game()
     @netbase.send_packet(
       NetChunk.create_vital_header({vital: true}, 1) +
-      [pack_msg_id(NETMSG_ENTERGAME, true)])
+      [pack_msg_id(NETMSG_ENTERGAME, system: true)])
   end
 
   ##
@@ -125,8 +129,8 @@ class TwClient
   # Takes a NETMSGTYPE_CL_* integer
   # and returns a byte that can be send over
   # the network
-  def pack_msg_id(msg_id, system = false)
-    (msg_id << 1) | (system ? 1 : 0)
+  def pack_msg_id(msg_id, options = {system: false})
+    (msg_id << 1) | (options[:system] ? 1 : 0)
   end
 
   def send_chat(str)
