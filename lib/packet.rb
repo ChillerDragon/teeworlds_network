@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'huffman_tw'
 
 class PacketFlags
@@ -70,14 +72,14 @@ class Packet
     token = bytes[3..6].join(' ').green
     payload = bytes[7..].join(' ')
     puts @prefix + "  data: #{[header, token, payload].join(' ')}"
-    print @prefix + '        '
+    print "#{@prefix}        "
     print 'header'.ljust(3 * 3, ' ').yellow
     print 'token'.ljust(4 * 3, ' ').green
     puts 'data'
   end
 
   def to_s
-    puts @prefix + 'Packet'
+    puts "#{@prefix}Packet"
     puts @prefix + "  flags: #{@flags}"
     bytes = str_hex(@data).split(' ')
     # TODO: check terminal size?
@@ -85,7 +87,7 @@ class Packet
     rows = bytes.groups_of(max_width)
     annotate_first_row(rows.first)
     rows[1..].each do |row|
-      print @prefix + '        '
+      print "#{@prefix}        "
       puts row.join(' ')
     end
     puts ''
