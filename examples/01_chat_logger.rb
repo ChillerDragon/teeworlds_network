@@ -15,7 +15,7 @@ client = TeeworldsClient.new(verbose: false)
 # msg.author.team
 # msg.author.name
 # msg.author.clan
-client.hook_chat do |msg|
+client.on_chat do |msg|
   puts "[chat] #{msg}"
 end
 

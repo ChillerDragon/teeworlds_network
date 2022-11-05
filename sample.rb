@@ -30,7 +30,7 @@ client = TeeworldsClient.new(verbose: args[:verbose])
 client.set_startinfo(
       name: "ruby gamer")
 
-client.hook_chat do |msg|
+client.on_chat do |msg|
   puts "[chat] #{msg}"
 end
 

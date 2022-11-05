@@ -52,7 +52,7 @@ class TeeworldsClient
     }
   end
 
-  def hook_chat(&block)
+  def on_chat(&block)
     @hooks[:chat] = block
   end
 

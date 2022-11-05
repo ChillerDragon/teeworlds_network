@@ -15,7 +15,7 @@ require_relative 'lib/teeworlds-client'
 
 client = TeeworldsClient.new(verbose: false)
 
-client.hook_chat do |msg|
+client.on_chat do |msg|
   puts "[chat] #{msg}"
 end
 
