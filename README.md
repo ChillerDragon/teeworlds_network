@@ -5,7 +5,7 @@ A teeworlds 0.7 client library written in ruby
 
 Here a simple sample usage of the library.
 Connecting a client to localhost on port 8303.
-And printing out every chat message the server sends.
+Acting as a simple chat bot.
 Also properly disconnect when the program is killed gracefully.
 
 For more sample usages checkout the [examples/](examples/) folder.
