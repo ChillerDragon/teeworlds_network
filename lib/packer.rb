@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'array'
 
 class Packer
@@ -45,13 +47,13 @@ class Packer
 
   def self.pack_big_int(sign, num)
     num_bits = num.to_s(2)
-    first = '1' + sign + num_bits[-6..]
+    first = "1#{sign}#{num_bits[-6..]}"
 
     num_bits = num_bits[0..-7]
     bytes = []
     num_bits.chars.groups_of(7).each do |seven_bits|
       # mark all as extended
-      bytes << '1' + seven_bits.join('').rjust(7, '0')
+      bytes << "1#{seven_bits.join('').rjust(7, '0')}"
     end
     # least significant first
     bytes = bytes.reverse
@@ -82,7 +84,7 @@ class Unpacker
 
     str = ''
     @data.each_with_index do |byte, index|
-      if byte == 0x00
+      if byte.zero?
         @data = index == @data.length - 1 ? nil : @data[(index + 1)..]
         return str
       end
