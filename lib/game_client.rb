@@ -64,7 +64,29 @@ class GameClient
 
     player = context.data[:player]
     @players[player.id] = player
-    puts "'#{player.name}' joined the game"
+  end
+
+  def on_client_drop(chunk)
+    u = Unpacker.new(chunk.data[1..])
+    client_id = u.get_int()
+    reason = u.get_string()
+    silent = u.get_int()
+
+    context = Context.new(
+      @cliemt,
+      player: @players[client_id],
+      chunk: chunk,
+      client_id: client_id,
+      reason: reason == '' ? nil : reason,
+      silent: silent
+    )
+    if @client.hooks[:client_drop]
+      @client.hooks[:client_drop].call(context)
+      context.verify
+      return if context.cancled?
+    end
+
+    @players.delete(context.data[:client_id])
   end
 
   def on_ready_to_enter(chunk)
