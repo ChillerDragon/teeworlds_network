@@ -32,7 +32,7 @@ client.on_chat do |msg|
 end
 
 client.on_client_info do |ctx|
-  puts "'#{ctx.data[:player].name}' joined the game#{reason}"
+  puts "'#{ctx.data[:player].name}' joined the game"
 end
 
 client.on_client_drop do |ctx|

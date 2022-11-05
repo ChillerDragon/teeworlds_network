@@ -79,7 +79,7 @@ class GameClient
       chunk:,
       client_id:,
       reason: reason == '' ? nil : reason,
-      silent:
+      silent: silent != 0
     )
     if @client.hooks[:client_drop]
       @client.hooks[:client_drop].call(context)

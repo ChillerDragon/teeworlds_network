@@ -83,11 +83,7 @@ class Unpacker
     str = ''
     @data.each_with_index do |byte, index|
       if byte == 0x00
-        @data = if index == @data.length - 1
-                  nil
-                else
-                  @data[(index + 1)..]
-                end
+        @data = index == @data.length - 1 ? nil : @data[(index + 1)..]
         return str
       end
       str += byte.chr
