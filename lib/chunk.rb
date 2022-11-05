@@ -47,7 +47,7 @@ class NetChunk
     @@sent_vital_chunks += 1
     seq = @@sent_vital_chunks if seq.nil?
 
-    flag_bits = '00'
+    flag_bits = '00'.dup
     flag_bits[0] = flags[:resend] ? '1' : '0'
     flag_bits[1] = flags[:vital] ? '1' : '0'
 
