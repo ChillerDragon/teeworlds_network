@@ -1,4 +1,4 @@
-name: Style
+name: Integration
 
 on:
   push:
@@ -7,8 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  lint:
-
+  test-connect:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,13 +18,14 @@ jobs:
         ruby-version: 3.1.x
     - name: Prepare
       run: |
-        sudo apt-get update
-        sudo apt-get install shellcheck
+        sudo apt-get update -y
+        sudo apt-get install -y shellcheck teeworlds-server
         gem install bundler
         gem install rubocop:1.31.2
         bundle install --jobs 4 --retry 3
-    - name: Check ruby with rubocop
+    - name: Test sending chat messages
       run: |
-        rubocop
-    - name: Shellcheck
-      run: find . -type f -name '*.sh' -print0 | xargs -0 shellcheck
+        ./integration_test/run.sh chat
+    - name: Test reconnect
+      run: |
+        ./integration_test/run.sh reconnect

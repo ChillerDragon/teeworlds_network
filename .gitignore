@@ -1,2 +1,5 @@
 Gemfile.lock
+integration_test/*
+!integration_test/*.rb
+!integration_test/*.sh
 
