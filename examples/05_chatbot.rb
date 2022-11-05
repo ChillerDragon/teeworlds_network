@@ -11,13 +11,13 @@ require_relative '../lib/teeworlds-client'
 client = TeeworldsClient.new(verbose: false)
 
 client.on_chat do |msg|
-  if msg.message[0] == '!'
-    case msg.message[1..]
-    when 'ping' then client.send_chat('pong')
-    when 'whoami' then client.send_chat("You are: #{msg.author.name}")
-    when 'list' then client.send_chat(client.game_client.players.values.map(&:name).join(', '))
-    else client.send_chat('Unkown command! Commands: !ping, !whoami, !list')
-    end
+  next if msg.message[0] != '!'
+
+  case msg.message[1..]
+  when 'ping' then client.send_chat('pong')
+  when 'whoami' then client.send_chat("You are: #{msg.author.name}")
+  when 'list' then client.send_chat(client.game_client.players.values.map(&:name).join(', '))
+  else client.send_chat('Unkown command! Commands: !ping, !whoami, !list')
   end
 end
 
