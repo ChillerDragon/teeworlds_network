@@ -56,6 +56,14 @@ class TeeworldsClient
     @hooks[:chat] = block
   end
 
+  def on_map_change(&block)
+    @hooks[:map_change] = block
+  end
+
+  def on_client_info(&block)
+    @hooks[:client_info] = block
+  end
+
   def send_chat(str)
     @netbase.send_packet(
       NetChunk.create_vital_header({vital: true}, 4 + str.length) +
@@ -126,18 +134,6 @@ class TeeworldsClient
       end
       @start_info[key] = value
     end
-  end
-
-  private
-
-  def connection_loop
-      until @signal_disconnect
-        tick
-        # todo: proper tick speed sleep
-        sleep 0.001
-      end
-      @thread_running = false
-      @signal_disconnect = false
   end
 
   def send_msg(data)
@@ -246,36 +242,7 @@ class TeeworldsClient
     puts "got NET_CTRLMSG_CLOSE"
   end
 
-  def get_strings(data)
-    strings = []
-    str = ""
-    data.chars.each do |b|
-      # use a bunch of control characters as delimiters
-      # https://en.wikipedia.org/wiki/Control_character
-      if (0x00..0x0F).to_a.include?(b.unpack('C*').first)
-        strings.push(str) unless str.length.zero?
-        str = ""
-        next
-      end
-
-      str += b
-    end
-    strings
-  end
-
-  def on_msg_map_change(data)
-    mapname = get_strings(data).first
-    puts "map: #{mapname}"
-    send_msg_ready()
-  end
-
-  def on_motd(data)
-    puts "motd: #{get_strings(data)}"
-  end
-
-  def on_playerinfo(data)
-    puts "playerinfo: #{get_strings(data).join(', ')}"
-  end
+  private
 
   # CClient::ProcessConnlessPacket
   def on_ctrl_message(msg, data)
@@ -290,15 +257,12 @@ class TeeworldsClient
     end
   end
 
-  def on_emoticon(chunk)
-    # puts "Got emoticon flags: #{chunk.flags}"
-  end
-
   def on_message(chunk)
     case chunk.msg
-    when NETMSGTYPE_SV_READYTOENTER then send_enter_game
-    when NETMSGTYPE_SV_CLIENTINFO then @game_client.on_player_join(chunk)
-    when NETMSGTYPE_SV_EMOTICON then on_emoticon(chunk)
+    when NETMSGTYPE_SV_READYTOENTER then @game_client.on_ready_to_enter(chunk)
+    when NETMSGTYPE_SV_CLIENTINFO then @game_client.on_client_info(chunk)
+    when NETMSGTYPE_DE_CLIENTENTER then @game_client.on_client_enter(chunk)
+    when NETMSGTYPE_SV_EMOTICON then @game_client.on_emoticon(chunk)
     when NETMSGTYPE_SV_CHAT then @game_client.on_chat(chunk)
     else
       if @verbose
@@ -315,11 +279,11 @@ class TeeworldsClient
     puts "proccess chunk with msg: #{chunk.msg}"
     case chunk.msg
     when NETMSG_MAP_CHANGE
-      send_msg_ready
+      @game_client.on_map_change(chunk)
     when NETMSG_SERVERINFO
       puts "ignore server info for now"
     when NETMSG_CON_READY
-      send_msg_startinfo
+      @game_client.on_connected
     when NETMSG_NULL
       # should we be in alert here?
     else
@@ -388,5 +352,16 @@ class TeeworldsClient
       send_chat("hello world")
     end
   end
+
+  def connection_loop
+      until @signal_disconnect
+        tick
+        # todo: proper tick speed sleep
+        sleep 0.001
+      end
+      @thread_running = false
+      @signal_disconnect = false
+  end
+
 end
 

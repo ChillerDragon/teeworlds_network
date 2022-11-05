@@ -1,7 +1,7 @@
 class Player
-  attr_reader :id, :local, :team, :name, :clan
-  attr_reader :country
-  attr_reader :skin_parts, :skin_custom_colors, :skin_colors
+  attr_accessor :id, :local, :team, :name, :clan
+  attr_accessor :country
+  attr_accessor :skin_parts, :skin_custom_colors, :skin_colors
 
   def initialize(data = {})
     @id = data[:id] || -1

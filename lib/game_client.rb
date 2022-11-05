@@ -2,6 +2,33 @@ require_relative 'player'
 require_relative 'packer'
 require_relative 'chat_message'
 
+class Context
+  attr_reader :old_data
+  attr_accessor :data
+
+  def initialize(keys = {})
+    @cancle = false
+    @old_data = keys
+    @data = keys
+  end
+
+  def verify
+    @data.each do |key, value|
+      next if @old_data.key? key
+
+      raise "Error: invalid data key '#{key}'\n       valid keys: #{@old_data.keys}"
+    end
+  end
+
+  def cancled?
+    @cancle
+  end
+
+  def cancle
+    @cancle = true
+  end
+end
+
 class GameClient
   attr_accessor :players
 
@@ -10,7 +37,12 @@ class GameClient
     @players = {}
   end
 
-  def on_player_join(chunk)
+  def on_client_enter(chunk)
+    puts "ON CLIENT ENTER"
+    puts chunk
+  end
+
+  def on_client_info(chunk)
     # puts "Got playerinfo flags: #{chunk.flags}"
     u = Unpacker.new(chunk.data[1..])
     player = Player.new(
@@ -23,8 +55,39 @@ class GameClient
     # skinparts and the silent flag
     # are currently ignored
 
+    context = Context.new(
+      player: player,
+      chunk: chunk
+    )
+    if @client.hooks[:client_info]
+      @client.hooks[:client_info].call(context)
+      context.verify
+      return if context.cancled?
+    end
+
+    player = context.data[:player]
     @players[player.id] = player
     puts "'#{player.name}' joined the game"
+  end
+
+  def on_ready_to_enter(chunk)
+    @client.send_enter_game
+  end
+
+  def on_connected
+    @client.send_msg_startinfo
+  end
+
+  def on_map_change(chunk)
+    context = Context.new(chunk: chunk)
+    if @client.hooks[:map_change]
+      @client.hooks[:map_change].call(context)
+      context.verify
+      return if context.cancled?
+    end
+    # ignore mapdownload at all times
+    # and claim to have the map
+    @client.send_msg_ready
   end
 
   def on_chat(chunk)
