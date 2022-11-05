@@ -75,7 +75,7 @@ class NetChunk
       size_bits[6..] +
       seq_bits[2..]
     header_bits.chars.groups_of(8).map do |eigth_bits|
-      eigth_bits.join('').to_i(2)
+      eigth_bits.join.to_i(2)
     end
   end
 
@@ -91,8 +91,8 @@ class NetChunk
     size_bytes = size.chars.groups_of(8)
     # trim first 2 bits of both bytes
     # Size: 2 bytes (..00 0000 ..00 0010)
-    size_bytes.map! { |b| b[2..].join('') }
-    @size = size_bytes.join('').to_i(2)
+    size_bytes.map! { |b| b[2..].join }
+    @size = size_bytes.join.to_i(2)
 
     # sequence number
     # in da third byte but who needs seq?!

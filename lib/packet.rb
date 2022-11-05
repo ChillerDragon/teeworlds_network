@@ -61,10 +61,10 @@ class Packet
     flags_byte = @data[0].unpack('B*')
     @flags = PacketFlags.new(flags_byte.first[2..5]).hash
     @payload = @data[PACKET_HEADER_SIZE..]
-    if flags_compressed
-      @payload = @huffman.decompress(@payload.unpack('C*'))
-      @payload = @payload.pack('C*')
-    end
+    return unless  flags_compressed
+
+    @payload = @huffman.decompress(@payload.unpack('C*'))
+    @payload = @payload.pack('C*')
   end
 
   def annotate_first_row(bytes)
@@ -81,7 +81,7 @@ class Packet
   def to_s
     puts "#{@prefix}Packet"
     puts @prefix + "  flags: #{@flags}"
-    bytes = str_hex(@data).split(' ')
+    bytes = str_hex(@data).split
     # TODO: check terminal size?
     max_width = 14
     rows = bytes.groups_of(max_width)

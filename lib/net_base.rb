@@ -13,7 +13,7 @@ class NetBase
     @port = nil
     @s = nil
     @ack = 0
-    @server_token = [0xFF, 0xFF, 0xFF, 0xFF].map { |b| b.to_s(16) }.join('')
+    @server_token = [0xFF, 0xFF, 0xFF, 0xFF].map { |b| b.to_s(16) }.join
   end
 
   def connect(socket, ip, port)
@@ -47,7 +47,7 @@ class NetBase
     header_bits = "00#{flags_bits}#{@ack.to_s(2).rjust(10, '0')}#{num_chunks.to_s(2).rjust(8, '0')}"
 
     header = header_bits.chars.groups_of(8).map do |eight_bits|
-      eight_bits.join('').to_i(2)
+      eight_bits.join.to_i(2)
     end
 
     header += str_bytes(@server_token)

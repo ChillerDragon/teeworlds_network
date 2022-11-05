@@ -97,7 +97,7 @@ class TeeworldsClient
     @game_client = GameClient.new(self)
     # me trying to write cool code
     @client_token = (1..4).to_a.map { |_| rand(0..255) }
-    @client_token = @client_token.map { |b| b.to_s(16) }.join('')
+    @client_token = @client_token.map { |b| b.to_s(16) }.join
     puts "client token #{@client_token}"
     @netbase = NetBase.new
     @netbase.client_token = @client_token

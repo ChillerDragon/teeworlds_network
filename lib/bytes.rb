@@ -11,9 +11,9 @@ def str_bytes(str)
 end
 
 def bytes_to_str(data)
-  data.unpack('H*').join('')
+  data.unpack('H*').join
 end
 
 def get_byte(data, start = 0, num = 1)
-  data[start...(start + num)].unpack('H*').join('').upcase
+  data[start...(start + num)].unpack('H*').join.upcase
 end

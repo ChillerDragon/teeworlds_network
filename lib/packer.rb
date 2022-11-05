@@ -53,7 +53,7 @@ class Packer
     bytes = []
     num_bits.chars.groups_of(7).each do |seven_bits|
       # mark all as extended
-      bytes << "1#{seven_bits.join('').rjust(7, '0')}"
+      bytes << "1#{seven_bits.join.rjust(7, '0')}"
     end
     # least significant first
     bytes = bytes.reverse
@@ -105,7 +105,6 @@ class Unpacker
     #       because bigger ints are not sent anyways
     bytes = @data.map { |byte| byte.to_s(2).rjust(8, '0') }
     first = bytes[0]
-    other = bytes[1..]
 
     sign = first[1] == '1' ? -1 : 1
     bits = []
@@ -127,7 +126,7 @@ class Unpacker
       bits = [first[2..]]
       @data = @data[1..]
     end
-    bits.join('').to_i(2) * sign
+    bits.join.to_i(2) * sign
   end
 end
 
