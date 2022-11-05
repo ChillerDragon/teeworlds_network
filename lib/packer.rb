@@ -36,9 +36,8 @@ class Packer
       num += 1
     end
     num = num.abs
-    if num > 63 || num < -63
-      return self.pack_big_int(sign, num)
-    end
+    return pack_big_int(sign, num) if num > 63 || num < -63
+
     ext = '0'
     bits = ext + sign + num.to_s(2).rjust(6, '0')
     [bits.to_i(2)]
@@ -69,26 +68,26 @@ end
 class Unpacker
   def initialize(data)
     @data = data
-    if data.class == String
-      @data = data.unpack("C*")
-    elsif data.class == Array
+    if data.instance_of?(String)
+      @data = data.unpack('C*')
+    elsif data.instance_of?(Array)
       @data = data
     else
-      raise "Error: Unpacker expects array of integers or byte string"
+      raise 'Error: Unpacker expects array of integers or byte string'
     end
   end
 
-  def get_string()
+  def get_string
     return nil if @data.nil?
 
     str = ''
     @data.each_with_index do |byte, index|
       if byte == 0x00
-        if index == @data.length - 1
-          @data = nil
-        else
-          @data = @data[(index + 1)..]
-        end
+        @data = if index == @data.length - 1
+                  nil
+                else
+                  @data[(index + 1)..]
+                end
         return str
       end
       str += byte.chr
@@ -98,10 +97,10 @@ class Unpacker
     ''
   end
 
-  def get_int()
+  def get_int
     return nil if @data.nil?
 
-    # todo: make this more performant
+    # TODO: make this more performant
     #       it should not read in ALL bytes
     #       of the WHOLE packed data
     #       it should be max 4 bytes
@@ -150,8 +149,8 @@ def todo_make_this_rspec_test
   # p Packer.pack_int(-3).first.to_s(2) == '1000010'
   # p Packer.pack_int(-4).first.to_s(2) == '1000011'
 
-  p Packer.pack_int(64).map { |e| e.to_s(2).rjust(8, '0') } == ["10000000", "00000001"]
-  p Packer.pack_int(-64).map { |e| e.to_s(2).rjust(8, '0') } == ["11000000", "00000000"]
+  p Packer.pack_int(64).map { |e| e.to_s(2).rjust(8, '0') } == %w[10000000 00000001]
+  p Packer.pack_int(-64).map { |e| e.to_s(2).rjust(8, '0') } == %w[11000000 00000000]
 
   # # multi byte int
   # p Packer.pack_int(64) == [128, 1]
@@ -184,8 +183,8 @@ def todo_also_rspec_unpacker
   # p u.get_int() == 64
 
   u = Unpacker.new([128, 1, 128, 1])
-  p u.get_int() == 64
-  p u.get_int() == 64
+  p u.get_int == 64
+  p u.get_int == 64
   # p u.get_int() == nil
 
   # (-128..128).each do |i|
@@ -194,15 +193,14 @@ def todo_also_rspec_unpacker
   # end
 
   u = Unpacker.new(['00000001'.to_i(2)])
-  p u.get_int() == 1
+  p u.get_int == 1
 
   u = Unpacker.new(['10000000'.to_i(2), '00000001'.to_i(2)])
-  p u.get_int() == 64
+  p u.get_int == 64
 
-  # todo should be -64
+  # TODO: should be -64
   # u = Unpacker.new(['11000000'.to_i(2), '00000000'.to_i(2)])
   # p u.get_int()
 end
 
 # todo_also_rspec_unpacker
-

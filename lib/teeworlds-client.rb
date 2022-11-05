@@ -28,15 +28,15 @@ class TeeworldsClient
     @signal_disconnect = false
     @game_client = GameClient.new(self)
     @start_info = {
-      name: "ruby gamer",
-      clan: "",
+      name: 'ruby gamer',
+      clan: '',
       country: -1,
-      body: "spiky",
-      marking: "duodonny",
-      decoration: "",
-      hands: "standard",
-      feet: "standard",
-      eyes: "standard",
+      body: 'spiky',
+      marking: 'duodonny',
+      decoration: '',
+      hands: 'standard',
+      feet: 'standard',
+      eyes: 'standard',
       custom_color_body: 0,
       custom_color_marking: 0,
       custom_color_decoration: 0,
@@ -74,7 +74,7 @@ class TeeworldsClient
 
   def send_chat(str)
     @netbase.send_packet(
-      NetChunk.create_vital_header({vital: true}, 4 + str.length) +
+      NetChunk.create_vital_header({ vital: true }, 4 + str.length) +
       [
         pack_msg_id(NETMSGTYPE_CL_SAY),
         CHAT_ALL,
@@ -86,11 +86,9 @@ class TeeworldsClient
 
   def connect(ip, port, options = {})
     options[:detach] = options[:detach] || false
-    if options[:detach]
-      if @thread_running
-        puts "Error: connection thread already running call disconnect() first"
-        return
-      end
+    if options[:detach] && @thread_running
+      puts 'Error: connection thread already running call disconnect() first'
+      return
     end
     disconnect
     @signal_disconnect = false
@@ -123,13 +121,9 @@ class TeeworldsClient
   end
 
   def disconnect
-    puts "disconnecting."
-    unless @netbase.nil?
-      @netbase.send_packet([NET_CTRLMSG_CLOSE], 0, control: true)
-    end
-    unless @s.nil?
-      @s.close
-    end
+    puts 'disconnecting.'
+    @netbase.send_packet([NET_CTRLMSG_CLOSE], 0, control: true) unless @netbase.nil?
+    @s.close unless @s.nil?
     @signal_disconnect = true
   end
 
@@ -148,40 +142,40 @@ class TeeworldsClient
     @netbase.send_packet(data)
   end
 
-  def send_ctrl_keepalive()
+  def send_ctrl_keepalive
     @netbase.send_packet([NET_CTRLMSG_KEEPALIVE], 0, control: true)
   end
 
-  def send_msg_connect()
+  def send_msg_connect
     msg = [NET_CTRLMSG_CONNECT] + str_bytes(@client_token) + Array.new(501, 0x00)
     @netbase.send_packet(msg, 0, control: true)
   end
 
-  def send_ctrl_with_token()
+  def send_ctrl_with_token
     @state = NET_CONNSTATE_TOKEN
     msg = [NET_CTRLMSG_TOKEN] + str_bytes(@client_token) + Array.new(512, 0x00)
     @netbase.send_packet(msg, 0, control: true)
   end
 
-  def send_info()
+  def send_info
     data = []
     data += Packer.pack_str(GAME_NETVERSION)
-    data += Packer.pack_str("password")
+    data += Packer.pack_str('password')
     data += Packer.pack_int(CLIENT_VERSION)
-    msg = NetChunk.create_vital_header({vital: true}, data.size + 1) +
-      [pack_msg_id(NETMSG_INFO, system: true)] +
-      data
+    msg = NetChunk.create_vital_header({ vital: true }, data.size + 1) +
+          [pack_msg_id(NETMSG_INFO, system: true)] +
+          data
 
     @netbase.send_packet(msg, 1)
   end
 
-  def send_msg_startinfo()
+  def send_msg_startinfo
     data = []
 
     @start_info.each do |key, value|
-      if value.class == String
+      if value.instance_of?(String)
         data += Packer.pack_str(value)
-      elsif value.class == Integer
+      elsif value.instance_of?(Integer)
         data += Packer.pack_int(value)
       else
         puts "Error: invalid startinfo #{key}: #{value}"
@@ -190,22 +184,24 @@ class TeeworldsClient
     end
 
     @netbase.send_packet(
-      NetChunk.create_vital_header({vital: true}, data.size + 1) +
+      NetChunk.create_vital_header({ vital: true }, data.size + 1) +
       [pack_msg_id(NETMSGTYPE_CL_STARTINFO, system: false)] +
       data
     )
   end
 
-  def send_msg_ready()
+  def send_msg_ready
     @netbase.send_packet(
-      NetChunk.create_vital_header({vital: true}, 1) +
-      [pack_msg_id(NETMSG_READY, system: true)])
+      NetChunk.create_vital_header({ vital: true }, 1) +
+      [pack_msg_id(NETMSG_READY, system: true)]
+    )
   end
 
-  def send_enter_game()
+  def send_enter_game
     @netbase.send_packet(
-      NetChunk.create_vital_header({vital: true}, 1) +
-      [pack_msg_id(NETMSG_ENTERGAME, system: true)])
+      NetChunk.create_vital_header({ vital: true }, 1) +
+      [pack_msg_id(NETMSG_ENTERGAME, system: true)]
+    )
   end
 
   ##
@@ -214,12 +210,12 @@ class TeeworldsClient
   # Takes a NETMSGTYPE_CL_* integer
   # and returns a byte that can be send over
   # the network
-  def pack_msg_id(msg_id, options = {system: false})
+  def pack_msg_id(msg_id, options = { system: false })
     (msg_id << 1) | (options[:system] ? 1 : 0)
   end
 
   def send_input
-    header = [0x10, 0x0A, 01] + str_bytes(@token)
+    header = [0x10, 0x0A, 0o1] + str_bytes(@token)
     random_compressed_input = [
       0x4D, 0xE9, 0x48, 0x13, 0xD0, 0x0B, 0x6B, 0xFC, 0xB7, 0x2B, 0x6E, 0x00, 0xBA
     ]
@@ -234,20 +230,20 @@ class TeeworldsClient
   end
 
   def on_msg_token(data)
-      @token = bytes_to_str(data)
-      @netbase.server_token = @token
-      puts "Got token #{@token}"
-      send_msg_connect()
+    @token = bytes_to_str(data)
+    @netbase.server_token = @token
+    puts "Got token #{@token}"
+    send_msg_connect
   end
 
   def on_msg_accept
-    puts "got accept. connection online"
+    puts 'got accept. connection online'
     @state = NET_CONNSTATE_ONLINE
     send_info
   end
 
   def on_msg_close
-    puts "got NET_CTRLMSG_CLOSE"
+    puts 'got NET_CTRLMSG_CLOSE'
   end
 
   private
@@ -258,10 +254,10 @@ class TeeworldsClient
     when NET_CTRLMSG_TOKEN then on_msg_token(data)
     when NET_CTRLMSG_ACCEPT then on_msg_accept
     when NET_CTRLMSG_CLOSE then on_msg_close
-    when NET_CTRLMSG_KEEPALIVE then # silently ignore keepalive
+    when NET_CTRLMSG_KEEPALIVE # silently ignore keepalive
     else
-        puts "Uknown control message #{msg}"
-        exit(1)
+      puts "Uknown control message #{msg}"
+      exit(1)
     end
   end
 
@@ -273,14 +269,12 @@ class TeeworldsClient
     when NETMSGTYPE_SV_EMOTICON then @game_client.on_emoticon(chunk)
     when NETMSGTYPE_SV_CHAT then @game_client.on_chat(chunk)
     else
-      if @verbose
-        puts "todo non sys chunks. skipped msg: #{chunk.msg}"
-      end
+      puts "todo non sys chunks. skipped msg: #{chunk.msg}" if @verbose
     end
   end
 
   def process_chunk(chunk)
-    if !chunk.sys
+    unless chunk.sys
       on_message(chunk)
       return
     end
@@ -289,7 +283,7 @@ class TeeworldsClient
     when NETMSG_MAP_CHANGE
       @game_client.on_map_change(chunk)
     when NETMSG_SERVERINFO
-      puts "ignore server info for now"
+      puts 'ignore server info for now'
     when NETMSG_CON_READY
       @game_client.on_connected
     when NETMSG_NULL
@@ -303,7 +297,7 @@ class TeeworldsClient
   def process_server_packet(packet)
     data = packet.payload
     if data.size.zero?
-      puts "Error: packet payload is empty"
+      puts 'Error: packet payload is empty'
       puts packet.to_s
       return
     end
@@ -311,9 +305,7 @@ class TeeworldsClient
     chunks.each do |chunk|
       if chunk.flags_vital && !chunk.flags_resend
         @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
-        if @verbose
-          puts "got ack: #{@netbase.ack}"
-        end
+        puts "got ack: #{@netbase.ack}" if @verbose
       end
       process_chunk(chunk)
     end
@@ -327,12 +319,12 @@ class TeeworldsClient
       pck = nil
     end
     if pck.nil? && @token.nil?
-      @wait_for_token = @wait_for_token || 0
+      @wait_for_token ||= 0
       @wait_for_token += 1
       if @wait_for_token > 6
         @token = nil
         send_ctrl_with_token
-        puts "retrying connection ..."
+        puts 'retrying connection ...'
       end
     end
     return unless pck
@@ -340,36 +332,30 @@ class TeeworldsClient
     data = pck.first
 
     packet = Packet.new(data, '<')
-    if @verbose
-      puts packet.to_s
-    end
+    puts packet.to_s if @verbose
 
     # process connless packets data
     if packet.flags_control
-      msg = data[PACKET_HEADER_SIZE].unpack("C*").first
+      msg = data[PACKET_HEADER_SIZE].unpack1('C*')
       on_ctrl_message(msg, data[(PACKET_HEADER_SIZE + 1)..])
     else # process non-connless packets
       process_server_packet(packet)
     end
 
     @ticks += 1
-    if @ticks % 8 == 0
-      send_ctrl_keepalive
-    end
+    send_ctrl_keepalive if @ticks % 8 == 0
     # if @ticks % 20 == 0
     #   send_chat("hello world")
     # end
   end
 
   def connection_loop
-      until @signal_disconnect
-        tick
-        # todo: proper tick speed sleep
-        sleep 0.001
-      end
-      @thread_running = false
-      @signal_disconnect = false
+    until @signal_disconnect
+      tick
+      # TODO: proper tick speed sleep
+      sleep 0.001
+    end
+    @thread_running = false
+    @signal_disconnect = false
   end
-
 end
-

@@ -4,7 +4,7 @@ class Array
 
     groups = []
     group = []
-    self.each do |item|
+    each do |item|
       group.push(item)
 
       if group.size >= max_size
@@ -16,4 +16,3 @@ class Array
     groups
   end
 end
-

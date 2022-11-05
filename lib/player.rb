@@ -1,7 +1,5 @@
 class Player
-  attr_accessor :id, :local, :team, :name, :clan
-  attr_accessor :country
-  attr_accessor :skin_parts, :skin_custom_colors, :skin_colors
+  attr_accessor :id, :local, :team, :name, :clan, :country, :skin_parts, :skin_custom_colors, :skin_colors
 
   def initialize(data = {})
     @id = data[:id] || -1
@@ -15,4 +13,3 @@ class Player
     @skin_colors = data[:skin_colors] || Array.new(6, 0)
   end
 end
-

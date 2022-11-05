@@ -10,4 +10,3 @@ describe 'Array', :array do
     end
   end
 end
-

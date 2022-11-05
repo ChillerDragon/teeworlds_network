@@ -27,4 +27,3 @@ class ChatMesage
     "#{@author.name}: #{@message}"
   end
 end
-

@@ -12,4 +12,3 @@ class ServerInfo
     "version=#{@version} gametype=#{gametype} map=#{map} name=#{name}"
   end
 end
-

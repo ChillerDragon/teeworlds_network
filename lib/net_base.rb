@@ -44,7 +44,7 @@ class NetBase
       eight_bits.join('').to_i(2)
     end
 
-    header = header + str_bytes(@server_token)
+    header += str_bytes(@server_token)
     data = (header + payload).pack('C*')
     @s.send(data, 0, @ip, @port)
 
@@ -54,4 +54,3 @@ class NetBase
     end
   end
 end
-

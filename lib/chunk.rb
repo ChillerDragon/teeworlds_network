@@ -4,6 +4,7 @@ require_relative 'bytes'
 
 class NetChunk
   attr_reader :next, :data, :msg, :sys, :flags
+
   @@sent_vital_chunks = 0
 
   def initialize(data)
@@ -14,8 +15,8 @@ class NetChunk
     chunk_end = CHUNK_HEADER_SIZE + @size
     # puts "data[0]: " + str_hex(data[0])
     @data = data[CHUNK_HEADER_SIZE...chunk_end]
-    @msg = @data[0].unpack("C*").first
-    @sys = @msg & 1 == 1 ? true : false
+    @msg = @data[0].unpack1('C*')
+    @sys = @msg & 1 == 1
     @msg >>= 1
     @next = data[chunk_end..] if data.size > chunk_end
   end
@@ -26,9 +27,9 @@ class NetChunk
 
   def to_s
     "NetChunk\n" +
-    "  msg=#{msg} sys=#{sys}\n" +
-    "  #{@flags}\n" +
-    "  data: #{str_hex(data)}"
+      "  msg=#{msg} sys=#{sys}\n" +
+      "  #{@flags}\n" +
+      "  data: #{str_hex(data)}"
   end
 
   ##
@@ -42,9 +43,7 @@ class NetChunk
   # represented as an Array of 3 integers
   def self.create_vital_header(flags, size, seq = nil)
     @@sent_vital_chunks += 1
-    if seq.nil?
-      seq = @@sent_vital_chunks
-    end
+    seq = @@sent_vital_chunks if seq.nil?
 
     flag_bits = '00'
     flag_bits[0] = flags[:resend] ? '1' : '0'
@@ -53,7 +52,6 @@ class NetChunk
     size_bits = size.to_s(2).rjust(12, '0')
     # size_bits[0..5]
     # size_bits[6..]
-
 
     seq_bits = seq.to_s(2).rjust(10, '0')
     # seq_bits[0..1]
@@ -68,7 +66,7 @@ class NetChunk
     # q=sequence
     #
     # ffss ssss qqss ssss qqqq qqqq
-    header_bits = 
+    header_bits =
       flag_bits +
       size_bits[0..5] +
       seq_bits[0..1] +
@@ -81,17 +79,17 @@ class NetChunk
 
   def parse_header(data)
     # flags
-    flags = data[0].unpack("B*").first
+    flags = data[0].unpack1('B*')
     flags = flags[0..1]
-    @flags[:resend] = flags[0] == "1"
-    @flags[:vital] = flags[1] == "1"
+    @flags[:resend] = flags[0] == '1'
+    @flags[:vital] = flags[1] == '1'
 
     # size
-    size = data[0..1].unpack("B*").first
+    size = data[0..1].unpack1('B*')
     size_bytes = size.chars.groups_of(8)
     # trim first 2 bits of both bytes
     # Size: 2 bytes (..00 0000 ..00 0010)
-    size_bytes.map! {|b| b[2..].join('') }
+    size_bytes.map! { |b| b[2..].join('') }
     @size = size_bytes.join('').to_i(2)
 
     # sequence number
@@ -117,13 +115,12 @@ class BigChungusTheChunkGetter
     while chunk.next
       chunk = NetChunk.new(chunk.next)
       chunks.push(chunk)
-      if chunks.size > MAX_NUM_CHUNKS
-        # inf loop guard case
-        puts "Warning: abort due to max num chunks bein reached"
-        break
-      end
+      next unless chunks.size > MAX_NUM_CHUNKS
+
+      # inf loop guard case
+      puts 'Warning: abort due to max num chunks bein reached'
+      break
     end
     chunks
   end
 end
-

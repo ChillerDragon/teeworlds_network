@@ -6,14 +6,14 @@ class PacketFlags
   def initialize(data)
     @hash = {}
     @bits = ''
-    if data.class == Hash
+    if data.instance_of?(Hash)
       @bits = parse_hash(data)
       @hash = data
-    elsif data.class == String
+    elsif data.instance_of?(String)
       @hash = parse_bits(data)
       @bits = data
     else
-      raise "Flags have to be hash or string"
+      raise 'Flags have to be hash or string'
     end
   end
 
@@ -56,12 +56,12 @@ class Packet
     @prefix = prefix
     @huffman = Huffman.new
     @data = data
-    flags_byte = @data[0].unpack("B*")
+    flags_byte = @data[0].unpack('B*')
     @flags = PacketFlags.new(flags_byte.first[2..5]).hash
     @payload = @data[PACKET_HEADER_SIZE..]
     if flags_compressed
-      @payload = @huffman.decompress(@payload.unpack("C*"))
-      @payload = @payload.pack("C*")
+      @payload = @huffman.decompress(@payload.unpack('C*'))
+      @payload = @payload.pack('C*')
     end
   end
 
@@ -70,37 +70,36 @@ class Packet
     token = bytes[3..6].join(' ').green
     payload = bytes[7..].join(' ')
     puts @prefix + "  data: #{[header, token, payload].join(' ')}"
-    print @prefix + "        "
-    print "header".ljust(3 * 3, ' ').yellow
-    print "token".ljust(4 * 3, ' ').green
-    puts "data"
+    print @prefix + '        '
+    print 'header'.ljust(3 * 3, ' ').yellow
+    print 'token'.ljust(4 * 3, ' ').green
+    puts 'data'
   end
 
-  def to_s()
-    puts @prefix + "Packet"
+  def to_s
+    puts @prefix + 'Packet'
     puts @prefix + "  flags: #{@flags}"
     bytes = str_hex(@data).split(' ')
-    # todo: check terminal size?
+    # TODO: check terminal size?
     max_width = 14
     rows = bytes.groups_of(max_width)
     annotate_first_row(rows.first)
     rows[1..].each do |row|
-      print @prefix + "        "
+      print @prefix + '        '
       puts row.join(' ')
     end
-    puts ""
+    puts ''
   end
 
-  def flags_compressed()
+  def flags_compressed
     @flags[:compressed]
   end
 
-  def flags_connless()
+  def flags_connless
     @flags[:connection] == false
   end
 
-  def flags_control()
+  def flags_control
     @flags[:control]
   end
 end
-

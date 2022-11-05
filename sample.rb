@@ -2,18 +2,18 @@
 
 require_relative 'lib/teeworlds-client'
 
-args = {verbose: false, ip: nil, port: nil}
+args = { verbose: false, ip: nil, port: nil }
 
 ARGV.each do |arg|
-  if arg == '--help' || arg == '-h'
-    puts "usage: teeworlds.rb [OPTIONS..] [host] [port]"
-    echo "options:"
-    echo "  --help|-h        show this help"
-    echo "  --verbose|-v     verbose output"
-    echo "example:"
-    echo "  teeworlds.rb --verbose localhost 8303"
+  if ['--help', '-h'].include?(arg)
+    puts 'usage: teeworlds.rb [OPTIONS..] [host] [port]'
+    echo 'options:'
+    echo '  --help|-h        show this help'
+    echo '  --verbose|-v     verbose output'
+    echo 'example:'
+    echo '  teeworlds.rb --verbose localhost 8303'
     exit(0)
-  elsif arg == '--verbose' || arg == '-v'
+  elsif ['--verbose', '-v'].include?(arg)
     args[:verbose] = true
   elsif args[:ip].nil?
     args[:ip] = arg

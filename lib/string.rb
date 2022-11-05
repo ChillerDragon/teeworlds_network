@@ -22,4 +22,3 @@ class String
     colorize(35)
   end
 end
-
