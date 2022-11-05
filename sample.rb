@@ -34,15 +34,6 @@ client.on_chat do |msg|
   puts "[chat] #{msg}"
 end
 
-client.on_map_change do |ctx|
-  puts "GOT MAP CHANGOS"
-end
-
-client.on_client_info do |ctx|
-  puts "player info: #{ctx.data[:player]}"
-  ctx.data[:player].name = "yee"
-end
-
 Signal.trap('INT') do
   client.disconnect
 end

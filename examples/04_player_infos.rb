@@ -1,6 +1,8 @@
+#!/usr/bin/env ruby
+
 # Set custom skin and other player infos
 
-require_relative 'lib/teeworlds-client'
+require_relative '../lib/teeworlds-client'
 
 client = TeeworldsClient.new(verbose: true)
 

@@ -1,6 +1,8 @@
+#!/usr/bin/env ruby
+
 # Chat spamming client
 
-require_relative 'lib/teeworlds-client'
+require_relative '../lib/teeworlds-client'
 
 client = TeeworldsClient.new(verbose: true)
 

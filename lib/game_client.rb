@@ -3,10 +3,11 @@ require_relative 'packer'
 require_relative 'chat_message'
 
 class Context
-  attr_reader :old_data
+  attr_reader :old_data, :client
   attr_accessor :data
 
-  def initialize(keys = {})
+  def initialize(client, keys = {})
+    @client = client
     @cancle = false
     @old_data = keys
     @data = keys
@@ -56,6 +57,7 @@ class GameClient
     # are currently ignored
 
     context = Context.new(
+      @client,
       player: player,
       chunk: chunk
     )
@@ -75,11 +77,17 @@ class GameClient
   end
 
   def on_connected
+    context = Context.new(@client)
+    if @client.hooks[:connected]
+      @client.hooks[:connected].call(context)
+      context.verify
+      return if context.cancled?
+    end
     @client.send_msg_startinfo
   end
 
   def on_map_change(chunk)
-    context = Context.new(chunk: chunk)
+    context = Context.new(@client, chunk: chunk)
     if @client.hooks[:map_change]
       @client.hooks[:map_change].call(context)
       context.verify

@@ -15,7 +15,7 @@ require_relative 'player'
 require_relative 'game_client'
 
 class TeeworldsClient
-  attr_reader :state, :hooks
+  attr_reader :state, :hooks, :game_client
 
   def initialize(options = {})
     @verbose = options[:verbose] || false
@@ -62,6 +62,10 @@ class TeeworldsClient
 
   def on_client_info(&block)
     @hooks[:client_info] = block
+  end
+
+  def on_connected(&block)
+    @hooks[:connected] = block
   end
 
   def send_chat(str)
@@ -348,9 +352,9 @@ class TeeworldsClient
     if @ticks % 8 == 0
       send_ctrl_keepalive
     end
-    if @ticks % 20 == 0
-      send_chat("hello world")
-    end
+    # if @ticks % 20 == 0
+    #   send_chat("hello world")
+    # end
   end
 
   def connection_loop
