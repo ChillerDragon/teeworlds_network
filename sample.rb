@@ -27,9 +27,6 @@ args[:port] = args[:port] || 8303
 
 client = TeeworldsClient.new(verbose: args[:verbose])
 
-client.set_startinfo(
-      name: "ruby gamer")
-
 client.on_chat do |msg|
   puts "[chat] #{msg}"
 end
@@ -39,10 +36,4 @@ Signal.trap('INT') do
 end
 
 # connect and detach thread
-client.connect(args[:ip], args[:port], detach: true)
-
-# after 2 seconds reconnect
-# and block the main thread
-sleep 2
 client.connect(args[:ip], args[:port], detach: false)
-

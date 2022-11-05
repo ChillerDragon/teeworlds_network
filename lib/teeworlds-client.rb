@@ -265,7 +265,6 @@ class TeeworldsClient
     case chunk.msg
     when NETMSGTYPE_SV_READYTOENTER then @game_client.on_ready_to_enter(chunk)
     when NETMSGTYPE_SV_CLIENTINFO then @game_client.on_client_info(chunk)
-    when NETMSGTYPE_DE_CLIENTENTER then @game_client.on_client_enter(chunk)
     when NETMSGTYPE_SV_EMOTICON then @game_client.on_emoticon(chunk)
     when NETMSGTYPE_SV_CHAT then @game_client.on_chat(chunk)
     else

@@ -38,11 +38,6 @@ class GameClient
     @players = {}
   end
 
-  def on_client_enter(chunk)
-    puts "ON CLIENT ENTER"
-    puts chunk
-  end
-
   def on_client_info(chunk)
     # puts "Got playerinfo flags: #{chunk.flags}"
     u = Unpacker.new(chunk.data[1..])
@@ -86,6 +81,9 @@ class GameClient
     @client.send_msg_startinfo
   end
 
+  def on_emoticon(chunk)
+  end
+
   def on_map_change(chunk)
     context = Context.new(@client, chunk: chunk)
     if @client.hooks[:map_change]
@@ -99,14 +97,6 @@ class GameClient
   end
 
   def on_chat(chunk)
-    #   06     01     00     40      41  00
-    #   msg    mode   cl_id  trgt    A   nullbyte?
-    #          all           -1
-    # mode = chunk.data[1]
-    # client_id = chunk.data[2]
-    # target = chunk.data[3]
-    # msg = chunk.data[4..]
-
     u = Unpacker.new(chunk.data[1..])
     data = {
       mode: u.get_int(),
