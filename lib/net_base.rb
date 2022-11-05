@@ -1,3 +1,10 @@
+# frozen_string_literal: true
+
+##
+# NetBase
+#
+# Lowest network layer logic. Sends packets via udp.
+# Also adding the teeworlds protocol packet header.
 class NetBase
   attr_accessor :client_token, :server_token, :ack
 
@@ -20,6 +27,7 @@ class NetBase
   # Sends a packing setting the proper header for you
   #
   # @param payload [Array] The Integer list representing the data after the header
+  # @param num_chunks [Integer] Amount of NetChunks in the payload
   # @param flags [Hash] Packet header flags for more details check the class +PacketFlags+
   def send_packet(payload, num_chunks = 1, flags = {})
     # unsigned char flags_ack;    // 6bit flags, 2bit ack
@@ -34,11 +42,9 @@ class NetBase
     # // TTTTTTTT
     # // TTTTTTTT
     flags_bits = PacketFlags.new(flags).bits
-    header_bits =
-      '00' + # unused flags?           # ff
-      flags_bits +                     #    ffff
-      @ack.to_s(2).rjust(10, '0') +    #        aa aaaa aaaa
-      num_chunks.to_s(2).rjust(8, '0') # NNNN NNNN
+    #          unused flags       ack                             num chunks
+    #              ff ffff        aa aaaa aaaa                    NNNN NNNN
+    header_bits = "00#{flags_bits}#{@ack.to_s(2).rjust(10, '0')}#{num_chunks.to_s(2).rjust(8, '0')}"
 
     header = header_bits.chars.groups_of(8).map do |eight_bits|
       eight_bits.join('').to_i(2)
@@ -48,9 +54,6 @@ class NetBase
     data = (header + payload).pack('C*')
     @s.send(data, 0, @ip, @port)
 
-    if @verbose || flags[:test]
-      p = Packet.new(data, '>')
-      puts p.to_s
-    end
+    puts Packet.new(data, '>').to_s if @verbose || flags[:test]
   end
 end
