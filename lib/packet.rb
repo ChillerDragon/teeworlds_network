@@ -104,7 +104,3 @@ class Packet
   end
 end
 
-def todo_add_rspec_test
-  p PacketFlags.new(control: true).bits == "0001"
-end
-
