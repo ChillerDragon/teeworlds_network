@@ -38,4 +38,4 @@ client.connect('localhost', 8303, detach: false)
 
 ## Documentation
 
-Checkout [docs/01.md](docs/01.md) for a full library documentation.
+Checkout [docs/v0.0.1.md](docs/v0.0.1.md) for a full library documentation.
