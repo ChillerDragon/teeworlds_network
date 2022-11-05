@@ -17,7 +17,7 @@ client = TeeworldsClient.new(verbose: false)
 
 client.on_chat do |msg|
   # note use `next` instead of `return` in the block
-  next if msg.message[0] == '!'
+  next unless msg.message[0] == '!'
 
   case msg.message[1..]
   when 'ping' then client.send_chat('pong')
