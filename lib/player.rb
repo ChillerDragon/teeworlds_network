@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Player
   attr_accessor :id, :local, :team, :name, :clan, :country, :skin_parts, :skin_custom_colors, :skin_colors
 

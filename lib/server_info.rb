@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ServerInfo
   attr_reader :version, :name, :map, :gametype
 

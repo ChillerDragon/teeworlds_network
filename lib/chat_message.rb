@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ChatMesage
   attr_reader :mode, :client_id, :target_id, :message, :author
 

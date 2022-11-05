@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'array'
 require_relative 'network'
 require_relative 'bytes'
@@ -26,9 +28,9 @@ class NetChunk
   end
 
   def to_s
-    "NetChunk\n" +
-      "  msg=#{msg} sys=#{sys}\n" +
-      "  #{@flags}\n" +
+    "NetChunk\n" \
+      "  msg=#{msg} sys=#{sys}\n" \
+      "  #{@flags}\n" \
       "  data: #{str_hex(data)}"
   end
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # turn byte array into hex string
 def str_hex(data)
   data.unpack1('H*').scan(/../).join(' ').upcase

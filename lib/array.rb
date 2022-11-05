@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Array
   def groups_of(max_size)
     return [] if max_size < 1

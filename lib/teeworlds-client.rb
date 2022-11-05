@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'socket'
 
@@ -122,8 +123,8 @@ class TeeworldsClient
 
   def disconnect
     puts 'disconnecting.'
-    @netbase.send_packet([NET_CTRLMSG_CLOSE], 0, control: true) unless @netbase.nil?
-    @s.close unless @s.nil?
+    @netbase&.send_packet([NET_CTRLMSG_CLOSE], 0, control: true)
+    @s&.close
     @signal_disconnect = true
   end
 
@@ -343,7 +344,7 @@ class TeeworldsClient
     end
 
     @ticks += 1
-    send_ctrl_keepalive if @ticks % 8 == 0
+    send_ctrl_keepalive if (@ticks % 8).zero?
     # if @ticks % 20 == 0
     #   send_chat("hello world")
     # end

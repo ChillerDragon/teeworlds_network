@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'player'
 require_relative 'packer'
 require_relative 'chat_message'
@@ -129,6 +131,6 @@ class GameClient
     data[:author] = @players[data[:client_id]]
     msg = ChatMesage.new(data)
 
-    @client.hooks[:chat].call(msg) if @client.hooks[:chat]
+    @client.hooks[:chat]&.call(msg)
   end
 end
