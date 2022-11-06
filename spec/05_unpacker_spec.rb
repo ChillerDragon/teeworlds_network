@@ -20,17 +20,27 @@ describe 'Unpacker', :unpacker do
     end
 
     it 'Should unpack negative integers' do
-      u = Unpacker.new([0x41, 0x42])
+      u = Unpacker.new([0x40, 0x41, 0x42])
+      # 0x40 => 1000 0000
+      #         ^^      ^
+      #  negative\      /
+      #           \    /
+      #             0
+      #
+      # There is no -0 so it will be -1
       expect(u.get_int).to eq(-1)
       expect(u.get_int).to eq(-2)
+      expect(u.get_int).to eq(-3)
     end
 
     it 'Should unpack positive and negative integers' do
-      u = Unpacker.new([0x01, 0x02, 0x41, 0x42])
+      u = Unpacker.new([0x01, 0x02, 0x03, 0x40, 0x41, 0x42])
       expect(u.get_int).to eq(1)
       expect(u.get_int).to eq(2)
+      expect(u.get_int).to eq(3)
       expect(u.get_int).to eq(-1)
       expect(u.get_int).to eq(-2)
+      expect(u.get_int).to eq(-3)
     end
 
     it 'Should pack and unpack and match from 0 to 63' do
@@ -57,23 +67,23 @@ describe 'Unpacker', :unpacker do
       u = Unpacker.new(['00000011'.to_i(2)])
       expect(u.get_int).to eq(3)
 
-      # u = Unpacker.new(['01000000'.to_i(2)])
-      # expect(u.get_int).to eq(-1)
+      u = Unpacker.new(['01000000'.to_i(2)])
+      expect(u.get_int).to eq(-1)
     end
 
-    # it 'Should pack and unpack and match from -3 to 3' do
-    #   (-3..3).each do |i|
-    #     u = Unpacker.new(Packer.pack_int(i))
-    #     expect(u.get_int()).to eq(i)
-    #   end
-    # end
+    it 'Should pack and unpack and match from -3 to 3' do
+      (-3..3).each do |i|
+        u = Unpacker.new(Packer.pack_int(i))
+        expect(u.get_int()).to eq(i)
+      end
+    end
 
-    # it 'Should pack and unpack and match from -63 to 63' do
-    #   (-63..63).each do |i|
-    #     u = Unpacker.new(Packer.pack_int(i))
-    #     expect(u.get_int()).to eq(i)
-    #   end
-    # end
+    it 'Should pack and unpack and match from -63 to 63' do
+      (-63..63).each do |i|
+        u = Unpacker.new(Packer.pack_int(i))
+        expect(u.get_int()).to eq(i)
+      end
+    end
 
     it 'Should unpack 0000 0001 to 1' do
       u = Unpacker.new(['00000001'.to_i(2)])
@@ -112,8 +122,8 @@ describe 'Unpacker', :unpacker do
       expect(u.get_int).to eq(64)
     end
 
-    it 'Should unpack 1100 0001  0000 0001 to -65' do
-      u = Unpacker.new(['11000001'.to_i(2), '00000001'.to_i(2)])
+    it 'Should unpack 1100 0000  0000 0001 to -65' do
+      u = Unpacker.new(['11000000'.to_i(2), '00000001'.to_i(2)])
       expect(u.get_int).to eq(-65)
     end
   end

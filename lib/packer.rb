@@ -107,7 +107,7 @@ class Unpacker
     bytes = @data.map { |byte| byte.to_s(2).rjust(8, '0') }
     first = bytes[0]
 
-    sign = first[1] == '1' ? -1 : 1
+    sign = first[1]
     bits = []
 
     # extended
@@ -127,7 +127,8 @@ class Unpacker
       bits = [first[2..]]
       @data = @data[1..]
     end
-    bits.join.to_i(2) * sign
+    num = bits.join.to_i(2)
+    sign == '1' ? -(num + 1) : num
   end
 end
 
