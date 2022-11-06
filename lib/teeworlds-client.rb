@@ -73,6 +73,10 @@ class TeeworldsClient
     @hooks[:connected] = block
   end
 
+  def on_rcon_line(&block)
+    @hooks[:rcon_line] = block
+  end
+
   def send_chat(str)
     @netbase.send_packet(
       NetChunk.create_vital_header({ vital: true }, 4 + str.length) +
@@ -167,6 +171,42 @@ class TeeworldsClient
           [pack_msg_id(NETMSG_INFO, system: true)] +
           data
 
+    @netbase.send_packet(msg, 1)
+  end
+
+  def rcon_auth(name, password = nil)
+    if name.instance_of?(Hash)
+      password = name[:password]
+      name = name[:name]
+    end
+    if password.nil?
+      raise "Error: password can not be empty\n" \
+            "       provide two strings: name, password\n" \
+            "       or a hash with the key :password\n" \
+            "\n" \
+            "       rcon_auth('', '123')\n" \
+            "       rcon_auth(password: '123')\n"
+    end
+    data = []
+    if name.nil? || name == ''
+      data += Packer.pack_str(password)
+    else # ddnet auth using name, password and some int?
+      data += Packer.pack_str(name)
+      data += Packer.pack_str(password)
+      data += Packer.pack_int(1)
+    end
+    msg = NetChunk.create_vital_header({ vital: true }, data.size + 1) +
+          [pack_msg_id(NETMSG_RCON_AUTH, system: true)] +
+          data
+    @netbase.send_packet(msg, 1)
+  end
+
+  def rcon(command)
+    data = []
+    data += Packer.pack_str(command)
+    msg = NetChunk.create_vital_header({ vital: true }, data.size + 1) +
+          [pack_msg_id(NETMSG_RCON_CMD, system: true)] +
+          data
     @netbase.send_packet(msg, 1)
   end
 
@@ -289,6 +329,8 @@ class TeeworldsClient
       @game_client.on_connected
     when NETMSG_NULL
       # should we be in alert here?
+    when NETMSG_RCON_LINE
+      @game_client.on_rcon_line(chunk)
     else
       puts "Unsupported system msg: #{chunk.msg}"
       exit(1)

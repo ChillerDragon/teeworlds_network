@@ -106,6 +106,15 @@ class GameClient
     @client.send_msg_startinfo
   end
 
+  def on_rcon_line(chunk)
+    u = Unpacker.new(chunk.data[1..])
+    context = Context.new(
+      @client,
+      line: u.get_string
+    )
+    @client.hooks[:rcon_line]&.call(context)
+  end
+
   def on_emoticon(chunk); end
 
   def on_map_change(chunk)

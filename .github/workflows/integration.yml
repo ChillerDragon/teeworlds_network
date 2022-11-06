@@ -29,3 +29,6 @@ jobs:
     - name: Test reconnect
       run: |
         ./integration_test/run.sh reconnect
+    - name: Test rcon
+      run: |
+        ./integration_test/run.sh rcon

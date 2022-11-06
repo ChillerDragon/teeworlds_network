@@ -20,5 +20,5 @@ Signal.trap('INT') do
   client.disconnect
 end
 
-# connect and detach thread
+# connect and block main thread
 client.connect('localhost', 8303, detach: false)
