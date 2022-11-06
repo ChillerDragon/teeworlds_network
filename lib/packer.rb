@@ -14,10 +14,10 @@ class Packer
     #
     # the first too big number 64 is represented as those bits
     # 10000000 00000001
-    # ^^^    ^ ^      ^
-    # ||\   /   \    /
-    # || \ /     \  /
-    # ||  \       \/
+    # ^^^    ^ ^^    ^
+    # ||\   /  | \   /
+    # || \ / not  \ /
+    # ||  \ extended
     # ||   \      /
     # ||    \    /
     # ||     \  /
@@ -25,7 +25,7 @@ class Packer
     # ||      /\
     # ||     /  \
     # ||    /    \
-    # || 00000001 000000
+    # || 0000001 000000
     # ||       |
     # ||       v
     # ||       64
@@ -171,6 +171,11 @@ def todo_also_rspec_unpacker
   # p u.get_int() == -1
   # p u.get_int() == -2
 
+  # (-3..3).each do |i|
+  #   u = Unpacker.new(Packer.pack_int(i))
+  #   p u.get_int() == i
+  # end
+
   # (-63..63).each do |i|
   #   u = Unpacker.new(Packer.pack_int(i))
   #   p u.get_int() == i
@@ -179,9 +184,9 @@ def todo_also_rspec_unpacker
   # u = Unpacker.new([128, 1])
   # p u.get_int() == 64
 
-  u = Unpacker.new([128, 1, 128, 1])
-  p u.get_int == 64
-  p u.get_int == 64
+  # u = Unpacker.new([128, 1, 128, 1])
+  # p u.get_int == 64
+  # p u.get_int == 64
   # p u.get_int() == nil
 
   # (-128..128).each do |i|
@@ -189,15 +194,29 @@ def todo_also_rspec_unpacker
   #   p u.get_int() == i
   # end
 
-  u = Unpacker.new(['00000001'.to_i(2)])
-  p u.get_int == 1
+  # u = Unpacker.new(['00000001'.to_i(2)])
+  # p u.get_int == 1
 
-  u = Unpacker.new(['10000000'.to_i(2), '00000001'.to_i(2)])
-  p u.get_int == 64
+  # u = Unpacker.new(['10000000'.to_i(2), '00000001'.to_i(2)])
+  # p u.get_int == 64
 
-  # TODO: should be -64
+  # should be 64
+  # u = Unpacker.new(['10000000'.to_i(2), '00000001'.to_i(2)])
+  # p u.get_int()
+
+  # should be -64
   # u = Unpacker.new(['11000000'.to_i(2), '00000000'.to_i(2)])
+  # p u.get_int()
+
+  # u = Unpacker.new(['01000000'.to_i(2)])
+  # p u.get_int()
+
+  # p Packer.pack_int(-1).first.to_s(2)
+
+  # num = '01000000'.to_i(2)
+  # p num == 64
+  # u = Unpacker.new([num])
   # p u.get_int()
 end
 
-# todo_also_rspec_unpacker
+todo_also_rspec_unpacker
