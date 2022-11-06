@@ -48,11 +48,19 @@ describe 'Packer', :packer do
     end
 
     it 'Should pack negative' do
-      expect(Packer.pack_int(-65).map { |e| e.to_s(2).rjust(8, '0') }).to eq(%w[11000001 00000001])
+      expect(Packer.pack_int(-65).map { |e| e.to_s(2).rjust(8, '0') }).to eq(%w[11000000 00000001])
     end
 
     it 'Should pack large numbers' do
       expect(Packer.pack_int(99_999_999_999_999_999)).to eq([191, 131, 255, 147, 246, 194, 215, 232, 88])
+    end
+
+    it 'Should pack -128 to 1111 1111 0000 0001 (match tw traffic)' do
+      expect(Packer.pack_int(-128).map { |b| b.to_s(2).rjust(8, '0') }).to eq(%w[11111111 00000001])
+    end
+
+    it 'Should pack -128 to 0xFF 0x01 (match tw traffic)' do
+      expect(Packer.pack_int(-128)).to eq([0xFF, 0x01])
     end
   end
 end

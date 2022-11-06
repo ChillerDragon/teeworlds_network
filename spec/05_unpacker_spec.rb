@@ -44,7 +44,7 @@ describe 'Unpacker', :unpacker do
     end
 
     it 'Should pack and unpack and match from 0 to 63' do
-      (0..63).each do |i|
+      64.times do |i|
         u = Unpacker.new(Packer.pack_int(i))
         expect(u.get_int).to eq(i)
       end
@@ -74,14 +74,14 @@ describe 'Unpacker', :unpacker do
     it 'Should pack and unpack and match from -3 to 3' do
       (-3..3).each do |i|
         u = Unpacker.new(Packer.pack_int(i))
-        expect(u.get_int()).to eq(i)
+        expect(u.get_int).to eq(i)
       end
     end
 
     it 'Should pack and unpack and match from -63 to 63' do
       (-63..63).each do |i|
         u = Unpacker.new(Packer.pack_int(i))
-        expect(u.get_int()).to eq(i)
+        expect(u.get_int).to eq(i)
       end
     end
 
@@ -93,18 +93,23 @@ describe 'Unpacker', :unpacker do
 
   context 'Unpack multi byte integers' do
     it 'Should pack and unpack and match from 0 to 128' do
-      (0..128).each do |i|
+      129.times do |i|
         u = Unpacker.new(Packer.pack_int(i))
         expect(u.get_int).to eq(i)
       end
     end
 
-    # it 'Should pack and unpack and match from -128 to 128' do
-    #   (-128..128).each do |i|
-    #     u = Unpacker.new(Packer.pack_int(i))
-    #     expect(u.get_int()).to eq(i)
-    #   end
-    # end
+    it 'Should unpack 0xFF 0x01 to -128 (match tw traffic)' do
+      u = Unpacker.new([0xFF, 0x01])
+      expect(u.get_int).to eq(-128)
+    end
+
+    it 'Should pack and unpack and match from -128 to 128' do
+      (-128..128).each do |i|
+        u = Unpacker.new(Packer.pack_int(i))
+        expect(u.get_int).to eq(i)
+      end
+    end
 
     it 'Should unpack [128, 1] to 64' do
       u = Unpacker.new([128, 1])

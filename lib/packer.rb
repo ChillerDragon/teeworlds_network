@@ -46,7 +46,6 @@ class Packer
   end
 
   def self.pack_big_int(sign, num)
-    num += 1 if sign == '1'
     num_bits = num.to_s(2)
     first = "1#{sign}#{num_bits[-6..]}"
 
