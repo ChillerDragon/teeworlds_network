@@ -28,6 +28,17 @@ describe 'Packer', :packer do
       expect(Packer.pack_int(-3).first.to_s(2)).to eq('1000010')
       expect(Packer.pack_int(-4).first.to_s(2)).to eq('1000011')
     end
+
+    # https://github.com/ddnet/ddnet/pull/6015
+    it 'Should pack the same as ddnet C++ tests -3..3' do
+      expect(Packer.pack_int(1).first.to_s(2).rjust(8, '0')).to eq('00000001')
+      expect(Packer.pack_int(2).first.to_s(2).rjust(8, '0')).to eq('00000010')
+      expect(Packer.pack_int(3).first.to_s(2).rjust(8, '0')).to eq('00000011')
+
+      expect(Packer.pack_int(-1).first.to_s(2).rjust(8, '0')).to eq('01000000')
+      expect(Packer.pack_int(-2).first.to_s(2).rjust(8, '0')).to eq('01000001')
+      expect(Packer.pack_int(-3).first.to_s(2).rjust(8, '0')).to eq('01000010')
+    end
   end
 
   context 'Pack multi byte integers' do

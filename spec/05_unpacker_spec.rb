@@ -40,6 +40,27 @@ describe 'Unpacker', :unpacker do
       end
     end
 
+    # https://github.com/ddnet/ddnet/pull/6015
+    it 'Should unpack the same as ddnet C++ tests -3..3' do
+      expect(Packer.pack_int(1).first.to_s(2).rjust(8, '0')).to eq('00000001')
+      expect(Packer.pack_int(2).first.to_s(2).rjust(8, '0')).to eq('00000010')
+      expect(Packer.pack_int(3).first.to_s(2).rjust(8, '0')).to eq('00000011')
+
+      expect(Packer.pack_int(-1).first.to_s(2).rjust(8, '0')).to eq('01000000')
+      expect(Packer.pack_int(-2).first.to_s(2).rjust(8, '0')).to eq('01000001')
+      expect(Packer.pack_int(-3).first.to_s(2).rjust(8, '0')).to eq('01000010')
+
+      u = Unpacker.new(['00000001'.to_i(2)])
+      expect(u.get_int).to eq(1)
+      u = Unpacker.new(['00000010'.to_i(2)])
+      expect(u.get_int).to eq(2)
+      u = Unpacker.new(['00000011'.to_i(2)])
+      expect(u.get_int).to eq(3)
+
+      # u = Unpacker.new(['01000000'.to_i(2)])
+      # expect(u.get_int).to eq(-1)
+    end
+
     # it 'Should pack and unpack and match from -3 to 3' do
     #   (-3..3).each do |i|
     #     u = Unpacker.new(Packer.pack_int(i))

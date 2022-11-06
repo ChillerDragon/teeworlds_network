@@ -130,3 +130,7 @@ class Unpacker
     bits.join.to_i(2) * sign
   end
 end
+
+u = Unpacker.new(['01000000'.to_i(2)])
+# expect -1
+p u.get_int
