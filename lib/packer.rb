@@ -46,6 +46,7 @@ class Packer
   end
 
   def self.pack_big_int(sign, num)
+    num += 1 if sign == '1'
     num_bits = num.to_s(2)
     first = "1#{sign}#{num_bits[-6..]}"
 
@@ -129,32 +130,3 @@ class Unpacker
     bits.join.to_i(2) * sign
   end
 end
-
-def todo_make_this_rspec_test
-  # # single byte int
-  # p Packer.pack_int(1) == [1]
-  # p Packer.pack_int(3) == [3]
-  # p Packer.pack_int(16) == [16]
-  # p Packer.pack_int(63) == [63]
-
-  # # negative single byte
-  # p Packer.pack_int(-1) == [64]
-  # p Packer.pack_int(-2) == [65]
-
-  # p Packer.pack_int(-1).first.to_s(2) == '1000000'
-  # p Packer.pack_int(-2).first.to_s(2) == '1000001'
-  # p Packer.pack_int(-3).first.to_s(2) == '1000010'
-  # p Packer.pack_int(-4).first.to_s(2) == '1000011'
-
-  p Packer.pack_int(64).map { |e| e.to_s(2).rjust(8, '0') } == %w[10000000 00000001]
-  p Packer.pack_int(-64).map { |e| e.to_s(2).rjust(8, '0') } == %w[11000000 00000000]
-
-  # # multi byte int
-  # p Packer.pack_int(64) == [128, 1]
-  # p Packer.pack_int(99999999999999999) == [191, 131, 255, 147, 246, 194, 215, 232, 88]
-
-  # # string
-  # p Packer.pack_str("A") == [65, 0]
-end
-
-# todo_make_this_rspec_test
