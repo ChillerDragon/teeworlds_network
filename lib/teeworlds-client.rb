@@ -77,6 +77,10 @@ class TeeworldsClient
     @hooks[:rcon_line] = block
   end
 
+  def on_on_snapshot(&block)
+    @hooks[:snapshot] = block
+  end
+
   def send_chat(str)
     @netbase.send_packet(
       NetChunk.create_vital_header({ vital: true }, 4 + str.length) +
@@ -256,18 +260,37 @@ class TeeworldsClient
   end
 
   def send_input
-    header = [0x10, 0x0A, 0o1] + str_bytes(@token)
-    random_compressed_input = [
-      0x4D, 0xE9, 0x48, 0x13, 0xD0, 0x0B, 0x6B, 0xFC, 0xB7, 0x2B, 0x6E, 0x00, 0xBA
-    ]
-    # this wont work we need to ack the ticks
-    # and then compress it
-    # CMsgPacker Msg(NETMSG_INPUT, true);
-    # Msg.AddInt(m_AckGameTick);
-    # Msg.AddInt(m_PredTick);
-    # Msg.AddInt(Size);
-    msg = header + random_compressed_input
-    @s.send(msg.pack('C*'), 0, @ip, @port)
+    inp = {
+      direction: -1,
+      target_x: 10,
+      target_y: 10,
+      jump: rand(0..1),
+      fire: 0,
+      hook: 0,
+      player_flags: 0,
+      wanted_weapon: 0,
+      next_weapon: 0,
+      prev_weapon: 0
+    }
+
+    data = []
+    data += Packer.pack_int(@game_client.ack_game_tick)
+    data += Packer.pack_int(@game_client.pred_game_tick)
+    data += Packer.pack_int(40) # magic size 40
+    data += Packer.pack_int(inp[:direction])
+    data += Packer.pack_int(inp[:target_x])
+    data += Packer.pack_int(inp[:target_y])
+    data += Packer.pack_int(inp[:jump])
+    data += Packer.pack_int(inp[:fire])
+    data += Packer.pack_int(inp[:hook])
+    data += Packer.pack_int(inp[:player_flags])
+    data += Packer.pack_int(inp[:wanted_weapon])
+    data += Packer.pack_int(inp[:next_weapon])
+    data += Packer.pack_int(inp[:prev_weapon])
+    msg = NetChunk.create_non_vital_header(size: data.size + 1) +
+          [pack_msg_id(NETMSG_INPUT, system: true)] +
+          data
+    @netbase.send_packet(msg, 1)
   end
 
   def on_msg_token(data)
@@ -331,6 +354,8 @@ class TeeworldsClient
       # should we be in alert here?
     when NETMSG_RCON_LINE
       @game_client.on_rcon_line(chunk)
+    when NETMSG_SNAP, NETMSG_SNAPSINGLE, NETMSG_SNAPEMPTY
+      @game_client.on_snapshot(chunk)
     else
       puts "Unsupported system msg: #{chunk.msg}"
       exit(1)
@@ -385,11 +410,18 @@ class TeeworldsClient
       process_server_packet(packet)
     end
 
-    @ticks += 1
     send_ctrl_keepalive if (@ticks % 8).zero?
-    # if @ticks % 20 == 0
-    #   send_chat("hello world")
-    # end
+    if @game_client.ack_game_tick.positive?
+      now = Time.now
+      @@last_pred ||= now
+      diff = now - @@last_pred
+      # @Swarfey does js setInterval(20) in his lib
+      # not sure if it makes sense to do a diff > 0.2 here then xd
+      @game_client.pred_game_tick += 1 if diff > 0.2
+    end
+
+    @ticks += 1
+    send_input if (@ticks % 20).zero?
   end
 
   def connection_loop

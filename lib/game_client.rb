@@ -33,11 +33,13 @@ class Context
 end
 
 class GameClient
-  attr_accessor :players
+  attr_accessor :players, :pred_game_tick, :ack_game_tick
 
   def initialize(client)
     @client = client
     @players = {}
+    @ack_game_tick = -1
+    @pred_game_tick = 0
   end
 
   def on_client_info(chunk)
@@ -113,6 +115,43 @@ class GameClient
       line: u.get_string
     )
     @client.hooks[:rcon_line]&.call(context)
+  end
+
+  def on_snapshot(chunk)
+    u = Unpacker.new(chunk.data)
+    u.get_int
+    # msg = u.get_int
+    # msg >>= 1
+
+    # num_parts = 1
+    # part = 0
+    game_tick = u.get_int
+    # delta_tick = u.get_int
+    # part_size = 0
+    # crc = 0
+    # complete_size = 0
+    # data = nil
+
+    # TODO: state check
+
+    # if msg == NETMSG_SNAP
+    #   num_parts = u.get_int
+    #   part = u.get_int
+    # end
+
+    # unless msg == NETMSG_SNAPEMPTY
+    #   crc = u.get_int
+    #   part_size = u.get_int
+    # end
+
+    # TODO: add get_raw(size)
+    # data = u.get_raw
+
+    # ack every snapshot no matter how broken
+    @ack_game_tick = game_tick
+    return unless (@pred_game_tick - @ack_game_tick).abs > 10
+
+    @pred_game_tick = @ack_game_tick + 1
   end
 
   def on_emoticon(chunk); end

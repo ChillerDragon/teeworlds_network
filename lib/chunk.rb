@@ -34,6 +34,21 @@ class NetChunk
       "  data: #{str_hex(data)}"
   end
 
+  def self.create_non_vital_header(data = { size: 0 })
+    flag_bits = '00'
+    unused_bits = '00'
+
+    size_bits = data[:size].to_s(2).rjust(12, '0')
+    header_bits =
+      flag_bits +
+      size_bits[0..5] +
+      unused_bits +
+      size_bits[6..]
+    header_bits.chars.groups_of(8).map do |eigth_bits|
+      eigth_bits.join.to_i(2)
+    end
+  end
+
   ##
   # Create int array ready to be send over the network
   #
