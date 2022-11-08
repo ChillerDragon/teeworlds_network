@@ -6,14 +6,18 @@
 # Lowest network layer logic. Sends packets via udp.
 # Also adding the teeworlds protocol packet header.
 class NetBase
-  attr_accessor :client_token, :server_token, :ack
+  attr_accessor :peer_token, :ack
 
   def initialize
     @ip = nil
     @port = nil
     @s = nil
     @ack = 0
-    @server_token = [0xFF, 0xFF, 0xFF, 0xFF].map { |b| b.to_s(16) }.join
+    @peer_token = [0xFF, 0xFF, 0xFF, 0xFF].map { |b| b.to_s(16) }.join
+  end
+
+  def bind(socket)
+    @s = socket
   end
 
   def connect(socket, ip, port)
@@ -29,7 +33,7 @@ class NetBase
   # @param payload [Array] The Integer list representing the data after the header
   # @param num_chunks [Integer] Amount of NetChunks in the payload
   # @param flags [Hash] Packet header flags for more details check the class +PacketFlags+
-  def send_packet(payload, num_chunks = 1, flags = {})
+  def send_packet(payload, num_chunks = 1, opts = {})
     # unsigned char flags_ack;    // 6bit flags, 2bit ack
     # unsigned char ack;          // 8bit ack
     # unsigned char numchunks;    // 8bit chunks
@@ -41,7 +45,7 @@ class NetBase
     # // TTTTTTTT
     # // TTTTTTTT
     # // TTTTTTTT
-    flags_bits = PacketFlags.new(flags).bits
+    flags_bits = PacketFlags.new(opts).bits
     #          unused flags       ack                             num chunks
     #              ff ffff        aa aaaa aaaa                    NNNN NNNN
     header_bits = "00#{flags_bits}#{@ack.to_s(2).rjust(10, '0')}#{num_chunks.to_s(2).rjust(8, '0')}"
@@ -50,10 +54,17 @@ class NetBase
       eight_bits.join.to_i(2)
     end
 
-    header += str_bytes(@server_token)
+    header += str_bytes(@peer_token)
     data = (header + payload).pack('C*')
-    @s.send(data, 0, @ip, @port)
+    ip = @ip
+    port = @port
+    unless opts[:addr].nil?
+      ip = opts[:addr].ip
+      port = opts[:addr].port
+    end
+    puts "send to #{ip}:#{port}"
+    @s.send(data, 0, ip, port)
 
-    puts Packet.new(data, '>').to_s if @verbose || flags[:test]
+    puts Packet.new(data, '>').to_s if @verbose || opts[:test]
   end
 end

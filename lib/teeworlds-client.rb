@@ -23,7 +23,6 @@ class TeeworldsClient
     @state = NET_CONNSTATE_OFFLINE
     @ip = 'localhost'
     @port = 8303
-    @packet_flags = {}
     @hooks = {}
     @thread_running = false
     @signal_disconnect = false
@@ -108,7 +107,6 @@ class TeeworldsClient
     @client_token = @client_token.map { |b| b.to_s(16) }.join
     puts "client token #{@client_token}"
     @netbase = NetBase.new
-    @netbase.client_token = @client_token
     NetChunk.reset
     @ip = ip
     @port = port
@@ -295,7 +293,7 @@ class TeeworldsClient
 
   def on_msg_token(data)
     @token = bytes_to_str(data)
-    @netbase.server_token = @token
+    @netbase.peer_token = @token
     puts "Got token #{@token}"
     send_msg_connect
   end

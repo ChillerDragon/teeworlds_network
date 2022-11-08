@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'net_addr'
+
 require 'huffman_tw'
 
 class PacketFlags
@@ -45,7 +47,7 @@ end
 
 # Class holding the parsed packet data
 class Packet
-  attr_reader :flags, :payload
+  attr_reader :flags, :payload, :addr
 
   def initialize(data, prefix = '')
     # @data and @payload
@@ -56,6 +58,7 @@ class Packet
     #         use '>' and '<' for example to indicate
     #         network direction (client/server)
     @prefix = prefix
+    @addr = NetAddr.new(nil, nil)
     @huffman = Huffman.new
     @data = data
     flags_byte = @data[0].unpack('B*')

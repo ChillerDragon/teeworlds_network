@@ -129,6 +129,11 @@ class Unpacker
     num = bits.join.to_i(2)
     sign == '1' ? -(num + 1) : num
   end
+
+  def get_raw(size = -1)
+    # TODO: error if size exceeds @data.size
+    @data.shift(size == -1 ? @data.size : size)
+  end
 end
 
 u = Unpacker.new(['01000000'.to_i(2)])
