@@ -33,6 +33,8 @@ class TeeworldsServer
     @netbase.bind(@s)
     loop do
       tick
+      # TODO: proper tick speed sleep
+      sleep 0.001
     end
   end
 
@@ -102,8 +104,5 @@ class TeeworldsServer
     packet.addr.port = client[1]
     puts packet.to_s if @verbose
     on_packet(packet)
-
-    # TODO: proper tick speed sleep
-    sleep 0.001
   end
 end
