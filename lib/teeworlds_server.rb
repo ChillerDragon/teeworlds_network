@@ -11,12 +11,14 @@ require_relative 'chunk'
 require_relative 'net_base'
 require_relative 'net_addr'
 require_relative 'packer'
+require_relative 'game_server'
 
 class TeeworldsServer
   def initialize(options = {})
     @verbose = options[:verbose] || false
     @ip = '127.0.0.1'
     @port = 8303
+    @game_server = GameServer.new(self)
   end
 
   def run(ip, port)
@@ -38,8 +40,34 @@ class TeeworldsServer
     end
   end
 
-  def on_client_packet(_packet)
-    puts 'got client packet'
+  def on_system_chunk(chunk)
+    puts "got system chunk: #{chunk}"
+  end
+
+  def process_chunk(chunk)
+    unless chunk.sys
+      on_system_chunk(chunk)
+      return
+    end
+    puts "proccess chunk with msg: #{chunk.msg}"
+    case chunk.msg
+    when NETMSG_INFO
+      @game_server.on_info(chunk)
+    else
+      puts "Unsupported system msg: #{chunk.msg}"
+      exit(1)
+    end
+  end
+
+  def on_client_packet(packet)
+    chunks = BigChungusTheChunkGetter.get_chunks(packet.payload)
+    chunks.each do |chunk|
+      if chunk.flags_vital && !chunk.flags_resend
+        @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
+        puts "got ack: #{@netbase.ack}" if @verbose
+      end
+      process_chunk(chunk)
+    end
   end
 
   def on_ctrl_message(packet)
@@ -79,6 +107,7 @@ class TeeworldsServer
 
   def on_ctrl_connect(packet)
     puts "Got connect from #{packet.addr}"
+    @netbase.send_packet([NET_CTRLMSG_ACCEPT], 0, control: true, addr: packet.addr)
   end
 
   def on_packet(packet)
