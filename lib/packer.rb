@@ -135,7 +135,3 @@ class Unpacker
     @data.shift(size == -1 ? @data.size : size)
   end
 end
-
-u = Unpacker.new(['01000000'.to_i(2)])
-# expect -1
-p u.get_int
