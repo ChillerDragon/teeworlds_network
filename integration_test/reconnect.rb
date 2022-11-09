@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require_relative '../lib/teeworlds-client'
+require_relative '../lib/teeworlds_client'
 
 client = TeeworldsClient.new(verbose: false)
 

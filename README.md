@@ -1,5 +1,5 @@
-# teeworlds-client
-A teeworlds 0.7 client library written in ruby
+# teeworlds_network
+A teeworlds 0.7 client & server library written in ruby
 
 ## Sample
 
@@ -11,7 +11,7 @@ Also properly disconnect when the program is killed gracefully.
 For more sample usages checkout the [examples/](examples/) folder.
 
 ```ruby
-require_relative 'lib/teeworlds-client'
+require_relative 'lib/teeworlds_client'
 
 client = TeeworldsClient.new(verbose: false)
 

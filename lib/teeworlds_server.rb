@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 require 'socket'
@@ -47,6 +46,9 @@ class TeeworldsServer
     puts "got ctrl msg: #{msg}"
     case msg
     when NET_CTRLMSG_TOKEN then on_ctrl_token(packet)
+    when NET_CTRLMSG_CONNECT then on_ctrl_connect(packet)
+    when NET_CTRLMSG_KEEPALIVE then on_ctrl_keep_alive(packet)
+    when NET_CTRLMSG_CLOSE then on_ctrl_close(packet)
     else
       puts "Uknown control message #{msg}"
       exit(1)
@@ -63,6 +65,18 @@ class TeeworldsServer
     token = u.get_raw(4)
     # puts "got token #{token.map { |b| b.to_s(16) }.join('')}"
     send_ctrl_with_token(packet.addr, token)
+  end
+
+  def on_ctrl_keep_alive(packet)
+    puts "Got keep alive from #{packet.addr}" if @verbose
+  end
+
+  def on_ctrl_close(packet)
+    puts "Client closed the connection #{packet.addr}"
+  end
+
+  def on_ctrl_connect(packet)
+    puts "Got connect from #{packet.addr}"
   end
 
   def on_packet(packet)

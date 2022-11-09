@@ -7,7 +7,7 @@
 #
 # Then connect to localhost and write !ping in the chat
 
-require_relative '../lib/teeworlds-client'
+require_relative '../lib/teeworlds_client'
 
 client = TeeworldsClient.new(verbose: false)
 

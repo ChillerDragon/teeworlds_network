@@ -3,12 +3,12 @@
 require 'rake'
 
 Gem::Specification.new do |s|
-  s.name        = 'teeworlds-client'
+  s.name        = 'teeworlds_network'
   s.version     = '0.0.1'
-  s.summary     = 'teeworlds 0.7 network protocol (client)'
+  s.summary     = 'teeworlds 0.7 network protocol (client and server)'
   s.description = <<-DESC
   A library wrapping the network protocol of the game teeworlds.
-  Supported protocol version 0.7 and only the client side.
+  Only supporting the version 0.7 of the teeworlds protocol.
   DESC
   s.authors     = ['ChillerDragon']
   s.email       = 'ChillerDragon@gmail.com'
@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 3.1.2'
   s.add_dependency 'huffman_tw', '~> 0.0.1'
   s.add_dependency 'rspec', '~> 3.9.0'
-  s.homepage    = 'https://github.com/ChillerDragon/teeworlds-client'
+  s.homepage    = 'https://github.com/ChillerDragon/teeworlds_network'
   s.license     = 'Unlicense'
   s.metadata['rubygems_mfa_required'] = 'true'
 end

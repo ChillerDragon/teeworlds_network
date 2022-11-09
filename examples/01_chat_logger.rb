@@ -3,7 +3,7 @@
 
 # Print all incoming chat messages to stdout
 
-require_relative '../lib/teeworlds-client'
+require_relative '../lib/teeworlds_client'
 
 client = TeeworldsClient.new(verbose: false)
 

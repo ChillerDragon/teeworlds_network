@@ -3,7 +3,7 @@
 
 # Prints out all network traffic
 
-require_relative '../lib/teeworlds-client'
+require_relative '../lib/teeworlds_client'
 
 client = TeeworldsClient.new(verbose: true)
 

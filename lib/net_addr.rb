@@ -7,4 +7,8 @@ class NetAddr
     @ip = ip
     @port = port
   end
+
+  def to_s
+    "#{@ip}:#{@port}"
+  end
 end
