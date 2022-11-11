@@ -11,4 +11,8 @@ class NetAddr
   def to_s
     "#{@ip}:#{@port}"
   end
+
+  def eq(addr)
+    @ip == addr.ip && @port == addr.port
+  end
 end

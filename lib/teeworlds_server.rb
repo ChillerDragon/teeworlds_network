@@ -12,6 +12,16 @@ require_relative 'net_base'
 require_relative 'net_addr'
 require_relative 'packer'
 require_relative 'game_server'
+require_relative 'message'
+
+class Client
+  attr_accessor :id, :addr
+
+  def initialize(attr = {})
+    @id = attr[:id]
+    @addr = attr[:addr]
+  end
+end
 
 class TeeworldsServer
   def initialize(options = {})
@@ -19,6 +29,7 @@ class TeeworldsServer
     @ip = '127.0.0.1'
     @port = 8303
     @game_server = GameServer.new(self)
+    @clients = {}
   end
 
   def run(ip, port)
@@ -44,7 +55,7 @@ class TeeworldsServer
     puts "got system chunk: #{chunk}"
   end
 
-  def process_chunk(chunk)
+  def process_chunk(chunk, packet)
     unless chunk.sys
       on_system_chunk(chunk)
       return
@@ -52,7 +63,7 @@ class TeeworldsServer
     puts "proccess chunk with msg: #{chunk.msg}"
     case chunk.msg
     when NETMSG_INFO
-      @game_server.on_info(chunk)
+      @game_server.on_info(chunk, packet)
     else
       puts "Unsupported system msg: #{chunk.msg}"
       exit(1)
@@ -66,7 +77,7 @@ class TeeworldsServer
         @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
         puts "got ack: #{@netbase.ack}" if @verbose
       end
-      process_chunk(chunk)
+      process_chunk(chunk, packet)
     end
   end
 
@@ -90,6 +101,20 @@ class TeeworldsServer
     @netbase.send_packet(msg, 0, control: true, addr:)
   end
 
+  def send_map(addr)
+    data = []
+    data += Packer.pack_str(@game_server.map.name)
+    data += Packer.pack_int(@game_server.map.crc)
+    data += Packer.pack_int(@game_server.map.size)
+    data += Packer.pack_int(8) # chunk num?
+    data += Packer.pack_int(MAP_CHUNK_SIZE)
+    data += @game_server.map.sha256_arr # poor mans pack_raw()
+    msg = NetChunk.create_non_vital_header(size: data.size + 1) +
+          [pack_msg_id(NETMSG_MAP_CHANGE, system: true)] +
+          data
+    @netbase.send_packet(msg, 1, addr:)
+  end
+
   def on_ctrl_token(packet)
     u = Unpacker.new(packet.payload[1..])
     token = u.get_raw(4)
@@ -106,7 +131,15 @@ class TeeworldsServer
   end
 
   def on_ctrl_connect(packet)
-    puts "Got connect from #{packet.addr}"
+    puts 'got connection, sending accept'
+
+    id = get_next_client_id
+    if id == -1
+      puts 'server full drop packet. TODO: tell the client'
+      return
+    end
+    client = Client.new(id:, addr: packet.addr)
+    @clients[id] = client
     @netbase.send_packet([NET_CTRLMSG_ACCEPT], 0, control: true, addr: packet.addr)
   end
 
@@ -119,18 +152,33 @@ class TeeworldsServer
     end
   end
 
+  def get_next_client_id
+    (0..MAX_CLIENTS).each do |i|
+      next if @clients[i]
+
+      return i
+    end
+    -1
+  end
+
   def tick
     begin
-      data, client = @s.recvfrom_nonblock(1400)
+      data, sender_inet_addr = @s.recvfrom_nonblock(1400)
     rescue IO::EAGAINWaitReadable
       data = nil
-      client = nil
+      sender_inet_addr = nil
     end
     return unless data
 
     packet = Packet.new(data, '<')
-    packet.addr.ip = client[2] # or 3 idk bot 127.0.0.1 in my local test case
-    packet.addr.port = client[1]
+    packet.addr.ip = sender_inet_addr[2] # or 3 idk bot 127.0.0.1 in my local test case
+    packet.addr.port = sender_inet_addr[1]
+    @clients.each do |id, client|
+      next unless packet.addr.eq(client.addr)
+
+      packet.client_id = id
+    end
+
     puts packet.to_s if @verbose
     on_packet(packet)
   end

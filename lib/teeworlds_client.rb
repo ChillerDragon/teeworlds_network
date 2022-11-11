@@ -13,6 +13,7 @@ require_relative 'net_base'
 require_relative 'packer'
 require_relative 'player'
 require_relative 'game_client'
+require_relative 'message'
 
 class TeeworldsClient
   attr_reader :state, :hooks, :game_client
@@ -244,16 +245,6 @@ class TeeworldsClient
       NetChunk.create_vital_header({ vital: true }, 1) +
       [pack_msg_id(NETMSG_ENTERGAME, system: true)]
     )
-  end
-
-  ##
-  # Turns int into network byte
-  #
-  # Takes a NETMSGTYPE_CL_* integer
-  # and returns a byte that can be send over
-  # the network
-  def pack_msg_id(msg_id, options = { system: false })
-    (msg_id << 1) | (options[:system] ? 1 : 0)
   end
 
   def send_input
