@@ -40,7 +40,7 @@ class Map
 
       @sha256_arr = @sha256
       @sha256 = @sha256.pack('C*')
-      @sha256_str = @sha256.map { |b| b.to_s(16) }.join
+      @sha256_str = @sha256.map { |b| b.to_s(16).rjust(2, '0') }.join
     end
   end
 end

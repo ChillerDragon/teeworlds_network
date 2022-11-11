@@ -34,7 +34,7 @@ class TeeworldsServer
 
   def run(ip, port)
     @server_token = (1..4).to_a.map { |_| rand(0..255) }
-    @server_token = @server_token.map { |b| b.to_s(16) }.join
+    @server_token = @server_token.map { |b| b.to_s(16).rjust(2, '0') }.join
     puts "server token #{@server_token}"
     @netbase = NetBase.new(verbose: @verbose)
     NetChunk.reset
@@ -107,8 +107,10 @@ class TeeworldsServer
   end
 
   def send_ctrl_with_token(addr, token)
-    msg = [NET_CTRLMSG_TOKEN] + token
+    msg = [NET_CTRLMSG_TOKEN] + str_bytes(@server_token)
+    @netbase.peer_token = token.pack('C*')
     @netbase.send_packet(msg, 0, control: true, addr:)
+    # @netbase.peer_token = @server_token
   end
 
   def send_map(addr)
@@ -154,7 +156,7 @@ class TeeworldsServer
   def on_ctrl_token(packet)
     u = Unpacker.new(packet.payload[1..])
     token = u.get_raw(4)
-    # puts "got token #{token.map { |b| b.to_s(16) }.join('')}"
+    # puts "got token #{token.map { |b| b.to_s(16).rjust(2, '0') }.join('')}"
     send_ctrl_with_token(packet.addr, token)
   end
 
