@@ -13,7 +13,7 @@ class GameServer
     @pred_game_tick = 0
     @map = Map.new(
       name: 'dm1',
-      crc: 1_683_261_464,
+      crc: '98a0a4c50c', # decimal 64548818
       size: 6793,
       sha256: '491af17a510214506270904f147a4c30ae0a85b91bb854395bef8c397fc078c3'
     )

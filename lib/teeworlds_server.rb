@@ -116,7 +116,7 @@ class TeeworldsServer
   def send_map(addr)
     data = []
     data += Packer.pack_str(@game_server.map.name)
-    data += Packer.pack_int(@game_server.map.crc)
+    data += @game_server.map.crc_arr # poor mans pack_raw()
     data += Packer.pack_int(@game_server.map.size)
     data += Packer.pack_int(8) # chunk num?
     data += Packer.pack_int(MAP_CHUNK_SIZE)
