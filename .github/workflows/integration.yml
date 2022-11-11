@@ -1,4 +1,4 @@
-name: Integration
+name: Integration tests
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  test-connect:
+  connect-to-server:
     runs-on: ubuntu-latest
 
     steps:
