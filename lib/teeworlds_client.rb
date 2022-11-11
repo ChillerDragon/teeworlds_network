@@ -106,7 +106,7 @@ class TeeworldsClient
     @client_token = (1..4).to_a.map { |_| rand(0..255) }
     @client_token = @client_token.map { |b| b.to_s(16) }.join
     puts "client token #{@client_token}"
-    @netbase = NetBase.new
+    @netbase = NetBase.new(verbose: @verbose)
     NetChunk.reset
     @ip = ip
     @port = port

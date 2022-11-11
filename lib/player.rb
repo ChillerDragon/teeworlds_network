@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Player
-  attr_accessor :id, :local, :team, :name, :clan, :country, :skin_parts, :skin_custom_colors, :skin_colors
+  attr_accessor :id, :local, :team, :name, :clan, :country, :skin_parts, :skin_custom_colors, :skin_colors, :score
 
   def initialize(data = {})
     @id = data[:id] || -1
@@ -13,5 +13,7 @@ class Player
     @skin_parts = data[:skin_parts] || Array.new(6, 'standard')
     @skin_custom_colors = data[:skin_custom_colors] || Array.new(6, 0)
     @skin_colors = data[:skin_colors] || Array.new(6, 0)
+
+    @score = data[:score] || 0
   end
 end

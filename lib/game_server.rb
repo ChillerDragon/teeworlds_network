@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require_relative 'map'
+require_relative 'server_info'
+require_relative 'game_info'
 
 class GameServer
   attr_accessor :pred_game_tick, :ack_game_tick, :map
@@ -27,5 +29,37 @@ class GameServer
     # TODO: check version and password
 
     @server.send_map(packet.addr)
+  end
+
+  def on_ready(_chunk, packet)
+    # vanilla server sends 3 chunks here usually
+    #  - motd
+    #  - server settings
+    #  - ready
+    #
+    # We only send ready for now
+    @server.send_ready(packet.addr)
+  end
+
+  def on_startinfo(_chunk, packet)
+    # vanilla server sends 3 chunks here usually
+    #  - vote clear options
+    #  - tune params
+    #  - ready to enter
+    #
+    # We only send ready to enter for now
+    @server.send_ready_to_enter(packet.addr)
+  end
+
+  def on_enter_game(_chunk, packet)
+    # vanilla server responds to enter game with two packets
+    # first:
+    #  - server info
+    # second:
+    #  - game info
+    #  - client info
+    #  - snap single
+    @server.send_server_info(packet.addr, ServerInfo.new.to_a)
+    @server.send_game_info(packet.addr, GameInfo.new.to_a)
   end
 end

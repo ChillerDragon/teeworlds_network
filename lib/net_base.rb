@@ -8,7 +8,8 @@
 class NetBase
   attr_accessor :peer_token, :ack
 
-  def initialize
+  def initialize(opts = {})
+    @verbose = opts[:verbose] || false
     @ip = nil
     @port = nil
     @s = nil

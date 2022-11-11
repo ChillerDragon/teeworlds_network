@@ -36,7 +36,7 @@ class TeeworldsServer
     @server_token = (1..4).to_a.map { |_| rand(0..255) }
     @server_token = @server_token.map { |b| b.to_s(16) }.join
     puts "server token #{@server_token}"
-    @netbase = NetBase.new
+    @netbase = NetBase.new(verbose: @verbose)
     NetChunk.reset
     @ip = ip
     @port = port
@@ -51,19 +51,29 @@ class TeeworldsServer
     end
   end
 
-  def on_system_chunk(chunk)
-    puts "got system chunk: #{chunk}"
+  def on_message(chunk, packet)
+    puts "got game chunk: #{chunk}"
+    case chunk.msg
+    when NETMSGTYPE_CL_STARTINFO then @game_server.on_startinfo(chunk, packet)
+    else
+      puts "Unsupported game msg: #{chunk.msg}"
+      exit(1)
+    end
   end
 
   def process_chunk(chunk, packet)
     unless chunk.sys
-      on_system_chunk(chunk)
+      on_message(chunk, packet)
       return
     end
     puts "proccess chunk with msg: #{chunk.msg}"
     case chunk.msg
     when NETMSG_INFO
       @game_server.on_info(chunk, packet)
+    when NETMSG_READY
+      @game_server.on_ready(chunk, packet)
+    when NETMSG_ENTERGAME
+      @game_server.on_enter_game(chunk, packet)
     else
       puts "Unsupported system msg: #{chunk.msg}"
       exit(1)
@@ -109,8 +119,34 @@ class TeeworldsServer
     data += Packer.pack_int(8) # chunk num?
     data += Packer.pack_int(MAP_CHUNK_SIZE)
     data += @game_server.map.sha256_arr # poor mans pack_raw()
-    msg = NetChunk.create_non_vital_header(size: data.size + 1) +
+    msg = NetChunk.create_vital_header({ vital: true }, data.size + 1) +
           [pack_msg_id(NETMSG_MAP_CHANGE, system: true)] +
+          data
+    @netbase.send_packet(msg, 1, addr:)
+  end
+
+  def send_ready(addr)
+    msg = NetChunk.create_vital_header({ vital: true }, 1) +
+          [pack_msg_id(NETMSG_CON_READY, system: true)]
+    @netbase.send_packet(msg, 1, addr:)
+  end
+
+  def send_ready_to_enter(addr)
+    msg = NetChunk.create_vital_header({ vital: true }, 1) +
+          [pack_msg_id(NETMSGTYPE_SV_READYTOENTER, system: false)]
+    @netbase.send_packet(msg, 1, addr:)
+  end
+
+  def send_server_info(addr, server_info)
+    msg = NetChunk.create_vital_header({ vital: true }, 1 + server_info.size) +
+          [pack_msg_id(NETMSG_SERVERINFO, system: true)] +
+          server_info
+    @netbase.send_packet(msg, 1, addr:)
+  end
+
+  def send_game_info(addr, data)
+    msg = NetChunk.create_vital_header({ vital: true }, 1 + data.size) +
+          [pack_msg_id(NETMSGTYPE_SV_GAMEINFO, system: false)] +
           data
     @netbase.send_packet(msg, 1, addr:)
   end
