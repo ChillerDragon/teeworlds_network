@@ -108,7 +108,7 @@ class TeeworldsServer
 
   def send_ctrl_with_token(addr, token)
     msg = [NET_CTRLMSG_TOKEN] + str_bytes(@server_token)
-    @netbase.peer_token = token.pack('C*')
+    @netbase.peer_token = token
     @netbase.send_packet(msg, 0, control: true, addr:)
     # @netbase.peer_token = @server_token
   end
@@ -156,7 +156,8 @@ class TeeworldsServer
   def on_ctrl_token(packet)
     u = Unpacker.new(packet.payload[1..])
     token = u.get_raw(4)
-    # puts "got token #{token.map { |b| b.to_s(16).rjust(2, '0') }.join('')}"
+    token = token.map { |b| b.to_s(16).rjust(2, '0') }.join
+    puts "got token #{token}"
     send_ctrl_with_token(packet.addr, token)
   end
 
