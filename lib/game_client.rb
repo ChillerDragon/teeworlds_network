@@ -108,6 +108,10 @@ class GameClient
     @client.send_msg_startinfo
   end
 
+  def on_disconnect
+    @client.hooks[:disconnect]&.call
+  end
+
   def on_rcon_line(chunk)
     u = Unpacker.new(chunk.data[1..])
     context = Context.new(

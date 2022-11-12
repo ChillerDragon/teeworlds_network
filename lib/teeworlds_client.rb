@@ -72,6 +72,10 @@ class TeeworldsClient
     @hooks[:connected] = block
   end
 
+  def on_disconnect(&block)
+    @hooks[:disconnect] = block
+  end
+
   def on_rcon_line(&block)
     @hooks[:rcon_line] = block
   end
@@ -301,7 +305,7 @@ class TeeworldsClient
   end
 
   def on_msg_close
-    puts 'got NET_CTRLMSG_CLOSE'
+    @game_client.on_disconnect
   end
 
   private

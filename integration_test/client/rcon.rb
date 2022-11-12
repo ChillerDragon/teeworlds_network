@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require_relative '../lib/teeworlds_client'
+require_relative '../../lib/teeworlds_client'
 
 client = TeeworldsClient.new
 
@@ -12,6 +12,11 @@ end
 
 client.on_rcon_line do |ctx|
   puts "[rcon] #{ctx.data[:line]}"
+end
+
+client.on_disconnect do
+  puts 'got disconnect'
+  exit 0
 end
 
 # connect and block main thread

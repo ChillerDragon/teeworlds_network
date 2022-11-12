@@ -1,5 +1,8 @@
 Gemfile.lock
-integration_test/*
-!integration_test/*.rb
-!integration_test/*.sh
+integration_test/*.txt
+integration_test/*.log
+integration_test/*.db
+integration_test/*.sql
+integration_test/*.sqlite
+integration_test/*.sqlite3
 

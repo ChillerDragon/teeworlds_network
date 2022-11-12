@@ -19,16 +19,16 @@ jobs:
     - name: Prepare
       run: |
         sudo apt-get update -y
-        sudo apt-get install -y shellcheck teeworlds-server
+        sudo apt-get install -y shellcheck teeworlds teeworlds-server
         gem install bundler
         gem install rubocop:1.31.2
         bundle install --jobs 4 --retry 3
     - name: Test sending chat messages
       run: |
-        ./integration_test/run.sh chat
+        ./integration_test/run.sh client/chat.rb
     - name: Test reconnect
       run: |
-        ./integration_test/run.sh reconnect
+        ./integration_test/run.sh client/reconnect.rb
     - name: Test rcon
       run: |
-        ./integration_test/run.sh rcon
+        ./integration_test/run.sh client/rcon.rb
