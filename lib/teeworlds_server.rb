@@ -22,6 +22,17 @@ class Client
     @addr = attr[:addr]
     @vital_sent = 0
   end
+
+  # TODO: use or remove
+  #       not sure if its cool
+  #       one can make vital_sent read only
+  #       and then the seq reader increments it
+  #       so everytime a header is created
+  #       the chunk builder just calls
+  #       seq = client.seq
+  def seq
+    @vital_sent + 1
+  end
 end
 
 class TeeworldsServer
