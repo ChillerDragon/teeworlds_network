@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
+require_relative 'token'
+
 ##
 # NetBase
 #
 # Lowest network layer logic. Sends packets via udp.
 # Also adding the teeworlds protocol packet header.
 class NetBase
-  attr_accessor :peer_token, :ack
+  attr_accessor :ack
+  attr_reader :peer_token
 
   def initialize(opts = {})
     @verbose = opts[:verbose] || false
@@ -26,6 +29,11 @@ class NetBase
     @ip = ip
     @port = port
     @ack = 0
+  end
+
+  def set_peer_token(token)
+    SecurityToken.validate(token)
+    @peer_token = token
   end
 
   ##

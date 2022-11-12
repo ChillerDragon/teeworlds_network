@@ -13,6 +13,7 @@ require_relative 'net_addr'
 require_relative 'packer'
 require_relative 'game_server'
 require_relative 'message'
+require_relative 'token'
 
 class Client
   attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token
@@ -21,14 +22,9 @@ class Client
     @id = attr[:id]
     @addr = attr[:addr]
     @vital_sent = 0
-    @token = attr[:token]
-    unless @token.size == 4
-      raise "Invalid client token size\n" \
-            "got=#{@token.size} expected=4\n" \
-            "#{str_hex(@token)}"
-    end
-
     @last_recv_time = Time.now
+    @token = attr[:token]
+    SecurityToken.validate(@token)
   end
 
   # TODO: use or remove
@@ -145,16 +141,16 @@ class TeeworldsServer
   def send_ctrl_close(client, reason)
     msg = [NET_CTRLMSG_CLOSE]
     msg += Packer.pack_str(reason) unless reason.nil?
-    @netbase.peer_token = client.token
+    @netbase.set_peer_token(client.token)
     @netbase.send_packet(msg, 0, control: true, addr: client.addr)
-    # @netbase.peer_token = @server_token
+    # @netbase.set_peer_token(@server_token)
   end
 
   def send_ctrl_with_token(addr, token)
     msg = [NET_CTRLMSG_TOKEN] + str_bytes(@server_token)
-    @netbase.peer_token = token
+    @netbase.set_peer_token(token)
     @netbase.send_packet(msg, 0, control: true, addr:)
-    # @netbase.peer_token = @server_token
+    # @netbase.set_peer_token(@server_token)
   end
 
   def send_map(client)
@@ -200,9 +196,9 @@ class TeeworldsServer
   def on_ctrl_token(packet)
     u = Unpacker.new(packet.payload[1..])
     token = u.get_raw(4)
-    token = token.map { |b| b.to_s(16).rjust(2, '0') }.join
-    puts "got token #{token}"
-    send_ctrl_with_token(packet.addr, token)
+    token_str = token.map { |b| b.to_s(16).rjust(2, '0') }.join
+    puts "got token #{token_str}"
+    send_ctrl_with_token(packet.addr, token_str)
   end
 
   def on_ctrl_keep_alive(packet)
@@ -214,14 +210,14 @@ class TeeworldsServer
   end
 
   def on_ctrl_connect(packet)
-    puts 'got connection, sending accept'
-
     id = get_next_client_id
     if id == -1
       puts 'server full drop packet. TODO: tell the client'
       return
     end
-    client = Client.new(id:, addr: packet.addr, token: packet.payload[...4])
+    token = bytes_to_str(packet.payload[...4])
+    puts "got connection, sending accept (client token: #{token})"
+    client = Client.new(id:, addr: packet.addr, token:)
     @clients[id] = client
     @netbase.send_packet([NET_CTRLMSG_ACCEPT], 0, control: true, addr: packet.addr)
   end

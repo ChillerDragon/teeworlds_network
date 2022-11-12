@@ -281,7 +281,7 @@ class TeeworldsClient
     data += Packer.pack_int(inp[:wanted_weapon])
     data += Packer.pack_int(inp[:next_weapon])
     data += Packer.pack_int(inp[:prev_weapon])
-    msg = NetChunk.createl_header(vital: false, size: data.size + 1) +
+    msg = NetChunk.create_header(vital: false, size: data.size + 1) +
           [pack_msg_id(NETMSG_INPUT, system: true)] +
           data
     @netbase.send_packet(msg, 1)
@@ -289,7 +289,7 @@ class TeeworldsClient
 
   def on_msg_token(data)
     @token = bytes_to_str(data)
-    @netbase.peer_token = @token
+    @netbase.set_peer_token(@token)
     puts "Got token #{@token}"
     send_msg_connect
   end
