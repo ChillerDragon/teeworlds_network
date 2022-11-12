@@ -87,7 +87,7 @@ class GameServer
     timeout_ids = []
     @server.clients.each do |id, client|
       diff = now - client.last_recv_time
-      timeout_ids.push(id) if diff > 1
+      timeout_ids.push(id) if diff > 10
     end
 
     timeout_ids.each do |id|

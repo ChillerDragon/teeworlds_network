@@ -287,6 +287,7 @@ class TeeworldsServer
     @clients.each do |id, client|
       next unless packet.addr.eq(client.addr)
 
+      client.last_recv_time = Time.now
       packet.client_id = id
       packet.client = client
     end
