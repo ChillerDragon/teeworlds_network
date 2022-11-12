@@ -82,7 +82,7 @@ class TeeworldsClient
 
   def send_chat(str)
     @netbase.send_packet(
-      NetChunk.create_vital_header({ vital: true }, 4 + str.length) +
+      NetChunk.create_header(vital: true, size: 4 + str.length) +
       [
         pack_msg_id(NETMSGTYPE_CL_SAY),
         CHAT_ALL,
@@ -169,7 +169,7 @@ class TeeworldsClient
     data += Packer.pack_str(GAME_NETVERSION)
     data += Packer.pack_str('password')
     data += Packer.pack_int(CLIENT_VERSION)
-    msg = NetChunk.create_vital_header({ vital: true }, data.size + 1) +
+    msg = NetChunk.create_header(vital: true, size: data.size + 1) +
           [pack_msg_id(NETMSG_INFO, system: true)] +
           data
 
@@ -197,7 +197,7 @@ class TeeworldsClient
       data += Packer.pack_str(password)
       data += Packer.pack_int(1)
     end
-    msg = NetChunk.create_vital_header({ vital: true }, data.size + 1) +
+    msg = NetChunk.create_header(vital: true, size: data.size + 1) +
           [pack_msg_id(NETMSG_RCON_AUTH, system: true)] +
           data
     @netbase.send_packet(msg, 1)
@@ -206,7 +206,7 @@ class TeeworldsClient
   def rcon(command)
     data = []
     data += Packer.pack_str(command)
-    msg = NetChunk.create_vital_header({ vital: true }, data.size + 1) +
+    msg = NetChunk.create_header(vital: true, size: data.size + 1) +
           [pack_msg_id(NETMSG_RCON_CMD, system: true)] +
           data
     @netbase.send_packet(msg, 1)
@@ -227,7 +227,7 @@ class TeeworldsClient
     end
 
     @netbase.send_packet(
-      NetChunk.create_vital_header({ vital: true }, data.size + 1) +
+      NetChunk.create_header(vital: true, size: data.size + 1) +
       [pack_msg_id(NETMSGTYPE_CL_STARTINFO, system: false)] +
       data
     )
@@ -235,14 +235,14 @@ class TeeworldsClient
 
   def send_msg_ready
     @netbase.send_packet(
-      NetChunk.create_vital_header({ vital: true }, 1) +
+      NetChunk.create_header(vital: true, size: 1) +
       [pack_msg_id(NETMSG_READY, system: true)]
     )
   end
 
   def send_enter_game
     @netbase.send_packet(
-      NetChunk.create_vital_header({ vital: true }, 1) +
+      NetChunk.create_header(vital: true, size: 1) +
       [pack_msg_id(NETMSG_ENTERGAME, system: true)]
     )
   end
@@ -275,7 +275,7 @@ class TeeworldsClient
     data += Packer.pack_int(inp[:wanted_weapon])
     data += Packer.pack_int(inp[:next_weapon])
     data += Packer.pack_int(inp[:prev_weapon])
-    msg = NetChunk.create_non_vital_header(size: data.size + 1) +
+    msg = NetChunk.createl_header(vital: false, size: data.size + 1) +
           [pack_msg_id(NETMSG_INPUT, system: true)] +
           data
     @netbase.send_packet(msg, 1)

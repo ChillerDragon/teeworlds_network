@@ -5,7 +5,7 @@ require_relative '../lib/chunk'
 describe 'NetChunk', :net_chunk do
   context 'Create vital header' do
     it 'Should set the vital flag' do
-      expect(NetChunk.create_vital_header({ vital: true }, 20, 5)).to eq([64, 20, 5])
+      expect(NetChunk.create_header(vital: true, size: 20, seq: 5)).to eq([64, 20, 5])
     end
   end
 end

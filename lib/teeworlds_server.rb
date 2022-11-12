@@ -133,33 +133,33 @@ class TeeworldsServer
     data += Packer.pack_int(8) # chunk num?
     data += Packer.pack_int(MAP_CHUNK_SIZE)
     data += @game_server.map.sha256_arr # poor mans pack_raw()
-    msg = NetChunk.create_vital_header({ vital: true }, data.size + 1) +
+    msg = NetChunk.create_header(vital: true, size: data.size + 1) +
           [pack_msg_id(NETMSG_MAP_CHANGE, system: true)] +
           data
     @netbase.send_packet(msg, 1, addr:)
   end
 
   def send_ready(addr)
-    msg = NetChunk.create_vital_header({ vital: true }, 1) +
+    msg = NetChunk.create_header(vital: true, size: 1) +
           [pack_msg_id(NETMSG_CON_READY, system: true)]
     @netbase.send_packet(msg, 1, addr:)
   end
 
   def send_ready_to_enter(addr)
-    msg = NetChunk.create_vital_header({ vital: true }, 1) +
+    msg = NetChunk.create_header(vital: true, size: 1) +
           [pack_msg_id(NETMSGTYPE_SV_READYTOENTER, system: false)]
     @netbase.send_packet(msg, 1, addr:)
   end
 
   def send_server_info(addr, server_info)
-    msg = NetChunk.create_vital_header({ vital: true }, 1 + server_info.size) +
+    msg = NetChunk.create_header(vital: true, size: 1 + server_info.size) +
           [pack_msg_id(NETMSG_SERVERINFO, system: true)] +
           server_info
     @netbase.send_packet(msg, 1, addr:)
   end
 
   def send_game_info(addr, data)
-    msg = NetChunk.create_vital_header({ vital: true }, 1 + data.size) +
+    msg = NetChunk.create_header(vital: true, size: 1 + data.size) +
           [pack_msg_id(NETMSGTYPE_SV_GAMEINFO, system: false)] +
           data
     @netbase.send_packet(msg, 1, addr:)
@@ -223,7 +223,7 @@ class TeeworldsServer
     data = []
     data += Packer.pack_int(@current_game_tick)
     data += Packer.pack_int(@current_game_tick - delta_tick)
-    msg_snap_empty = NetChunk.create_non_vital_header(size: data.size + 1) +
+    msg_snap_empty = NetChunk.create_header(vital: false, size: data.size + 1) +
                      [pack_msg_id(NETMSG_SNAPEMPTY, system: true)] +
                      data
     @clients.each do |_id, client|

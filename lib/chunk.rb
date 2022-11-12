@@ -34,7 +34,7 @@ class NetChunk
       "  data: #{str_hex(data)}"
   end
 
-  def self.create_non_vital_header(data = { size: 0 })
+  def self._create_non_vital_header(data = { size: 0 })
     flag_bits = '00'
     unused_bits = '00'
 
@@ -58,15 +58,18 @@ class NetChunk
   #
   # It will create a 3 byte chunk header
   # represented as an Array of 3 integers
-  def self.create_vital_header(flags, size, seq = nil)
+  def self.create_header(opts = { resend: false, vital: false, size: nil, seq: nil })
+    raise 'Chunk.create_header :size option can not be nil' if opts[:size].nil?
+    return _create_non_vital_header(opts) unless opts[:vital]
+
     @@sent_vital_chunks += 1
-    seq = @@sent_vital_chunks if seq.nil?
+    seq = @@sent_vital_chunks if opts[:seq].nil?
 
     flag_bits = '00'.dup
-    flag_bits[0] = flags[:resend] ? '1' : '0'
-    flag_bits[1] = flags[:vital] ? '1' : '0'
+    flag_bits[0] = opts[:resend] ? '1' : '0'
+    flag_bits[1] = opts[:vital] ? '1' : '0'
 
-    size_bits = size.to_s(2).rjust(12, '0')
+    size_bits = opts[:size].to_s(2).rjust(12, '0')
     # size_bits[0..5]
     # size_bits[6..]
 
