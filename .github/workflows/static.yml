@@ -1,4 +1,4 @@
-name: Bad code
+name: Static analysis
 
 on:
   push:
