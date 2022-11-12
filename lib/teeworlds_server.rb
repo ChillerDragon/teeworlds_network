@@ -217,7 +217,7 @@ class TeeworldsServer
       puts 'server full drop packet. TODO: tell the client'
       return
     end
-    token = bytes_to_str(packet.payload[...4])
+    token = bytes_to_str(packet.payload[1..4])
     puts "got connection, sending accept (client token: #{token})"
     client = Client.new(id:, addr: packet.addr, token:)
     @clients[id] = client
