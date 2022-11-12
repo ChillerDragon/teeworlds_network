@@ -5,7 +5,7 @@ require_relative 'network'
 require_relative 'bytes'
 
 class NetChunk
-  attr_reader :next, :data, :msg, :sys, :flags
+  attr_reader :next, :data, :msg, :sys, :flags, :header_raw
 
   @@sent_vital_chunks = 0
 
@@ -14,9 +14,15 @@ class NetChunk
     @flags = {}
     @size = 0
     parse_header(data[0..2])
-    chunk_end = CHUNK_HEADER_SIZE + @size
+    header_size = if flags_vital
+                    VITAL_CHUNK_HEADER_SIZE
+                  else
+                    NON_VITAL_CHUNK_HEADER_SIZE
+                  end
+    @header_raw = data[...header_size]
+    chunk_end = header_size + @size
     # puts "data[0]: " + str_hex(data[0])
-    @data = data[CHUNK_HEADER_SIZE...chunk_end]
+    @data = data[header_size...chunk_end]
     @msg = @data[0].unpack1('C*')
     @sys = @msg & 1 == 1
     @msg >>= 1
@@ -31,6 +37,7 @@ class NetChunk
     "NetChunk\n" \
       "  msg=#{msg} sys=#{sys}\n" \
       "  #{@flags}\n" \
+      "  header: #{str_hex(header_raw)}\n" \
       "  data: #{str_hex(data)}"
   end
 
