@@ -19,10 +19,15 @@ jobs:
     - name: Prepare
       run: |
         sudo apt-get update -y
-        sudo apt-get install -y shellcheck teeworlds teeworlds-server
+        sudo apt-get install -y shellcheck teeworlds-server
         gem install bundler
         gem install rubocop:1.31.2
         bundle install --jobs 4 --retry 3
+        wget https://github.com/ChillerDragon/teeworlds/releases/download/v0.7.5-headless/teeworlds-0.7.5-linux_x86_64.tar.gz
+        tar -xvzf teeworlds-0.7.5-linux_x86_64.tar.gz
+        sudo mkdir -p /usr/local/bin/
+        sudo mv teeworlds-0.7.5-linux_x86_64/teeworlds /usr/local/bin/teeworlds-headless
+        rm -rf teeworlds-0.7.5-linux_x86_64*
     - name: Test sending chat messages
       run: |
         ./integration_test/run.sh client/chat.rb

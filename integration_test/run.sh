@@ -9,6 +9,7 @@ clcfg='connect 127.0.0.1:8377;killme'
 tw_srv_running=0
 tw_client_running=0
 logdir=logs
+ruby_logfile=ruby_client.txt
 
 mkdir -p logs
 
@@ -32,9 +33,17 @@ function start_tw_server() {
 }
 
 function connect_tw_client() {
-	if [[ -x "$(command -v teeworlds)" ]]
+	if [[ -x "$(command -v teeworlds-headless)" ]]
 	then
-		teeworlds "$clcfg"
+		teeworlds-headless "$clcfg" "$logdir/client.txt"
+		tw_cl_bin=teeworlds-headless
+	elif [[ -x "$(command -v /usr/local/bin/teeworlds-headless)" ]]
+	then
+		/usr/local/bin/teeworlds-headless "$clcfg" "$logdir/client.txt"
+		tw_cl_bin=/usr/local/bin/teeworlds-headless
+	elif [[ -x "$(command -v teeworlds)" ]]
+	then
+		teeworlds "$clcfg" "$logdir/client.txt"
 		tw_cl_bin=teeworlds
 	else
 		echo "Error: please install a teeworlds"
@@ -67,6 +76,12 @@ then
 		invalid_test "$testname"
 	fi
 fi
+if [[ "$testname" =~ ^client/ ]]
+then
+	ruby_logfile="$logdir/ruby_client.tx"
+else
+	ruby_logfile="$logdir/ruby_server.tx"
+fi
 
 function cleanup() {
 	if [ "$tw_srv_running" == "1" ]
@@ -92,9 +107,9 @@ function fail() {
 	# this is a bit ugly but it works
 	# maybe a sleep does as well
 	# or I still did not get flushing
-	tail "$logdir/ruby_client.txt" &>/dev/null
+	tail "$ruby_logfile" &>/dev/null
 	echo "[-] end of ruby client log:"
-	tail "$logdir/ruby_client.txt"
+	tail "$ruby_logfile"
 	echo "[-] end of server log:"
 	tail "$logdir/server.txt"
 	echo "$msg"
@@ -111,13 +126,20 @@ function timeout() {
 }
 
 echo "[*] running test '$testname' ..."
-echo "ruby client log $(date)" > "$logdir/ruby_client.txt"
-echo "server log $(date)" > "$logdir/server.txt"
 [[ -f timeout.txt ]] && rm timeout.txt
-start_tw_server
+if [[ "$testname" =~ ^client/ ]]
+then
+	echo "ruby client log $(date)" > "$ruby_logfile"
+	echo "server log $(date)" > "$logdir/server.txt"
+	start_tw_server
+else
+	echo "client log $(date)" > "$logdir/client.txt"
+	echo "server log $(date)" > "$ruby_logfile"
+	connect_tw_client
+fi
 timeout 3 killme &
 _timout_pid=$!
-ruby "$testname" killme &> "$logdir/ruby_client.txt"
+ruby "$testname" killme &> "$ruby_logfile"
 
 if [ "$testname" == "client/chat.rb" ]
 then
