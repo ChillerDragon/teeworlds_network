@@ -62,4 +62,13 @@ class GameServer
     @server.send_server_info(packet.client, ServerInfo.new.to_a)
     @server.send_game_info(packet.client, GameInfo.new.to_a)
   end
+
+  def on_input(chunk, packet)
+    # vanilla server responds to input with 2 chunks
+    #  - input_timing
+    #  - snap (empty)
+
+    # we do nothing for now
+    # TODO: do something
+  end
 end
