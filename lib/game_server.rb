@@ -71,4 +71,22 @@ class GameServer
     # we do nothing for now
     # TODO: do something
   end
+
+  def disconnect_client(client, reason = nil)
+    @server.send_ctrl_close(client, reason)
+  end
+
+  def on_tick
+    now = Time.now
+    timeout_ids = []
+    @server.clients.each do |id, client|
+      diff = now - client.last_recv_time
+      timeout_ids.push(id) if diff > 1
+    end
+
+    timeout_ids.each do |id|
+      disconnect_client(@server.clients[id], 'Timeout')
+      @server.clients.delete(id)
+    end
+  end
 end

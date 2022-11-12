@@ -15,12 +15,20 @@ require_relative 'game_server'
 require_relative 'message'
 
 class Client
-  attr_accessor :id, :addr, :vital_sent
+  attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token
 
   def initialize(attr = {})
     @id = attr[:id]
     @addr = attr[:addr]
     @vital_sent = 0
+    @token = attr[:token]
+    unless @token.size == 4
+      raise "Invalid client token size\n" \
+            "got=#{@token.size} expected=4\n" \
+            "#{str_hex(@token)}"
+    end
+
+    @last_recv_time = Time.now
   end
 
   # TODO: use or remove
@@ -36,6 +44,8 @@ class Client
 end
 
 class TeeworldsServer
+  attr_accessor :clients
+
   def initialize(options = {})
     @verbose = options[:verbose] || false
     @ip = '127.0.0.1'
@@ -132,6 +142,14 @@ class TeeworldsServer
     end
   end
 
+  def send_ctrl_close(client, reason)
+    msg = [NET_CTRLMSG_CLOSE]
+    msg += Packer.pack_str(reason) unless reason.nil?
+    @netbase.peer_token = client.token
+    @netbase.send_packet(msg, 0, control: true, addr: client.addr)
+    # @netbase.peer_token = @server_token
+  end
+
   def send_ctrl_with_token(addr, token)
     msg = [NET_CTRLMSG_TOKEN] + str_bytes(@server_token)
     @netbase.peer_token = token
@@ -203,7 +221,7 @@ class TeeworldsServer
       puts 'server full drop packet. TODO: tell the client'
       return
     end
-    client = Client.new(id:, addr: packet.addr)
+    client = Client.new(id:, addr: packet.addr, token: packet.payload[...4])
     @clients[id] = client
     @netbase.send_packet([NET_CTRLMSG_ACCEPT], 0, control: true, addr: packet.addr)
   end
@@ -254,6 +272,7 @@ class TeeworldsServer
         @current_game_tick += 1
         do_snapshot
       end
+      @game_server.on_tick
     end
 
     begin
