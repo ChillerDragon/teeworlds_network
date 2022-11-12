@@ -16,13 +16,21 @@ require_relative 'message'
 require_relative 'token'
 
 class Client
-  attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token
+  attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token, :player
 
   def initialize(attr = {})
     @id = attr[:id]
     @addr = attr[:addr]
     @vital_sent = 0
     @last_recv_time = Time.now
+    @player = Player.new(
+      id: @id,
+      local: 0,
+      team: 0,
+      name: '(connecting)',
+      clan: '',
+      country: -1
+    )
     @token = attr[:token]
     SecurityToken.validate(@token)
   end
@@ -208,7 +216,20 @@ class TeeworldsServer
   end
 
   def on_ctrl_close(packet)
-    puts "Client closed the connection #{packet.addr}"
+    reason = nil
+    if packet.payload[2]
+      u = Unpacker.new(packet.payload[1..])
+      reason = u.get_string
+    end
+    drop_client(packet.client, reason)
+  end
+
+  def drop_client(client, reason = nil)
+    send_ctrl_close(client, reason)
+    return if client.nil?
+
+    @game_server.on_client_drop(client, reason)
+    @clients.delete(client.id)
   end
 
   def on_ctrl_connect(packet)

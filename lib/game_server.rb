@@ -63,7 +63,7 @@ class GameServer
     @server.send_game_info(packet.client, GameInfo.new.to_a)
   end
 
-  def on_rcon_cmd(chunk, packet)
+  def on_rcon_cmd(chunk, _packet)
     u = Unpacker.new(chunk.data[1..])
     cmd = u.get_string
     puts "got rcon_cmd=#{cmd}"
@@ -78,8 +78,9 @@ class GameServer
     # TODO: do something
   end
 
-  def disconnect_client(client, reason = nil)
-    @server.send_ctrl_close(client, reason)
+  def on_client_drop(client, reason = nil)
+    reason = reason.nil? ? '' : " (#{reason})"
+    puts "'#{client.player.name}' left the game#{reason}"
   end
 
   def on_tick
@@ -91,8 +92,7 @@ class GameServer
     end
 
     timeout_ids.each do |id|
-      disconnect_client(@server.clients[id], 'Timeout')
-      @server.clients.delete(id)
+      @server.drop_client(@server.clients[id], 'Timeout')
     end
   end
 end
