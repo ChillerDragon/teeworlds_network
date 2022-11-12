@@ -28,6 +28,10 @@ jobs:
         sudo mkdir -p /usr/local/bin/
         sudo mv teeworlds-0.7.5-linux_x86_64/teeworlds /usr/local/bin/teeworlds-headless
         rm -rf teeworlds-0.7.5-linux_x86_64*
+        wget https://github.com/ChillerDragon/ddnet/releases/download/v16.5-headless/DDNet-headless.zip
+        unzip DDNet-headless.zip
+        sudo mv DDNet-headless /usr/local/bin
+        rm DDNet-headless.zip
     - name: Test sending chat messages
       run: |
         ./integration_test/run.sh client/chat.rb
