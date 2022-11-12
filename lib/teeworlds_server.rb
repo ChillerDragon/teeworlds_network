@@ -15,11 +15,12 @@ require_relative 'game_server'
 require_relative 'message'
 
 class Client
-  attr_accessor :id, :addr
+  attr_accessor :id, :addr, :vital_sent
 
   def initialize(attr = {})
     @id = attr[:id]
     @addr = attr[:addr]
+    @vital_sent = 0
   end
 end
 
@@ -125,7 +126,7 @@ class TeeworldsServer
     # @netbase.peer_token = @server_token
   end
 
-  def send_map(addr)
+  def send_map(client)
     data = []
     data += Packer.pack_str(@game_server.map.name)
     data += @game_server.map.crc_arr # poor mans pack_raw()
@@ -133,36 +134,36 @@ class TeeworldsServer
     data += Packer.pack_int(8) # chunk num?
     data += Packer.pack_int(MAP_CHUNK_SIZE)
     data += @game_server.map.sha256_arr # poor mans pack_raw()
-    msg = NetChunk.create_header(vital: true, size: data.size + 1) +
+    msg = NetChunk.create_header(vital: true, size: data.size + 1, client:) +
           [pack_msg_id(NETMSG_MAP_CHANGE, system: true)] +
           data
-    @netbase.send_packet(msg, 1, addr:)
+    @netbase.send_packet(msg, 1, addr: client.addr)
   end
 
-  def send_ready(addr)
-    msg = NetChunk.create_header(vital: true, size: 1) +
+  def send_ready(client)
+    msg = NetChunk.create_header(vital: true, size: 1, client:) +
           [pack_msg_id(NETMSG_CON_READY, system: true)]
-    @netbase.send_packet(msg, 1, addr:)
+    @netbase.send_packet(msg, 1, addr: client.addr)
   end
 
-  def send_ready_to_enter(addr)
-    msg = NetChunk.create_header(vital: true, size: 1) +
+  def send_ready_to_enter(client)
+    msg = NetChunk.create_header(vital: true, size: 1, client:) +
           [pack_msg_id(NETMSGTYPE_SV_READYTOENTER, system: false)]
-    @netbase.send_packet(msg, 1, addr:)
+    @netbase.send_packet(msg, 1, addr: client.addr)
   end
 
-  def send_server_info(addr, server_info)
-    msg = NetChunk.create_header(vital: true, size: 1 + server_info.size) +
+  def send_server_info(client, server_info)
+    msg = NetChunk.create_header(vital: true, size: 1 + server_info.size, client:) +
           [pack_msg_id(NETMSG_SERVERINFO, system: true)] +
           server_info
-    @netbase.send_packet(msg, 1, addr:)
+    @netbase.send_packet(msg, 1, addr: client.addr)
   end
 
-  def send_game_info(addr, data)
-    msg = NetChunk.create_header(vital: true, size: 1 + data.size) +
+  def send_game_info(client, data)
+    msg = NetChunk.create_header(vital: true, size: 1 + data.size, client:) +
           [pack_msg_id(NETMSGTYPE_SV_GAMEINFO, system: false)] +
           data
-    @netbase.send_packet(msg, 1, addr:)
+    @netbase.send_packet(msg, 1, addr: client.addr)
   end
 
   def on_ctrl_token(packet)
@@ -257,6 +258,7 @@ class TeeworldsServer
       next unless packet.addr.eq(client.addr)
 
       packet.client_id = id
+      packet.client = client
     end
 
     puts packet.to_s if @verbose

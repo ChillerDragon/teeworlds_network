@@ -53,6 +53,7 @@ function check_chunk_header_args() {
 	local method_args
 	local needed_args
 	local needed_arg
+	local needed_srv
 	local code
 	needed_args=(vital: size:)
 	while read -r header_line
@@ -60,7 +61,14 @@ function check_chunk_header_args() {
 		line="$(echo "$header_line" | cut -d':' -f1-2)"
 		code="$(echo "$header_line" | cut -d':' -f3-)"
 		method_args="$(echo "$header_line" | cut -d'(' -f2-)"
-		for needed_arg in "${needed_args[@]}"
+		unset needed_srv
+		# vital chunk headers sent by the server
+		# need a client: to get the sequence number
+		if [[ "$line" =~ server ]] && [[ "$method_args" =~ 'vital: true' ]]
+		then
+			needed_srv='client:'
+		fi
+		for needed_arg in "${needed_args[@]}" $needed_srv
 		do
 			if ! echo "$method_args" | grep -q "$needed_arg"
 			then

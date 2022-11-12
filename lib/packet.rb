@@ -8,7 +8,7 @@ require 'huffman_tw'
 # Class holding the parsed packet data
 class Packet
   attr_reader :flags, :payload, :addr
-  attr_accessor :client_id
+  attr_accessor :client_id, :client
 
   def initialize(data, prefix = '')
     # @data and @payload
@@ -22,6 +22,7 @@ class Packet
     @addr = NetAddr.new(nil, nil)
     @huffman = Huffman.new
     @client_id = nil
+    @client = nil
     @data = data
     flags_byte = @data[0].unpack('B*')
     @flags = PacketFlags.new(flags_byte.first[2..5]).hash

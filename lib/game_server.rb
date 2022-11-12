@@ -28,7 +28,7 @@ class GameServer
 
     # TODO: check version and password
 
-    @server.send_map(packet.addr)
+    @server.send_map(packet.client)
   end
 
   def on_ready(_chunk, packet)
@@ -38,7 +38,7 @@ class GameServer
     #  - ready
     #
     # We only send ready for now
-    @server.send_ready(packet.addr)
+    @server.send_ready(packet.client)
   end
 
   def on_startinfo(_chunk, packet)
@@ -48,7 +48,7 @@ class GameServer
     #  - ready to enter
     #
     # We only send ready to enter for now
-    @server.send_ready_to_enter(packet.addr)
+    @server.send_ready_to_enter(packet.client)
   end
 
   def on_enter_game(_chunk, packet)
@@ -59,7 +59,7 @@ class GameServer
     #  - game info
     #  - client info
     #  - snap single
-    @server.send_server_info(packet.addr, ServerInfo.new.to_a)
-    @server.send_game_info(packet.addr, GameInfo.new.to_a)
+    @server.send_server_info(packet.client, ServerInfo.new.to_a)
+    @server.send_game_info(packet.client, GameInfo.new.to_a)
   end
 end

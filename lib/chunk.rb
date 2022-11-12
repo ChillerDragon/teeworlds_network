@@ -58,12 +58,19 @@ class NetChunk
   #
   # It will create a 3 byte chunk header
   # represented as an Array of 3 integers
-  def self.create_header(opts = { resend: false, vital: false, size: nil, seq: nil })
+  def self.create_header(opts = { resend: false, vital: false, size: nil, seq: nil, client: nil })
     raise 'Chunk.create_header :size option can not be nil' if opts[:size].nil?
     return _create_non_vital_header(opts) unless opts[:vital]
 
+    # client only counts this class var
     @@sent_vital_chunks += 1
     seq = opts[:seq].nil? ? @@sent_vital_chunks : opts[:seq]
+
+    # server counts per client
+    unless opts[:client].nil?
+      opts[:client].vital_sent += 1
+      seq = opts[:client].vital_sent
+    end
 
     flag_bits = '00'.dup
     flag_bits[0] = opts[:resend] ? '1' : '0'
