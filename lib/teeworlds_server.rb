@@ -30,6 +30,8 @@ class TeeworldsServer
     @port = 8303
     @game_server = GameServer.new(self)
     @clients = {}
+    @current_game_tick = 0
+    @last_snap_time = Time.now
   end
 
   def run(ip, port)
@@ -47,6 +49,16 @@ class TeeworldsServer
     loop do
       tick
       # TODO: proper tick speed sleep
+      #       replace by blocking network read
+      #       m_NetServer
+      #         .Wait(
+      #         clamp(
+      #         int((
+      #         TickStartTime(
+      #         m_CurrentGameTick+1)-time_get()
+      #         )*1000/time_freq()),
+      #         1,
+      #         1000/SERVER_TICK_SPEED/2));
       sleep 0.001
     end
   end
@@ -200,7 +212,36 @@ class TeeworldsServer
     -1
   end
 
+  def tick_start_time(tick)
+    # TODO: implement this C++ code
+    #       m_GameStartTime + (time_freq()*Tick)/SERVER_TICK_SPEED;
+  end
+
+  def do_snapshot
+    delta_tick = -1
+    # DeltaTick = m_aClients[i].m_LastAckedSnapshot;
+    data = []
+    data += Packer.pack_int(@current_game_tick)
+    data += Packer.pack_int(@current_game_tick - delta_tick)
+    msg_snap_empty = NetChunk.create_non_vital_header(size: data.size + 1) +
+                     [pack_msg_id(NETMSG_SNAPEMPTY, system: true)] +
+                     data
+    @clients.each do |_id, client|
+      @netbase.send_packet(msg_snap_empty, 1, addr: client.addr)
+    end
+  end
+
   def tick
+    unless @clients.empty?
+      now = Time.now
+      diff = now - @last_snap_time
+      # TODO: replace snaps every second by something more correct
+      if diff > 1
+        @current_game_tick += 1
+        do_snapshot
+      end
+    end
+
     begin
       data, sender_inet_addr = @s.recvfrom_nonblock(1400)
     rescue IO::EAGAINWaitReadable
