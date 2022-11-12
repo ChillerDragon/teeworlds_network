@@ -63,7 +63,7 @@ class NetChunk
     return _create_non_vital_header(opts) unless opts[:vital]
 
     @@sent_vital_chunks += 1
-    seq = @@sent_vital_chunks if opts[:seq].nil?
+    seq = opts[:seq].nil? ? @@sent_vital_chunks : opts[:seq]
 
     flag_bits = '00'.dup
     flag_bits[0] = opts[:resend] ? '1' : '0'
