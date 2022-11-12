@@ -127,9 +127,15 @@ class TeeworldsClient
     end
   end
 
+  # TODO: this is same in client and server
+  #       move to NetBase???
+  def send_ctrl_close
+    @netbase&.send_packet([NET_CTRLMSG_CLOSE], 0, control: true)
+  end
+
   def disconnect
     puts 'disconnecting.'
-    @netbase&.send_packet([NET_CTRLMSG_CLOSE], 0, control: true)
+    send_ctrl_close
     @s&.close
     @signal_disconnect = true
   end
