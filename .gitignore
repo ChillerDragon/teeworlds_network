@@ -5,4 +5,5 @@ integration_test/*.db
 integration_test/*.sql
 integration_test/*.sqlite
 integration_test/*.sqlite3
+integration_test/logs
 
