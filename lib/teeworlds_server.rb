@@ -106,6 +106,8 @@ class TeeworldsServer
       @game_server.on_enter_game(chunk, packet)
     when NETMSG_INPUT
       @game_server.on_input(chunk, packet)
+    when NETMSG_RCON_CMD
+      @game_server.on_rcon_cmd(chunk, packet)
     else
       puts "Unsupported system msg: #{chunk.msg}"
       exit(1)

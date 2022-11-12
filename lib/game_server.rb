@@ -63,6 +63,12 @@ class GameServer
     @server.send_game_info(packet.client, GameInfo.new.to_a)
   end
 
+  def on_rcon_cmd(chunk, packet)
+    u = Unpacker.new(chunk.data[1..])
+    cmd = u.get_string
+    puts "got rcon_cmd=#{cmd}"
+  end
+
   def on_input(chunk, packet)
     # vanilla server responds to input with 2 chunks
     #  - input_timing
