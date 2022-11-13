@@ -59,6 +59,7 @@ class GameServer
     #  - game info
     #  - client info
     #  - snap single
+    packet.client.in_game = true
     @server.send_server_info(packet.client, ServerInfo.new.to_a)
     @server.send_game_info(packet.client, GameInfo.new.to_a)
   end

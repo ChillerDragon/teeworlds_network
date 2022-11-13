@@ -16,7 +16,7 @@ require_relative 'message'
 require_relative 'token'
 
 class Client
-  attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token, :player
+  attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token, :player, :in_game
   attr_reader :ack
 
   def initialize(attr = {})
@@ -24,6 +24,7 @@ class Client
     @addr = attr[:addr]
     @vital_sent = 0
     @ack = 0
+    @in_game = false
     @last_recv_time = Time.now
     @player = Player.new(
       id: @id,
@@ -35,6 +36,10 @@ class Client
     )
     @token = attr[:token]
     SecurityToken.validate(@token)
+  end
+
+  def in_game?
+    @in_game
   end
 
   def bump_ack
@@ -297,6 +302,8 @@ class TeeworldsServer
                      [pack_msg_id(NETMSG_SNAPEMPTY, system: true)] +
                      data
     @clients.each do |_id, client|
+      next unless client.in_game?
+
       @netbase.send_packet(msg_snap_empty, chunks: 1, client:)
     end
   end
