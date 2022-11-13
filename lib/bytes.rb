@@ -14,6 +14,7 @@ def bytes_to_str(data)
   data.unpack('H*').join
 end
 
+# TODO: remove?
 def get_byte(data, start = 0, num = 1)
   data[start...(start + num)].unpack('H*').join.upcase
 end
