@@ -149,6 +149,11 @@ class TeeworldsServer
   end
 
   def send_ctrl_close(client, reason)
+    # when clients disconnect
+    # during the connection process
+    # we do not care
+    return if client.nil?
+
     msg = [NET_CTRLMSG_CLOSE]
     msg += Packer.pack_str(reason) unless reason.nil?
     @netbase.set_peer_token(client.token)
