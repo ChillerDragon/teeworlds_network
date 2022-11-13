@@ -105,6 +105,7 @@ class TeeworldsServer
     case chunk.msg
     when NETMSGTYPE_CL_STARTINFO then @game_server.on_start_info(chunk, packet)
     when NETMSGTYPE_CL_SAY then @game_server.on_say(chunk, packet)
+    when NETMSGTYPE_CL_EMOTICON then @game_server.on_emoticon(chunk, packet)
     else
       puts "Unsupported game msg: #{chunk.msg}"
       exit(1)

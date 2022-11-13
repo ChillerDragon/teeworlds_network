@@ -23,6 +23,11 @@ class GameServer
     )
   end
 
+  def on_emoticon(chunk, packet)
+    # TODO: generate ClEmoticon using
+    #       twgen g ClEmoticon emoticon:int
+  end
+
   def on_info(chunk, packet)
     u = Unpacker.new(chunk.data[1..])
     net_version = u.get_string
