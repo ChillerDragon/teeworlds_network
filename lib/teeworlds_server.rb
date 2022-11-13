@@ -104,6 +104,7 @@ class TeeworldsServer
     puts "got game chunk: #{chunk}"
     case chunk.msg
     when NETMSGTYPE_CL_STARTINFO then @game_server.on_start_info(chunk, packet)
+    when NETMSGTYPE_CL_SAY then @game_server.on_say(chunk, packet)
     else
       puts "Unsupported game msg: #{chunk.msg}"
       exit(1)
@@ -313,6 +314,10 @@ class TeeworldsServer
 
       @netbase.send_packet(msg_snap_empty, chunks: 1, client:)
     end
+  end
+
+  def get_player_by_id(id)
+    @clients[id]&.player
   end
 
   def tick

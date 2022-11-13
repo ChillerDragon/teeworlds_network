@@ -5,6 +5,8 @@ require_relative 'models/server_info'
 require_relative 'models/server_settings'
 require_relative 'models/game_info'
 require_relative 'models/start_info'
+require_relative 'models/cl_say'
+require_relative 'models/chat_message'
 
 class GameServer
   attr_accessor :pred_game_tick, :ack_game_tick, :map
@@ -55,6 +57,13 @@ class GameServer
     info_str = info.to_s
     puts "got start info: #{info_str}" if @verbose
     @server.send_ready_to_enter(packet.client)
+  end
+
+  def on_say(chunk, packet)
+    say = ClSay.new(chunk.data[1..])
+    author = packet.client.player
+    msg = ChatMesage.new(say.to_h.merge(client_id: author.id, author:))
+    puts msg.to_s
   end
 
   def on_enter_game(_chunk, packet)
