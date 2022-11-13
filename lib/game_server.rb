@@ -4,6 +4,7 @@ require_relative 'models/map'
 require_relative 'models/server_info'
 require_relative 'models/server_settings'
 require_relative 'models/game_info'
+require_relative 'models/start_info'
 
 class GameServer
   attr_accessor :pred_game_tick, :ack_game_tick, :map
@@ -42,13 +43,17 @@ class GameServer
     @server.send_ready(packet.client)
   end
 
-  def on_startinfo(_chunk, packet)
+  def on_start_info(chunk, packet)
     # vanilla server sends 3 chunks here usually
     #  - vote clear options
     #  - tune params
     #  - ready to enter
     #
     # We only send ready to enter for now
+    info = StartInfo.new(chunk.data[1..])
+    packet.client.player.set_start_info(info)
+    info_str = info.to_s
+    puts "got start info: #{info_str}" if @verbose
     @server.send_ready_to_enter(packet.client)
   end
 

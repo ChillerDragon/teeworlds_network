@@ -103,7 +103,7 @@ class TeeworldsServer
   def on_message(chunk, packet)
     puts "got game chunk: #{chunk}"
     case chunk.msg
-    when NETMSGTYPE_CL_STARTINFO then @game_server.on_startinfo(chunk, packet)
+    when NETMSGTYPE_CL_STARTINFO then @game_server.on_start_info(chunk, packet)
     else
       puts "Unsupported game msg: #{chunk.msg}"
       exit(1)

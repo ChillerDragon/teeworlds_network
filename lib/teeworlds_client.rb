@@ -222,7 +222,7 @@ class TeeworldsClient
     @netbase.send_packet(msg)
   end
 
-  def send_msg_startinfo
+  def send_msg_start_info
     data = []
 
     @start_info.each do |key, value|
@@ -231,7 +231,7 @@ class TeeworldsClient
       elsif value.instance_of?(Integer)
         data += Packer.pack_int(value)
       else
-        puts "Error: invalid startinfo #{key}: #{value}"
+        puts "Error: invalid start info #{key}: #{value}"
         exit 1
       end
     end

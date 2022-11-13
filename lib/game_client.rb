@@ -105,7 +105,7 @@ class GameClient
       context.verify
       return if context.cancled?
     end
-    @client.send_msg_startinfo
+    @client.send_msg_start_info
   end
 
   def on_disconnect
