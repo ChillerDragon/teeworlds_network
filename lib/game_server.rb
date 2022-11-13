@@ -2,6 +2,7 @@
 
 require_relative 'models/map'
 require_relative 'models/server_info'
+require_relative 'models/server_settings'
 require_relative 'models/game_info'
 
 class GameServer
@@ -37,7 +38,7 @@ class GameServer
     #  - server settings
     #  - ready
     #
-    # We only send ready for now
+    @server.send_server_settings(packet.client, ServerSettings.new.to_a)
     @server.send_ready(packet.client)
   end
 

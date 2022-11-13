@@ -213,6 +213,13 @@ class TeeworldsServer
     @netbase.send_packet(msg, chunks: 1, client:)
   end
 
+  def send_server_settings(client, server_settings)
+    msg = NetChunk.create_header(vital: true, size: 1 + server_settings.size, client:) +
+          [pack_msg_id(NETMSGTYPE_SV_SERVERSETTINGS, system: false)] +
+          server_settings
+    @netbase.send_packet(msg, chunks: 1, client:)
+  end
+
   def send_server_info(client, server_info)
     msg = NetChunk.create_header(vital: true, size: 1 + server_info.size, client:) +
           [pack_msg_id(NETMSG_SERVERINFO, system: true)] +
