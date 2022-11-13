@@ -57,10 +57,12 @@ class NetBase
     ack = @ack
     ip = @ip
     port = @port
+    token = @peer_token
     unless opts[:client].nil?
       ack = opts[:client].ack
       ip = opts[:client].addr.ip
       port = opts[:client].addr.port
+      token = opts[:client].token
     end
     unless opts[:addr].nil?
       ip = opts[:addr].ip
@@ -74,9 +76,19 @@ class NetBase
       eight_bits.join.to_i(2)
     end
 
-    header += str_bytes(@peer_token)
+    header += str_bytes(token)
     data = (header + payload).pack('C*')
-    puts "send to #{ip}:#{port}" if @verbose
+    client = opts[:client]
+    if @verbose
+      if client
+        puts "send to #{ip}:#{port} " \
+             "client(id=#{client.id} " \
+             "token=#{client.token} " \
+             "name=#{client.player.name} port=#{client.addr.port})"
+      else
+        puts "send to #{ip}:#{port}"
+      end
+    end
     @s.send(data, 0, ip, port)
 
     puts Packet.new(data, '>').to_s if @verbose || opts[:test]
