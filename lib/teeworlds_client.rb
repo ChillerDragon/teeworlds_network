@@ -80,7 +80,7 @@ class TeeworldsClient
     @hooks[:rcon_line] = block
   end
 
-  def on_on_snapshot(&block)
+  def on_snapshot(&block)
     @hooks[:snapshot] = block
   end
 
