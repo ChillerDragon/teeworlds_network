@@ -35,17 +35,17 @@ jobs:
         gem install bundler
         bundle install --jobs 4 --retry 3
         bundle exec rspec
-  # hooks:
-  #   runs-on: ubuntu-latest
+  hooks:
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Set up Ruby 3.1
-  #     uses: actions/setup-ruby@v1
-  #     with:
-  #       ruby-version: 3.1.x
-  #   - name: Check all hooks for crashes and documentation
-  #     run: |
-  #       gem install bundler
-  #       bundle install --jobs 4 --retry 3
-  #       ./scripts/hooks.sh
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Ruby 3.1
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 3.1.x
+    - name: Check all hooks for crashes and documentation
+      run: |
+        gem install bundler
+        bundle install --jobs 4 --retry 3
+        ./scripts/hooks.sh

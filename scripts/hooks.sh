@@ -7,12 +7,78 @@ then
 	exit 1
 fi
 
+arg_generate_docs=0
+
+for arg in "$@"
+do
+	if [ "$arg" == "--fix" ] || [ "$arg" == "--generate-docs" ]
+	then
+		arg_generate_docs=1
+	fi
+done
+
 tmpdir=scripts/tmp
 mkdir -p scripts/tmp
 
 function get_hooks() {
 	local ruby_file="$1"
 	grep -o "^[[:space:]]*def on_.*(&block)" "$ruby_file" | grep -o "on_[^(]*" | awk NF
+}
+
+function add_hook_doc() {
+	local mdfile="$1"
+	local ruby_class="$2"
+	local hook="$3"
+	local class_ln
+	if [ ! -f "$mdfile" ]
+	then
+		echo "Error: failed to generate docs! File not found $mdfile"
+		exit 1
+	fi
+	class_ln="$(grep -n "## $ruby_class" "$mdfile" | cut -d':' -f1)"
+	class_ln="$((class_ln+1))"
+	if [ "$class_ln" == "" ]
+	then
+		echo "Error: failed to generate docs could not get line"
+		echo "   mdfile=$mdfile"
+		echo "   ruby_class=$ruby_class"
+		echo "   hook=$hook"
+		exit 1
+	fi
+	local tmpdoc
+	local obj_var=client
+	local run="client.connect('localhost', 8303, detach: true)"
+	if [[ "$ruby_class" =~ Server ]]
+	then
+		obj_var=server
+		run="server.run('127.0.0.1', 8377)"
+	fi
+	tmpdoc="$tmpdir/doc.md"
+	{
+		head -n "$class_ln" "$mdfile" 
+		cat <<- EOF
+		### #$hook(&block)
+
+		**Parameter: block [Block |[context](#context)|]**
+
+		TODO: generated documentation
+
+		**Example:**
+		EOF
+		echo '```ruby'
+		cat <<- EOF
+		$obj_var = $ruby_class.new
+
+		$obj_var.$hook do |context|
+		  # TODO: generated documentation
+		end
+
+		$run
+		EOF
+		echo '```'
+		tail -n +"$class_ln" "$mdfile"
+	} > "$tmpdoc"
+	mv "$tmpdoc" "$mdfile"
 }
 
 function check_file() {
@@ -48,14 +114,22 @@ function check_file() {
 		mdfile="docs/$version.md"
 		if [ ! -f "$mdfile" ]
 		then
-			echo "Error: documentation not found $mdfile"
+			echo "ERROR: documentation not found $mdfile"
 			exit 1
 		fi
 		if ! grep -q "#$hook" "$mdfile"
 		then
-			echo " ERROR: missing documentation in $mdfile"
-			got_err=1
-			hook_err=1
+			if [ "$arg_generate_docs" == "1" ]
+			then
+				add_hook_doc "$mdfile" "$ruby_class" "$hook"
+			else
+				echo " ERROR: missing documentation in $mdfile"
+				# TODO: totally overengineer this and get spacing of 2nd line correct
+				#       by computing prev line length
+				echo "        try --generate-docs and fill out the templated docs"
+				got_err=1
+				hook_err=1
+			fi
 		else
 			printf ' .'
 		fi
@@ -89,6 +163,7 @@ function check_file() {
 	fi
 }
 
-check_file TeeworldsClient lib/teeworlds_client.rb
-# check_file TeeworldsServer lib/teeworlds_server.rb
-
+if check_file TeeworldsClient lib/teeworlds_client.rb # || check_file TeeworldsServer lib/teeworlds_server.rb
+then
+	exit 1
+fi
