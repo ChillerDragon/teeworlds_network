@@ -76,7 +76,7 @@ class NetBase
 
     header += str_bytes(@peer_token)
     data = (header + payload).pack('C*')
-    puts "send to #{ip}:#{port}"
+    puts "send to #{ip}:#{port}" if @verbose
     @s.send(data, 0, ip, port)
 
     puts Packet.new(data, '>').to_s if @verbose || opts[:test]

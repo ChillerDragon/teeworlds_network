@@ -68,6 +68,8 @@ class GameServer
     packet.client.in_game = true
     @server.send_server_info(packet.client, ServerInfo.new.to_a)
     @server.send_game_info(packet.client, GameInfo.new.to_a)
+
+    puts "'#{packet.client.player.name}' joined the game"
   end
 
   def on_rcon_cmd(chunk, _packet)

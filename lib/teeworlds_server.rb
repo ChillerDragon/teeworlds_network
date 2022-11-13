@@ -115,7 +115,7 @@ class TeeworldsServer
       on_message(chunk, packet)
       return
     end
-    puts "proccess chunk with msg: #{chunk.msg}"
+    puts "proccess chunk with msg: #{chunk.msg}" if @verbose
     case chunk.msg
     when NETMSG_INFO
       @game_server.on_info(chunk, packet)
