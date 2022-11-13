@@ -310,6 +310,12 @@ class TeeworldsServer
     msg_snap_empty = NetChunk.create_header(vital: false, size: data.size + 1) +
                      [pack_msg_id(NETMSG_SNAPEMPTY, system: true)] +
                      data
+    # data = []
+    # data += Packer.pack_int(@current_game_tick)
+    # data += Packer.pack_int(@current_game_tick - delta_tick)
+    # msg_snap_single = NetChunk.create_header(vital: false, size: data.size + 1) +
+    #                  [pack_msg_id(NETMSG_SNAPSINGLE, system: true)] +
+    #                  data
     @clients.each do |_id, client|
       next unless client.in_game?
 
