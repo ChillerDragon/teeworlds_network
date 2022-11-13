@@ -35,7 +35,7 @@ function add_hook_doc() {
 		echo "Error: failed to generate docs! File not found $mdfile"
 		exit 1
 	fi
-	class_ln="$(grep -n "## $ruby_class" "$mdfile" | cut -d':' -f1)"
+	class_ln="$(grep -n "^# $ruby_class" "$mdfile" | cut -d':' -f1)"
 	class_ln="$((class_ln+1))"
 	if [ "$class_ln" == "" ]
 	then
@@ -56,10 +56,14 @@ function add_hook_doc() {
 	tmpdoc="$tmpdir/doc.md"
 	{
 		head -n "$class_ln" "$mdfile" 
+		# the ancor tag is a hack to allow linking
+		# methods using #hook_name
+		# because we want to put junk after the hook name
+		# for example the parameters
 		cat <<- EOF
-		### #$hook(&block)
+		### <a name="$hook"></a> #$hook(&block)
 
-		**Parameter: block [Block |[context](#context)|]**
+		**Parameter: block [Block |[context](../classes/Context.md)|]**
 
 		TODO: generated documentation
 
@@ -111,7 +115,7 @@ function check_file() {
 		echo -n "[*] checking hook: $hook"
 		# check documentation
 		local mdfile
-		mdfile="docs/$version.md"
+		mdfile="docs/$version/classes/$ruby_class.md"
 		if [ ! -f "$mdfile" ]
 		then
 			echo "ERROR: documentation not found $mdfile"
