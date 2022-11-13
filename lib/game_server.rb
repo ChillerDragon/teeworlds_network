@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'map'
-require_relative 'server_info'
-require_relative 'game_info'
+require_relative 'models/map'
+require_relative 'models/server_info'
+require_relative 'models/game_info'
 
 class GameServer
   attr_accessor :pred_game_tick, :ack_game_tick, :map

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'network'
+require_relative '../network'
 require_relative 'player'
-require_relative 'packer'
+require_relative '../packer'
 
 class ServerInfo
   attr_accessor :version, :name, :hostname, :map, :gametype, :flags, :num_players, :max_players, :num_clients,

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'packer'
+require_relative '../packer'
 
 class GameInfo
   attr_accessor :game_flags, :score_limit, :time_limit, :match_num, :match_current

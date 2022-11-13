@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'bytes'
+require_relative '../bytes'
 
 class SecurityToken
   def self.err_msg(msg, token)

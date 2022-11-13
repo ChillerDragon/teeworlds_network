@@ -9,11 +9,11 @@ require_relative 'network'
 require_relative 'packet'
 require_relative 'chunk'
 require_relative 'net_base'
-require_relative 'net_addr'
+require_relative 'models/net_addr'
 require_relative 'packer'
 require_relative 'game_server'
 require_relative 'message'
-require_relative 'token'
+require_relative 'models/token'
 
 class Client
   attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token, :player, :in_game

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'bytes'
+require_relative '../bytes'
 
 class Map
   attr_reader :name, :crc, :crc_str, :crc_arr, :size, :sha256, :sha256_str, :sha256_arr

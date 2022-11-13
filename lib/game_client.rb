@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'player'
+require_relative 'models/player'
+require_relative 'models/chat_message'
 require_relative 'packer'
-require_relative 'chat_message'
 
 class Context
   attr_reader :old_data, :client

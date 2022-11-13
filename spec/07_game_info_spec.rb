@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../lib/game_info'
+require_relative '../lib/models/game_info'
 
 describe 'GameInfo', :game_info do
   context 'Pack to network' do

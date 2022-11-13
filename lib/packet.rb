@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative 'net_addr'
-require_relative 'packet_flags'
+require_relative 'models/net_addr'
+require_relative 'models/packet_flags'
 
 require 'huffman_tw'
 
