@@ -17,11 +17,13 @@ require_relative 'token'
 
 class Client
   attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token, :player
+  attr_reader :ack
 
   def initialize(attr = {})
     @id = attr[:id]
     @addr = attr[:addr]
     @vital_sent = 0
+    @ack = 0
     @last_recv_time = Time.now
     @player = Player.new(
       id: @id,
@@ -33,6 +35,10 @@ class Client
     )
     @token = attr[:token]
     SecurityToken.validate(@token)
+  end
+
+  def bump_ack
+    @ack = (@ack + 1) % NET_MAX_SEQUENCE
   end
 
   # TODO: use or remove
@@ -123,11 +129,19 @@ class TeeworldsServer
   end
 
   def on_client_packet(packet)
+    client = packet.client
+    if client.nil?
+      # TODO: turn this into a silent return
+      #       otherwise bad actors can easily trigger this
+      #       with handcrafted packets
+      puts 'Error: got client packet from unknown client'
+      exit 1
+    end
     chunks = BigChungusTheChunkGetter.get_chunks(packet.payload)
     chunks.each do |chunk|
       if chunk.flags_vital && !chunk.flags_resend
-        @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
-        puts "got ack: #{@netbase.ack}" if @verbose
+        packet.client.bump_ack
+        puts "got ack: #{packet.client.ack}" if @verbose
       end
       process_chunk(chunk, packet)
     end
@@ -157,14 +171,14 @@ class TeeworldsServer
     msg = [NET_CTRLMSG_CLOSE]
     msg += Packer.pack_str(reason) unless reason.nil?
     @netbase.set_peer_token(client.token)
-    @netbase.send_packet(msg, 0, control: true, addr: client.addr)
+    @netbase.send_packet(msg, chunks: 0, control: true, client:)
     # @netbase.set_peer_token(@server_token)
   end
 
   def send_ctrl_with_token(addr, token)
     msg = [NET_CTRLMSG_TOKEN] + str_bytes(@server_token)
     @netbase.set_peer_token(token)
-    @netbase.send_packet(msg, 0, control: true, addr:)
+    @netbase.send_packet(msg, chunks: 0, control: true, addr:)
     # @netbase.set_peer_token(@server_token)
   end
 
@@ -179,33 +193,33 @@ class TeeworldsServer
     msg = NetChunk.create_header(vital: true, size: data.size + 1, client:) +
           [pack_msg_id(NETMSG_MAP_CHANGE, system: true)] +
           data
-    @netbase.send_packet(msg, 1, addr: client.addr)
+    @netbase.send_packet(msg, chunks: 1, client:)
   end
 
   def send_ready(client)
     msg = NetChunk.create_header(vital: true, size: 1, client:) +
           [pack_msg_id(NETMSG_CON_READY, system: true)]
-    @netbase.send_packet(msg, 1, addr: client.addr)
+    @netbase.send_packet(msg, chunks: 1, client:)
   end
 
   def send_ready_to_enter(client)
     msg = NetChunk.create_header(vital: true, size: 1, client:) +
           [pack_msg_id(NETMSGTYPE_SV_READYTOENTER, system: false)]
-    @netbase.send_packet(msg, 1, addr: client.addr)
+    @netbase.send_packet(msg, chunks: 1, client:)
   end
 
   def send_server_info(client, server_info)
     msg = NetChunk.create_header(vital: true, size: 1 + server_info.size, client:) +
           [pack_msg_id(NETMSG_SERVERINFO, system: true)] +
           server_info
-    @netbase.send_packet(msg, 1, addr: client.addr)
+    @netbase.send_packet(msg, chunks: 1, client:)
   end
 
   def send_game_info(client, data)
     msg = NetChunk.create_header(vital: true, size: 1 + data.size, client:) +
           [pack_msg_id(NETMSGTYPE_SV_GAMEINFO, system: false)] +
           data
-    @netbase.send_packet(msg, 1, addr: client.addr)
+    @netbase.send_packet(msg, chunks: 1, client:)
   end
 
   def on_ctrl_token(packet)
@@ -247,7 +261,7 @@ class TeeworldsServer
     puts "got connection, sending accept (client token: #{token})"
     client = Client.new(id:, addr: packet.addr, token:)
     @clients[id] = client
-    @netbase.send_packet([NET_CTRLMSG_ACCEPT], 0, control: true, addr: packet.addr)
+    @netbase.send_packet([NET_CTRLMSG_ACCEPT], chunks: 0, control: true, client:)
   end
 
   def on_packet(packet)
@@ -283,7 +297,7 @@ class TeeworldsServer
                      [pack_msg_id(NETMSG_SNAPEMPTY, system: true)] +
                      data
     @clients.each do |_id, client|
-      @netbase.send_packet(msg_snap_empty, 1, addr: client.addr)
+      @netbase.send_packet(msg_snap_empty, chunks: 1, client:)
     end
   end
 

@@ -40,9 +40,8 @@ class NetBase
   # Sends a packing setting the proper header for you
   #
   # @param payload [Array] The Integer list representing the data after the header
-  # @param num_chunks [Integer] Amount of NetChunks in the payload
-  # @param flags [Hash] Packet header flags for more details check the class +PacketFlags+
-  def send_packet(payload, num_chunks = 1, opts = {})
+  # @param opts [Hash] :chunks, :client and packet header flags for more details check the class +PacketFlags+
+  def send_packet(payload, opts = { chunks: 1, client: nil, addr: nil })
     # unsigned char flags_ack;    // 6bit flags, 2bit ack
     # unsigned char ack;          // 8bit ack
     # unsigned char numchunks;    // 8bit chunks
@@ -55,9 +54,21 @@ class NetBase
     # // TTTTTTTT
     # // TTTTTTTT
     flags_bits = PacketFlags.new(opts).bits
+    ack = @ack
+    ip = @ip
+    port = @port
+    unless opts[:client].nil?
+      ack = opts[:client].ack
+      ip = opts[:client].addr.ip
+      port = opts[:client].addr.port
+    end
+    unless opts[:addr].nil?
+      ip = opts[:addr].ip
+      port = opts[:addr].port
+    end
     #          unused flags       ack                             num chunks
     #              ff ffff        aa aaaa aaaa                    NNNN NNNN
-    header_bits = "00#{flags_bits}#{@ack.to_s(2).rjust(10, '0')}#{num_chunks.to_s(2).rjust(8, '0')}"
+    header_bits = "00#{flags_bits}#{ack.to_s(2).rjust(10, '0')}#{opts[:chunks].to_s(2).rjust(8, '0')}"
 
     header = header_bits.chars.groups_of(8).map do |eight_bits|
       eight_bits.join.to_i(2)
@@ -65,12 +76,6 @@ class NetBase
 
     header += str_bytes(@peer_token)
     data = (header + payload).pack('C*')
-    ip = @ip
-    port = @port
-    unless opts[:addr].nil?
-      ip = opts[:addr].ip
-      port = opts[:addr].port
-    end
     puts "send to #{ip}:#{port}"
     @s.send(data, 0, ip, port)
 

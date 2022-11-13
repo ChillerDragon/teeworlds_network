@@ -134,7 +134,7 @@ class TeeworldsClient
   # TODO: this is same in client and server
   #       move to NetBase???
   def send_ctrl_close
-    @netbase&.send_packet([NET_CTRLMSG_CLOSE], 0, control: true)
+    @netbase&.send_packet([NET_CTRLMSG_CLOSE], chunks: 0, control: true)
   end
 
   def disconnect
@@ -160,18 +160,18 @@ class TeeworldsClient
   end
 
   def send_ctrl_keepalive
-    @netbase.send_packet([NET_CTRLMSG_KEEPALIVE], 0, control: true)
+    @netbase.send_packet([NET_CTRLMSG_KEEPALIVE], chunks: 0, control: true)
   end
 
   def send_msg_connect
     msg = [NET_CTRLMSG_CONNECT] + str_bytes(@client_token) + Array.new(501, 0x00)
-    @netbase.send_packet(msg, 0, control: true)
+    @netbase.send_packet(msg, chunks: 0, control: true)
   end
 
   def send_ctrl_with_token
     @state = NET_CONNSTATE_TOKEN
     msg = [NET_CTRLMSG_TOKEN] + str_bytes(@client_token) + Array.new(512, 0x00)
-    @netbase.send_packet(msg, 0, control: true)
+    @netbase.send_packet(msg, chunks: 0, control: true)
   end
 
   def send_info
@@ -183,7 +183,7 @@ class TeeworldsClient
           [pack_msg_id(NETMSG_INFO, system: true)] +
           data
 
-    @netbase.send_packet(msg, 1)
+    @netbase.send_packet(msg)
   end
 
   def rcon_auth(name, password = nil)
@@ -210,7 +210,7 @@ class TeeworldsClient
     msg = NetChunk.create_header(vital: true, size: data.size + 1) +
           [pack_msg_id(NETMSG_RCON_AUTH, system: true)] +
           data
-    @netbase.send_packet(msg, 1)
+    @netbase.send_packet(msg)
   end
 
   def rcon(command)
@@ -219,7 +219,7 @@ class TeeworldsClient
     msg = NetChunk.create_header(vital: true, size: data.size + 1) +
           [pack_msg_id(NETMSG_RCON_CMD, system: true)] +
           data
-    @netbase.send_packet(msg, 1)
+    @netbase.send_packet(msg)
   end
 
   def send_msg_startinfo
@@ -288,7 +288,7 @@ class TeeworldsClient
     msg = NetChunk.create_header(vital: false, size: data.size + 1) +
           [pack_msg_id(NETMSG_INPUT, system: true)] +
           data
-    @netbase.send_packet(msg, 1)
+    @netbase.send_packet(msg)
   end
 
   def on_msg_token(data)
