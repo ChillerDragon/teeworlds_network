@@ -1,6 +1,18 @@
 #!/bin/bash
 
-FIELD_TYPES=(string str integer int raw)
+# FIELD_TYPES_STR=(string str text)
+# FIELD_TYPES_INT=(integer int num number)
+# FIELD_TYPES_RAW=(raw data bytes)
+# works but we do not want to show all to the user
+# IFS=" " read -r -a FIELD_TYPES <<< "${FIELD_TYPES_INT[*]} ${FIELD_TYPES_STR[*]} ${FIELD_TYPES_RAW[*]}"
+# IFS=$'\n'
+# FIELD_TYPES=(int str raw)
+
+declare -A FIELD_TYPES=(
+	[int]='int integer num number'
+	[string]='string str text'
+	[raw]='raw data bytes'
+)
 
 function show_help() {
 	echo "usage: twnet [action] [options]"
@@ -9,6 +21,56 @@ function show_help() {
 	echo "actions:"
 	echo "  generate | g   generate a ruby file. See $(tput bold)twnet g --help$(tput sgr0)"
 }
+
+# TODO: move those file helpers to a lib file and also use them in hooks.sh
+function replace_line() {
+	local filename="$1"
+	local search_ln="$2"
+	local replace_str="$3"
+	_edit_line_in_file replace "$filename" "$search_ln" "$replace_str"
+}
+
+function append_line() {
+	local filename="$1"
+	local search_ln="$2"
+	local replace_str="$3"
+	_edit_line_in_file append "$filename" "$search_ln" "$replace_str"
+}
+
+function _edit_line_in_file() {
+	local mode="$1"
+	local filename="$2"
+	local search_ln="$3"
+	local replace_str="$4"
+	local repl_ln
+	local from_ln
+	local to_ln
+	repl_ln="$(grep -nF "$search_ln" "$filename" | cut -d':' -f1)"
+	if [ "$mode" == "append" ]
+	then
+		from_ln="$((repl_ln+1))"
+		to_ln="$repl_ln"
+	elif [ "$mode" == "replace" ]
+	then
+		from_ln="$((repl_ln-1))"
+		to_ln="$((repl_ln+1))"
+	else
+		echo "Error: _edit_line_in_file expectes mode replace or append"
+		exit 1
+	fi
+	if [ "$repl_ln" == "" ]
+	then
+		echo "Error: failed to get line of '$search_ln' in file '$filename'"
+		exit 1
+	fi
+	{
+		head -n "$from_ln" "$filename" 
+		echo -e "$replace_str"
+		tail -n +"$to_ln" "$filename"
+	} > "$filename".tmp
+	mv "$filename".tmp "$filename"
+}
+
 
 function is_camel_case() {
 	[[ "$1" =~ ^([A-Z][a-z]+)+$ ]] && return 0
@@ -103,7 +165,7 @@ function action_generate_help() {
 	echo "  for example ClSay"
 	echo "fields:"
 	echo "  the formate is field_name:field_type"
-	echo "  the allowed types are: ${FIELD_TYPES[*]}"
+	echo "  the allowed types are: ${!FIELD_TYPES[*]}"
 	echo "  examples:"
 	echo "   target_id:int"
 	echo "   message:str"
@@ -117,10 +179,20 @@ function action_generate_help() {
 	tput sgr0
 }
 
+function replace_str() {
+	local filename="$1"
+	local search="$2"
+	local replace="$3"
+	sed "s/$search/$replace/" "$filename" > "$filename".tmp
+	mv "$filename".tmp "$filename"
+}
+
 function action_generate() {
 	local arg
 	local arg_type=''
 	local arg_name=''
+	local name_camel
+	local name_snake
 	local field_name
 	local field_type
 	local fields
@@ -148,7 +220,22 @@ function action_generate() {
 		else
 			if [ "$arg_type" == "" ]
 			then
-				arg_type="$arg"
+				if [ "$arg" == "server_packet" ] ||
+					[ "$arg" == "srv_pck" ] ||
+					[ "$arg" == "sv_pck" ] ||
+					[ "$arg" == "sp" ]
+				then
+					arg_type=server
+				elif [ "$arg" == "client_packet" ] ||
+					[ "$arg" == "cl_pck" ] ||
+					[ "$arg" == "cp" ]
+				then
+					arg_type=client
+				else
+					echo "Error: invalid packet type '$arg'"
+					echo "       expected: server_packet or client_packet"
+					exit 1
+				fi
 			elif [ "$arg_name" == "" ]
 			then
 				arg_name="$arg"
@@ -168,24 +255,23 @@ function action_generate() {
 					echo "Error: name '$arg_name' has to be UpperCamelCase"
 					exit 1
 				fi
-				# local w
-				# for w in $(split_camel_case "$arg_name")
-				# do
-				# 	echo "w: $w"
-				# done
+				name_camel="$arg_name"
+				name_snake="$(camel_to_snake_case "$arg_name")"
 			elif [[ "$arg" =~ (.*):(.*) ]]
 			then
 				field_name="${BASH_REMATCH[1]}"
 				field_type="${BASH_REMATCH[2]}"
-				fields["$field_name"]="$field_type"
 				local valid=0
-				for valid_type in "${FIELD_TYPES[@]}"
+				for valid_type in "${!FIELD_TYPES[@]}"
 				do
-					if [ "$valid_type" == "$field_type" ]
-					then
+					local tt
+					for tt in ${FIELD_TYPES[$valid_type]}
+					do
+						[[ "$tt" == "$field_type" ]] || continue
+
+						field_type="$valid_type"
 						valid=1
-						break
-					fi
+					done
 				done
 				if [ "$valid" == "0" ]
 				then
@@ -199,6 +285,7 @@ function action_generate() {
 					echo "       field names have to be lower_snake_case"
 					exit 1
 				fi
+				fields["$field_name"]="$field_type"
 			else
 				echo "Error: unkown argument '$arg' try $(tput bold)twnet g --help$(tput sgr0)"
 				exit 1
@@ -215,13 +302,64 @@ function action_generate() {
 		echo "Error: name can not be empty $(tput bold)twnet g --help$(tput sgr0)"
 		exit 1
 	fi
+	local tmpdir
+	tmpdir=scripts/tmp
+	mkdir -p scripts/tmp
+	local tmpfile
+	tmpfile="$tmpdir/$name_snake.rb"
+	cp scripts/packet_template.rb "$tmpfile"
+
+	replace_str "$tmpfile" PacketName "$name_camel"
+	replace_str "$tmpfile" SENDER "${arg_type^}"
+	if [ "$arg_type" == "client" ]
+	then
+		replace_str "$tmpfile" RECEIVER Server
+	else
+		replace_str "$tmpfile" RECEIVER Client
+	fi
+
+	local accessors=''
+	for field_name in "${!fields[@]}"
+	do
+		accessors+=", :$field_name"
+	done
+	replace_line "$tmpfile" attr_accessor "  attr_accessor${accessors:1}"
+
+	local unpacks=''
 	for field_name in "${!fields[@]}"
 	do
 		field_type="${fields[$field_name]}"
-		# echo "field"
-		# echo "  name: $field_name"
-		# echo "  type: $field_type"
+		unpacks+="\n    @$field_name = u.get_$field_type"
 	done
+	replace_line "$tmpfile" Unpacker.new "    u = Unpacker.new(data)$unpacks"
+
+	local hashs=''
+	for field_name in "${!fields[@]}"
+	do
+		field_type="${fields[$field_name]}"
+		if [ "$field_type" == "raw" ]
+		then
+			# TODO: pick nice raw default
+			#       after this is closed
+			#       https://github.com/ChillerDragon/teeworlds_network/issues/15
+			hashs+="\n    @$field_name = attr[:$field_name] || 'RAAAAAAAAAW DATA !!!!!!'"
+		elif [ "$field_type" == "int" ]
+		then
+			hashs+="\n    @$field_name = attr[:$field_name] || 0"
+		else # string or other
+			hashs+="\n    @$field_name = attr[:$field_name] || 'TODO: fill default'"
+		fi
+	done
+	replace_line "$tmpfile" "@foo = attr[:foo] || 0" "${hashs:2}"
+
+	hashs='      {'
+	for field_name in "${!fields[@]}"
+	do
+		hashs+="\n      $field_name = @$field_name,"
+	done
+	hashs="${hashs::-1}"
+	hashs+="\n    }"
+	replace_line "$tmpfile" "{ foo: @foo," "${hashs:2}"
 }
 
 function parse_args() {

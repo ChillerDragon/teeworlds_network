@@ -3,10 +3,10 @@
 require_relative '../packer'
 
 ##
-# SamplePacket
+# PacketName
 #
-# Client -> Server
-class SamplePacket
+# SENDER -> RECEIVER
+class PacketName
   attr_accessor :foo, :bar
 
   def initialize(hash_or_raw)
@@ -18,25 +18,19 @@ class SamplePacket
   end
 
   def init_raw(data)
-    u = Unpacker.new(data)
-    @foo = u.get_int
-    @bar = u.get_string
+    Unpacker.new(data)
   end
 
   def init_hash(attr)
     @foo = attr[:foo] || 0
-    @bar = attr[:bar] || 'sample'
   end
 
   def to_h
-    {
-      foo: @foo,
-      bar: @bar
-    }
+    { foo: @foo, bar: @bar }
   end
 
   # basically to_network
-  # int array the client sends to the server
+  # int array the SENDER sends to the RECEIVER
   def to_a
     Packer.pack_int(@foo) +
       Packer.pack_str(@bar)
