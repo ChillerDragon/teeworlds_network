@@ -1,0 +1,263 @@
+#!/bin/bash
+
+FIELD_TYPES=(string str integer int raw)
+
+function show_help() {
+	echo "usage: twnet [action] [options]"
+	echo "options:"
+	echo "  --help | -h    show this help"
+	echo "actions:"
+	echo "  generate | g   generate a ruby file. See $(tput bold)twnet g --help$(tput sgr0)"
+}
+
+function is_camel_case() {
+	[[ "$1" =~ ^([A-Z][a-z]+)+$ ]] && return 0
+	return 1
+}
+
+function is_snake_case() {
+	[[ "$1" =~ ^[a-z][a-z_]*[a-z]$ ]] && return 0
+	return 1
+}
+
+function split_camel_case() {
+	local str="$1"
+	local words=()
+	local word=''
+	while read -n1 -r c
+	do
+		if [[ "$c" =~ [A-Z] ]]
+		then
+			if [ "$word" != "" ]
+			then
+				words+=("${word,}")
+				word=''
+			fi
+		fi
+		word+="$c"
+	done < <(echo -n "$str")
+	if [ "$word" != "" ]
+	then
+		words+=("${word,}")
+		word=''
+	fi
+	echo "${words[*]}"
+}
+
+function split_snake_case() {
+	local str="$1"
+	local words=()
+	local word=''
+	while read -n1 -r c
+	do
+		if [[ "$c" == '_' ]]
+		then
+			if [ "$word" != "" ]
+			then
+				words+=("${word,}")
+				word=''
+			fi
+		else
+			word+="$c"
+		fi
+	done < <(echo -n "$str")
+	if [ "$word" != "" ]
+	then
+		words+=("${word,}")
+		word=''
+	fi
+	echo "${words[*]}"
+}
+
+function camel_to_snake_case() {
+	local camel="$1"
+	local w
+	local snake=''
+	for w in $(split_camel_case "$camel")
+	do
+		snake+="_$w"
+	done
+	echo "${snake:1}"
+}
+
+function snake_to_camel_case() {
+	local snake="$1"
+	local w
+	local camel=''
+	for w in $(split_snake_case "$snake")
+	do
+		camel+="${w^}"
+	done
+	echo "$camel"
+}
+
+function action_generate_help() {
+	echo "usage: twnet generate <type> <name> [fields..]"
+	echo "options:"
+	echo "  --help | -h       show this help"
+	echo "type:"
+	echo "	server_packet | srv_pck | sp     packet sent from server to client"
+	echo "	client_packet | cl_pck | cp      packet sent from client to server"
+	echo "name:"
+	echo "  will be the packet name use UpperCamelCase"
+	echo "  for example ClSay"
+	echo "fields:"
+	echo "  the formate is field_name:field_type"
+	echo "  the allowed types are: ${FIELD_TYPES[*]}"
+	echo "  examples:"
+	echo "   target_id:int"
+	echo "   message:str"
+	echo "examples:"
+	echo "  generate a cl_say.rb file describing a packet that"
+	echo "  is sent from the client to the server has the class name ClSay"
+	echo "  and two fields first target_id (integer) then message (string)"
+	echo ""
+	tput bold
+	echo "    twnet generate cp ClSay target_id:int message:str"
+	tput sgr0
+}
+
+function action_generate() {
+	local arg
+	local arg_type=''
+	local arg_name=''
+	local field_name
+	local field_type
+	local fields
+	local valid_type
+	declare -A fields
+	if [ "$#" -eq "0" ]
+	then
+		action_generate_help
+		exit 1
+	fi
+	while true
+	do
+		[[ "$#" -eq "0" ]] && break
+
+		arg="$1"
+		shift
+
+		if [ "${arg::1}" == "-" ]
+		then
+			if [ "$arg" == "--help" ] || [ "$arg" == "-h" ]
+			then
+				action_generate_help
+				exit 0
+			fi
+		else
+			if [ "$arg_type" == "" ]
+			then
+				arg_type="$arg"
+			elif [ "$arg_name" == "" ]
+			then
+				arg_name="$arg"
+				# tried to be smart with regex and failed
+				# if [[ "$arg_name" =~ ([A-Z][a-z]*)+ ]]
+				# then
+				# 	for b in "${BASH_REMATCH[@]}"
+				# 	do
+				# 		echo "b: $b"
+				# 	done
+				# else
+				# 	echo "Error: name '$arg_name' has to be UpperCamelCase"
+				# 	exit 1
+				# fi
+				if ! is_camel_case "$arg_name"
+				then
+					echo "Error: name '$arg_name' has to be UpperCamelCase"
+					exit 1
+				fi
+				# local w
+				# for w in $(split_camel_case "$arg_name")
+				# do
+				# 	echo "w: $w"
+				# done
+			elif [[ "$arg" =~ (.*):(.*) ]]
+			then
+				field_name="${BASH_REMATCH[1]}"
+				field_type="${BASH_REMATCH[2]}"
+				fields["$field_name"]="$field_type"
+				local valid=0
+				for valid_type in "${FIELD_TYPES[@]}"
+				do
+					if [ "$valid_type" == "$field_type" ]
+					then
+						valid=1
+						break
+					fi
+				done
+				if [ "$valid" == "0" ]
+				then
+					echo "Error: '$field_type' is not a valid field type"
+					echo "       valid types are: ${FIELD_TYPES[*]}"
+					exit 1
+				fi
+				if ! is_snake_case "$field_name"
+				then
+					echo "Error: '$field_name' is not a valid field name"
+					echo "       field names have to be lower_snake_case"
+					exit 1
+				fi
+			else
+				echo "Error: unkown argument '$arg' try $(tput bold)twnet g --help$(tput sgr0)"
+				exit 1
+			fi
+		fi
+	done
+	if [ "$arg_type" == "" ]
+	then
+		echo "Error: type can not be empty $(tput bold)twnet g --help$(tput sgr0)"
+		exit 1
+	fi
+	if [ "$arg_name" == "" ]
+	then
+		echo "Error: name can not be empty $(tput bold)twnet g --help$(tput sgr0)"
+		exit 1
+	fi
+	for field_name in "${!fields[@]}"
+	do
+		field_type="${fields[$field_name]}"
+		# echo "field"
+		# echo "  name: $field_name"
+		# echo "  type: $field_type"
+	done
+}
+
+function parse_args() {
+	local arg
+	while true
+	do
+		[[ "$#" -eq "0" ]] && break
+
+		arg="$1"
+		shift
+
+		if [ "${arg::1}" == "-" ]
+		then
+			if [ "$arg" == "--help" ] || [ "$arg" == "-h" ]
+			then
+				show_help
+				exit 0
+			fi
+		else
+			if [ "$arg" == "generate" ] || [ "$arg" == "g" ]
+			then
+				action_generate "$@"
+				exit
+			else
+				echo "Error: unkown action '$arg'"
+				exit 1
+			fi
+		fi
+	done
+}
+
+if [ "$#" -eq "0" ]
+then
+	show_help
+	exit 1
+fi
+
+parse_args "$@"
+
