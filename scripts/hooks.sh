@@ -144,9 +144,9 @@ function check_file() {
 		{
 			echo '# frozen_string_literal: true'
 			echo ''
-			echo "require_relative '../../$ruby_file'"
+			echo "require_relative '../../${ruby_file::-3}'"
 			echo "obj = $ruby_class.new"
-			echo "obj.$hook { |_| _ }"
+			echo "obj.$hook(&:verify)"
 		} > "$tmpfile"
 		if ! ruby "$tmpfile" &>/dev/null
 		then

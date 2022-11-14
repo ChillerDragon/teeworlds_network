@@ -11,7 +11,7 @@ require_relative '../lib/teeworlds_client'
 
 client = TeeworldsClient.new(verbose: false)
 
-client.on_chat do |msg|
+client.on_chat do |_, msg|
   next if msg.message[0] != '!'
 
   case msg.message[1..]

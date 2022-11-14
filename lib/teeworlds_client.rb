@@ -23,7 +23,16 @@ class TeeworldsClient
     @state = NET_CONNSTATE_OFFLINE
     @ip = 'localhost'
     @port = 8303
-    @hooks = {}
+    @hooks = {
+      chat: [],
+      map_change: [],
+      client_info: [],
+      client_drop: [],
+      connected: [],
+      disconnect: [],
+      rcon_line: [],
+      snapshot: []
+    }
     @thread_running = false
     @signal_disconnect = false
     @game_client = GameClient.new(self)
@@ -53,35 +62,35 @@ class TeeworldsClient
   end
 
   def on_chat(&block)
-    @hooks[:chat] = block
+    @hooks[:chat].push(block)
   end
 
   def on_map_change(&block)
-    @hooks[:map_change] = block
+    @hooks[:map_change].push(block)
   end
 
   def on_client_info(&block)
-    @hooks[:client_info] = block
+    @hooks[:client_info].push(block)
   end
 
   def on_client_drop(&block)
-    @hooks[:client_drop] = block
+    @hooks[:client_drop].push(block)
   end
 
   def on_connected(&block)
-    @hooks[:connected] = block
+    @hooks[:connected].push(block)
   end
 
   def on_disconnect(&block)
-    @hooks[:disconnect] = block
+    @hooks[:disconnect].push(block)
   end
 
   def on_rcon_line(&block)
-    @hooks[:rcon_line] = block
+    @hooks[:rcon_line].push(block)
   end
 
   def on_snapshot(&block)
-    @hooks[:snapshot] = block
+    @hooks[:snapshot].push(block)
   end
 
   def send_chat(str)

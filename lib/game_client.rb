@@ -3,34 +3,7 @@
 require_relative 'models/player'
 require_relative 'models/chat_message'
 require_relative 'packer'
-
-class Context
-  attr_reader :old_data, :client
-  attr_accessor :data
-
-  def initialize(client, keys = {})
-    @client = client
-    @cancle = false
-    @old_data = keys
-    @data = keys
-  end
-
-  def verify
-    @data.each do |key, _value|
-      next if @old_data.key? key
-
-      raise "Error: invalid data key '#{key}'\n       valid keys: #{@old_data.keys}"
-    end
-  end
-
-  def cancled?
-    @cancle
-  end
-
-  def cancle
-    @cancle = true
-  end
-end
+require_relative 'context'
 
 class GameClient
   attr_accessor :players, :pred_game_tick, :ack_game_tick
@@ -40,6 +13,21 @@ class GameClient
     @players = {}
     @ack_game_tick = -1
     @pred_game_tick = 0
+  end
+
+  ##
+  # call_hook
+  #
+  # @param: hook_sym [Symbol] name of the symbol to call
+  # @param: context [Context] context object to pass on data
+  # @param: optional [Any] optional 2nd parameter passed to the callback
+  def call_hook(hook_sym, context, optional = nil)
+    @client.hooks[hook_sym].each do |hook|
+      hook.call(context, optional)
+      context.verify
+      return nil if context.cancled?
+    end
+    context
   end
 
   def on_client_info(chunk)
@@ -61,11 +49,7 @@ class GameClient
       player:,
       chunk:
     )
-    if @client.hooks[:client_info]
-      @client.hooks[:client_info].call(context)
-      context.verify
-      return if context.cancled?
-    end
+    return if call_hook(:client_info, context).nil?
 
     player = context.data[:player]
     @players[player.id] = player
@@ -78,18 +62,14 @@ class GameClient
     silent = u.get_int
 
     context = Context.new(
-      @cliemt,
+      @client,
       player: @players[client_id],
       chunk:,
       client_id:,
       reason: reason == '' ? nil : reason,
       silent: silent != 0
     )
-    if @client.hooks[:client_drop]
-      @client.hooks[:client_drop].call(context)
-      context.verify
-      return if context.cancled?
-    end
+    return if call_hook(:client_drop, context).nil?
 
     @players.delete(context.data[:client_id])
   end
@@ -100,16 +80,13 @@ class GameClient
 
   def on_connected
     context = Context.new(@client)
-    if @client.hooks[:connected]
-      @client.hooks[:connected].call(context)
-      context.verify
-      return if context.cancled?
-    end
+    return if call_hook(:connected, context).nil?
+
     @client.send_msg_start_info
   end
 
   def on_disconnect
-    @client.hooks[:disconnect]&.call
+    call_hook(:disconnect, Context.new(@client))
   end
 
   def on_rcon_line(chunk)
@@ -118,7 +95,7 @@ class GameClient
       @client,
       line: u.get_string
     )
-    @client.hooks[:rcon_line]&.call(context)
+    call_hook(:rcon_line, context)
   end
 
   def on_snapshot(chunk)
@@ -162,11 +139,8 @@ class GameClient
 
   def on_map_change(chunk)
     context = Context.new(@client, chunk:)
-    if @client.hooks[:map_change]
-      @client.hooks[:map_change].call(context)
-      context.verify
-      return if context.cancled?
-    end
+    return if call_hook(:map_change, context).nil?
+
     # ignore mapdownload at all times
     # and claim to have the map
     @client.send_msg_ready
@@ -183,6 +157,7 @@ class GameClient
     data[:author] = @players[data[:client_id]]
     msg = ChatMesage.new(data)
 
-    @client.hooks[:chat]&.call(msg)
+    context = Context.new(@client, chunk:)
+    call_hook(:chat, context, msg)
   end
 end

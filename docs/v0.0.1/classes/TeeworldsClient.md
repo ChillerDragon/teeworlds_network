@@ -87,17 +87,19 @@ client.connect('localhost', 8303, detach: true)
 
 ### <a name="on_chat"></a> #on_chat(&block)
 
-**Parameter: block [Block |[ChatMessage](../classes/ChatMessage.md)|]**
+**Parameter: block [Block |[context](../classes/Context.md), [ChatMessage](../classes/ChatMessage.md)|]**
 
 Takes a block that will be called when the client receives a chat message.
-The block takes one parameter of type [ChatMessage](../classes/ChatMessage.md).
+The block takes two parameters:
+  [context](../classes/Context.md) - pretty much useless as of right now
+  [ChatMessage](../classes/ChatMessage.md) - holds all the information of the chat message
 
 **Example:**
 
 ```ruby
 client = TeeworldsClient.new
 
-client.on_chat do |msg|
+client.on_chat do |context, msg|
   puts "[chat] #{msg}"
 end
 

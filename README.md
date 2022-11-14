@@ -15,7 +15,7 @@ require_relative 'lib/teeworlds_client'
 
 client = TeeworldsClient.new(verbose: false)
 
-client.on_chat do |msg|
+client.on_chat do |_, msg|
   # note use `next` instead of `return` in the block
   next unless msg.message[0] == '!'
 

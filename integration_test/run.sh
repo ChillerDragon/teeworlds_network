@@ -78,9 +78,9 @@ then
 fi
 if [[ "$testname" =~ ^client/ ]]
 then
-	ruby_logfile="$logdir/ruby_client.tx"
+	ruby_logfile="$logdir/ruby_client.txt"
 else
-	ruby_logfile="$logdir/ruby_server.tx"
+	ruby_logfile="$logdir/ruby_server.txt"
 fi
 
 function cleanup() {
@@ -159,6 +159,36 @@ then
 	if pgrep -f "$tw_srv_bin $srvcfg"
 	then
 		fail "Error: server still running rcon shutdown failed"
+	fi
+elif [ "$testname" == "client/multiple_blocks.rb" ]
+then
+	sleep 1
+	if pgrep -f "$tw_srv_bin $srvcfg"
+	then
+		fail "Error: server still running rcon shutdown failed (2 blocks)"
+	fi
+	block1_ln="$(grep -n "block 1" "$ruby_logfile" | cut -d':' -f1)"
+	block2_ln="$(grep -n "block 2" "$ruby_logfile" | cut -d':' -f1)"
+	if [ "$block1_ln" == "" ]
+	then
+		fail "Error: 'block 1' not found in client log"
+	fi
+	if [ "$block2_ln" == "" ]
+	then
+		fail "Error: 'block 2' not found in client log"
+	fi
+	if [[ ! "$block1_ln" =~ ^[0-9]+$ ]]
+	then
+		fail "Error: failed to parse line number of 'block 1' got='$block1_ln'"
+	fi
+	if [[ ! "$block2_ln" =~ ^[0-9]+$ ]]
+	then
+		fail "Error: failed to parse line number of 'block 2' got='$block2_ln'"
+	fi
+	# ensure block call order matches definition order
+	if [ "$block1_ln" -gt "$block2_ln" ]
+	then
+		fail "Error: 'block 1' found after 'block 2' in client log"
 	fi
 else
 	echo "Error: unkown test '$testname'"

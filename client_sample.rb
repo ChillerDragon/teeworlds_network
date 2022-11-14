@@ -28,7 +28,7 @@ args[:port] = args[:port] || 8303
 
 client = TeeworldsClient.new(verbose: args[:verbose])
 
-client.on_chat do |msg|
+client.on_chat do |_, msg|
   puts "[chat] #{msg}"
 end
 
