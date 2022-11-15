@@ -81,7 +81,7 @@ function _edit_line_in_file() {
 	fi
 	{
 		head -n "$from_ln" "$filename" 
-		echo -e "$replace_str"
+		echo -ne "$replace_str"
 		tail -n +"$to_ln" "$filename"
 	} > "$filename".tmp
 	mv "$filename".tmp "$filename"
@@ -343,7 +343,7 @@ function action_generate() {
 		accessors+=", :$field_name"
 	done < <(echo "${fields[@]}" | tr ' ' '\n')
 	IFS=$'\n'
-	replace_line "$tmpfile" attr_accessor "  attr_accessor${accessors:1}"
+	replace_line "$tmpfile" attr_accessor "  attr_accessor${accessors:1}\n"
 
 	local unpacks=''
 	while IFS=':' read -r field_name field_type
@@ -356,7 +356,7 @@ function action_generate() {
 		fi
 	done < <(echo "${fields[@]}" | tr ' ' '\n')
 	IFS=$'\n'
-	replace_line "$tmpfile" Unpacker.new "    u = Unpacker.new(data)$unpacks"
+	replace_line "$tmpfile" Unpacker.new "    u = Unpacker.new(data)$unpacks\n"
 
 	local hashs=''
 	while IFS=':' read -r field_name field_type
@@ -378,7 +378,7 @@ function action_generate() {
 		fi
 	done < <(echo "${fields[@]}" | tr ' ' '\n')
 	IFS=$'\n'
-	replace_line "$tmpfile" "@foo = attr[:foo] || 0" "${hashs:2}"
+	replace_line "$tmpfile" "@foo = attr[:foo] || 0" "${hashs:2}\n"
 
 	hashs='      {'
 	while IFS=':' read -r field_name field_type
@@ -388,7 +388,7 @@ function action_generate() {
 	IFS=$'\n'
 	hashs="${hashs::-1}"
 	hashs+="\n    }"
-	replace_line "$tmpfile" "{ foo: @foo," "${hashs:2}"
+	replace_line "$tmpfile" "{ foo: @foo," "${hashs:2}\n"
 
 	local packs=''
 	while IFS=':' read -r field_name field_type
@@ -405,7 +405,7 @@ function action_generate() {
 		fi
 	done < <(echo "${fields[@]}" | tr ' ' '\n')
 	IFS=$'\n'
-	replace_line "$tmpfile" Packer.pack_int "${packs:2:-4}"
+	replace_line "$tmpfile" Packer.pack_int "${packs:2:-4}\n"
 
 	local bools=''
 	while IFS=':' read -r field_name field_type
@@ -419,7 +419,12 @@ function action_generate() {
 	done < <(echo "${fields[@]}" | tr ' ' '\n')
 	IFS=$'\n'
 
-	replace_lines_from "$tmpfile" 'def foo?' "${bools::-2}" 3
+	if [ "$bools" == "" ]
+	then
+		replace_lines_from "$tmpfile" 'def foo?' '' 3
+	else
+		replace_lines_from "$tmpfile" 'def foo?' "${bools::-2}\n" 3
+	fi
 
 	local destfile
 	destfile="lib/models/$(basename "$tmpfile")"
