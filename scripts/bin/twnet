@@ -347,7 +347,12 @@ function action_generate() {
 	for field_name in "${!fields[@]}"
 	do
 		field_type="${fields[$field_name]}"
-		unpacks+="\n    @$field_name = u.get_$field_type"
+		if [ "$field_type" == "bool" ]
+		then
+			unpacks+="\n    @$field_name = u.get_int"
+		else
+			unpacks+="\n    @$field_name = u.get_$field_type"
+		fi
 	done
 	replace_line "$tmpfile" Unpacker.new "    u = Unpacker.new(data)$unpacks"
 
