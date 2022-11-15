@@ -2,6 +2,10 @@
 
 require_relative 'array'
 
+SANITIZE = 1
+SANITIZE_CC = 2
+SKIP_START_WHITESPACES = 4
+
 class Packer
   # Format: ESDDDDDD EDDDDDDD EDD... Extended, Data, Sign
   def self.pack_int(num)
@@ -79,13 +83,22 @@ class Unpacker
     end
   end
 
-  def get_string
+  def str_sanitize(str)
+    letters = str.chars
+    letters.map! do |c|
+      c.ord < 32 && c != "\r" && c != "\n" && c != "\t" ? ' ' : c
+    end
+    letters.join
+  end
+
+  def get_string(sanitize = SANITIZE)
     return nil if @data.nil?
 
     str = ''
     @data.each_with_index do |byte, index|
       if byte.zero?
         @data = index == @data.length - 1 ? nil : @data[(index + 1)..]
+        str = str_sanitize(str) unless (sanitize & SANITIZE).zero?
         return str
       end
       str += byte.chr

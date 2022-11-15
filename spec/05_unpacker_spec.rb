@@ -12,6 +12,15 @@ describe 'Unpacker', :unpacker do
     end
   end
 
+  context 'Unpack strings sanitize (default)' do
+    it 'Should replace bytes lower than 32 with spaces' do
+      u = Unpacker.new([0x02, 0x41, 0x41, 0x00, 0x1F, 0x42, 0x42, 0x00])
+      expect(u.get_string).to eq(' AA')
+      expect(u.get_string).to eq(' BB')
+      expect(u.get_string).to eq(nil)
+    end
+  end
+
   context 'Unpack single byte integers' do
     it 'Should unpack positive integers' do
       u = Unpacker.new([0x01, 0x02])
