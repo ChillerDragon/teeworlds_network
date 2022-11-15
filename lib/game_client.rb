@@ -2,6 +2,7 @@
 
 require_relative 'models/player'
 require_relative 'models/chat_message'
+require_relative 'models/input_timing'
 require_relative 'packer'
 require_relative 'context'
 
@@ -45,7 +46,7 @@ class GameClient
     # are currently ignored
 
     context = Context.new(
-      @client,
+      nil,
       player:,
       chunk:
     )
@@ -55,6 +56,12 @@ class GameClient
     @players[player.id] = player
   end
 
+  def on_input_timing(chunk)
+    todo_rename_this = InputTiming.new(chunk.data[1..])
+    context = Context.new(todo_rename_this, chunk:, packet:)
+    call_hook(:input_timing, context)
+  end
+
   def on_client_drop(chunk)
     u = Unpacker.new(chunk.data[1..])
     client_id = u.get_int
@@ -62,7 +69,7 @@ class GameClient
     silent = u.get_int
 
     context = Context.new(
-      @client,
+      nil,
       player: @players[client_id],
       chunk:,
       client_id:,
@@ -79,20 +86,20 @@ class GameClient
   end
 
   def on_connected
-    context = Context.new(@client)
+    context = Context.new(nil)
     return if call_hook(:connected, context).nil?
 
     @client.send_msg_start_info
   end
 
   def on_disconnect
-    call_hook(:disconnect, Context.new(@client))
+    call_hook(:disconnect, Context.new(nil))
   end
 
   def on_rcon_line(chunk)
     u = Unpacker.new(chunk.data[1..])
     context = Context.new(
-      @client,
+      nil,
       line: u.get_string
     )
     call_hook(:rcon_line, context)
@@ -138,7 +145,7 @@ class GameClient
   def on_emoticon(chunk); end
 
   def on_map_change(chunk)
-    context = Context.new(@client, chunk:)
+    context = Context.new(nil, chunk:)
     return if call_hook(:map_change, context).nil?
 
     # ignore mapdownload at all times
@@ -157,7 +164,7 @@ class GameClient
     data[:author] = @players[data[:client_id]]
     msg = ChatMesage.new(data)
 
-    context = Context.new(@client, chunk:)
+    context = Context.new(nil, chunk:)
     call_hook(:chat, context, msg)
   end
 end

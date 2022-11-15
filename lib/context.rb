@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 class Context
-  attr_reader :old_data, :client
-  attr_accessor :data
+  attr_reader :old_data
+  attr_accessor :data, :todo_rename_this
 
-  def initialize(client, keys = {})
-    @client = client
+  def initialize(todo_rename_this, keys = {})
+    @todo_rename_this = todo_rename_this # the obj holding the parsed chunk
     @cancle = false
     @old_data = keys
     @data = keys

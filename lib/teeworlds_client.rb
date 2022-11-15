@@ -31,7 +31,8 @@ class TeeworldsClient
       connected: [],
       disconnect: [],
       rcon_line: [],
-      snapshot: []
+      snapshot: [],
+      input_timing: []
     }
     @thread_running = false
     @signal_disconnect = false
@@ -91,6 +92,10 @@ class TeeworldsClient
 
   def on_snapshot(&block)
     @hooks[:snapshot].push(block)
+  end
+
+  def on_input_timing(&block)
+    @hooks[:input_timing].push(block)
   end
 
   def send_chat(str)
@@ -363,6 +368,8 @@ class TeeworldsClient
       @game_client.on_rcon_line(chunk)
     when NETMSG_SNAP, NETMSG_SNAPSINGLE, NETMSG_SNAPEMPTY
       @game_client.on_snapshot(chunk)
+    when NETMSG_INPUTTIMING
+      @game_client.on_input_timing(chunk)
     else
       puts "Unsupported system msg: #{chunk.msg}"
       exit(1)

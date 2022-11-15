@@ -1,5 +1,22 @@
 # TeeworldsClient
 
+### <a name="on_input_timing"></a> #on_input_timing(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+TODO: generated documentation
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_input_timing do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: true)
+```
+
 ### <a name="on_snapshot"></a> #on_snapshot(&block)
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
