@@ -211,9 +211,10 @@ function action_generate() {
 	local name_snake
 	local field_name
 	local field_type
-	local fields
+	# associative array does not work
+	# because it does not keep order
+	local fields=()
 	local valid_type
-	declare -A fields
 	if [ "$#" -eq "0" ]
 	then
 		action_generate_help
@@ -303,7 +304,7 @@ function action_generate() {
 					echo "       field names have to be lower_snake_case"
 					exit 1
 				fi
-				fields["$field_name"]="$field_type"
+				fields+=("$field_name:$field_type")
 			else
 				echo "Error: unkown argument '$arg' try $(tput bold)twnet g --help$(tput sgr0)"
 				exit 1
@@ -337,29 +338,29 @@ function action_generate() {
 	fi
 
 	local accessors=''
-	for field_name in "${!fields[@]}"
+	while IFS=':' read -r field_name field_type
 	do
 		accessors+=", :$field_name"
-	done
+	done < <(echo "${fields[@]}" | tr ' ' '\n')
+	IFS=$'\n'
 	replace_line "$tmpfile" attr_accessor "  attr_accessor${accessors:1}"
 
 	local unpacks=''
-	for field_name in "${!fields[@]}"
+	while IFS=':' read -r field_name field_type
 	do
-		field_type="${fields[$field_name]}"
 		if [ "$field_type" == "bool" ]
 		then
 			unpacks+="\n    @$field_name = u.get_int"
 		else
 			unpacks+="\n    @$field_name = u.get_$field_type"
 		fi
-	done
+	done < <(echo "${fields[@]}" | tr ' ' '\n')
+	IFS=$'\n'
 	replace_line "$tmpfile" Unpacker.new "    u = Unpacker.new(data)$unpacks"
 
 	local hashs=''
-	for field_name in "${!fields[@]}"
+	while IFS=':' read -r field_name field_type
 	do
-		field_type="${fields[$field_name]}"
 		if [ "$field_type" == "raw" ]
 		then
 			# TODO: pick nice raw default
@@ -375,23 +376,24 @@ function action_generate() {
 		else # string or other
 			hashs+="\n    @$field_name = attr[:$field_name] || 'TODO: fill default'"
 		fi
-	done
+	done < <(echo "${fields[@]}" | tr ' ' '\n')
+	IFS=$'\n'
 	replace_line "$tmpfile" "@foo = attr[:foo] || 0" "${hashs:2}"
 
 	hashs='      {'
-	for field_name in "${!fields[@]}"
+	while IFS=':' read -r field_name field_type
 	do
 		hashs+="\n      $field_name: @$field_name,"
-	done
+	done < <(echo "${fields[@]}" | tr ' ' '\n')
+	IFS=$'\n'
 	hashs="${hashs::-1}"
 	hashs+="\n    }"
 	replace_line "$tmpfile" "{ foo: @foo," "${hashs:2}"
 
 	local packs=''
-	for field_name in "${!fields[@]}"
+	while IFS=':' read -r field_name field_type
 	do
 		packs+="      "
-		field_type="${fields[$field_name]}"
 		if [ "$field_type" == "raw" ]
 		then
 			packs+="Packer.pack_raw(@$field_name) +\n"
@@ -401,20 +403,21 @@ function action_generate() {
 		else # string or other
 			packs+="Packer.pack_str(@$field_name) +\n"
 		fi
-	done
+	done < <(echo "${fields[@]}" | tr ' ' '\n')
+	IFS=$'\n'
 	replace_line "$tmpfile" Packer.pack_int "${packs:2:-4}"
 
 	local bools=''
-	for field_name in "${!fields[@]}"
+	while IFS=':' read -r field_name field_type
 	do
-		field_type="${fields[$field_name]}"
 		[[ "$field_type" == "bool" ]] || continue
 
 		bools+="  def $field_name?\n"
 		bools+="    !@$field_name.zero?\n"
 		bools+="  end\n"
 		bools+="\n"
-	done
+	done < <(echo "${fields[@]}" | tr ' ' '\n')
+	IFS=$'\n'
 
 	replace_lines_from "$tmpfile" 'def foo?' "${bools::-2}" 3
 
