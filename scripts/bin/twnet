@@ -355,11 +355,36 @@ function action_generate() {
 	hashs='      {'
 	for field_name in "${!fields[@]}"
 	do
-		hashs+="\n      $field_name = @$field_name,"
+		hashs+="\n      $field_name: @$field_name,"
 	done
 	hashs="${hashs::-1}"
 	hashs+="\n    }"
 	replace_line "$tmpfile" "{ foo: @foo," "${hashs:2}"
+
+	local packs=''
+	for field_name in "${!fields[@]}"
+	do
+		packs+="      "
+		field_type="${fields[$field_name]}"
+		if [ "$field_type" == "raw" ]
+		then
+			packs+="Packer.pack_raw(@$field_name) +\n"
+		elif [ "$field_type" == "int" ]
+		then
+			packs+="Packer.pack_int(@$field_name) +\n"
+		else # string or other
+			packs+="Packer.pack_str(@$field_name) +\n"
+		fi
+	done
+	replace_line "$tmpfile" Packer.pack_int "${packs:2:-4}"
+	local destfile
+	destfile="lib/models/$(basename "$tmpfile")"
+	if [ -f "$destfile" ]
+	then
+		echo "Error: file already exists '$destfile'"
+		exit 1
+	fi
+	mv "$tmpfile" "$destfile"
 }
 
 function parse_args() {

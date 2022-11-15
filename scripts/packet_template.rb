@@ -32,8 +32,7 @@ class PacketName
   # basically to_network
   # int array the SENDER sends to the RECEIVER
   def to_a
-    Packer.pack_int(@foo) +
-      Packer.pack_str(@bar)
+    Packer.pack_int(@foo) + Packer.pack_str(@bar)
   end
 
   def to_s
