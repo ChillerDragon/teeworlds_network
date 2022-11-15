@@ -29,6 +29,10 @@ class PacketName
     { foo: @foo, bar: @bar }
   end
 
+  def foo?
+    !@foo.zero?
+  end
+
   # basically to_network
   # int array the SENDER sends to the RECEIVER
   def to_a

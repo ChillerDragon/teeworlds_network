@@ -12,6 +12,7 @@ declare -A FIELD_TYPES=(
 	[int]='int integer num number'
 	[string]='string str text'
 	[raw]='raw data bytes'
+	[bool]='bool boolean'
 )
 
 function show_help() {
@@ -27,24 +28,39 @@ function replace_line() {
 	local filename="$1"
 	local search_ln="$2"
 	local replace_str="$3"
-	_edit_line_in_file replace "$filename" "$search_ln" "$replace_str"
+	_edit_line_in_file replace 0 "$filename" "$search_ln" "$replace_str"
+}
+
+# replace 'num_lines' after match
+function replace_lines_from() {
+	local filename="$1"
+	local search_ln="$2"
+	local replace_str="$3"
+	local num_lines="$4"
+	_edit_line_in_file replace "$num_lines" "$filename" "$search_ln" "$replace_str"
 }
 
 function append_line() {
 	local filename="$1"
 	local search_ln="$2"
 	local replace_str="$3"
-	_edit_line_in_file append "$filename" "$search_ln" "$replace_str"
+	_edit_line_in_file append 0 "$filename" "$search_ln" "$replace_str"
 }
 
 function _edit_line_in_file() {
 	local mode="$1"
-	local filename="$2"
-	local search_ln="$3"
-	local replace_str="$4"
+	local num_lines_from="$2"
+	local filename="$3"
+	local search_ln="$4"
+	local replace_str="$5"
 	local repl_ln
 	local from_ln
 	local to_ln
+	if [[ ! "$num_lines_from" =~ ^[0-9]+$ ]]
+	then
+		echo "Error: _edit_line_in_file num_lines_from '$num_lines_from' has to be numeric"
+		exit 1
+	fi
 	repl_ln="$(grep -nF "$search_ln" "$filename" | cut -d':' -f1)"
 	if [ "$mode" == "append" ]
 	then
@@ -53,7 +69,7 @@ function _edit_line_in_file() {
 	elif [ "$mode" == "replace" ]
 	then
 		from_ln="$((repl_ln-1))"
-		to_ln="$((repl_ln+1))"
+		to_ln="$((repl_ln+1+num_lines_from))"
 	else
 		echo "Error: _edit_line_in_file expectes mode replace or append"
 		exit 1
@@ -346,6 +362,9 @@ function action_generate() {
 		elif [ "$field_type" == "int" ]
 		then
 			hashs+="\n    @$field_name = attr[:$field_name] || 0"
+		elif [ "$field_type" == "bool" ]
+		then
+			hashs+="\n    @$field_name = attr[:$field_name] || false"
 		else # string or other
 			hashs+="\n    @$field_name = attr[:$field_name] || 'TODO: fill default'"
 		fi
@@ -369,7 +388,7 @@ function action_generate() {
 		if [ "$field_type" == "raw" ]
 		then
 			packs+="Packer.pack_raw(@$field_name) +\n"
-		elif [ "$field_type" == "int" ]
+		elif [ "$field_type" == "int" ] || [ "$field_type" == "bool" ]
 		then
 			packs+="Packer.pack_int(@$field_name) +\n"
 		else # string or other
@@ -377,6 +396,21 @@ function action_generate() {
 		fi
 	done
 	replace_line "$tmpfile" Packer.pack_int "${packs:2:-4}"
+
+	local bools=''
+	for field_name in "${!fields[@]}"
+	do
+		field_type="${fields[$field_name]}"
+		[[ "$field_type" == "bool" ]] || continue
+
+		bools+="  def $field_name?\n"
+		bools+="    !@$field_name.zero?\n"
+		bools+="  end\n"
+		bools+="\n"
+	done
+
+	replace_lines_from "$tmpfile" 'def foo?' "${bools::-2}" 3
+
 	local destfile
 	destfile="lib/models/$(basename "$tmpfile")"
 	if [ -f "$destfile" ]
