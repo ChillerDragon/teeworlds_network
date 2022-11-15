@@ -19,6 +19,27 @@ describe 'Unpacker', :unpacker do
       expect(u.get_string).to eq(' BB')
       expect(u.get_string).to eq(nil)
     end
+    it 'Should keep \r, \n and \t' do
+      u = Unpacker.new(["\r".ord, 0x41, 0x41, 0x00, "\n".ord, 0x42, "\t".ord, 0x42, 0x00])
+      expect(u.get_string).to eq("\rAA")
+      expect(u.get_string).to eq("\nB\tB")
+      expect(u.get_string).to eq(nil)
+    end
+  end
+
+  context 'Unpack strings sanitize cc' do
+    it 'Should replace bytes lower than 32 with spaces' do
+      u = Unpacker.new([0x02, 0x41, 0x41, 0x00, 0x1F, 0x42, 0x42, 0x00])
+      expect(u.get_string).to eq(' AA')
+      expect(u.get_string).to eq(' BB')
+      expect(u.get_string).to eq(nil)
+    end
+    it 'Should NOT keep \r, \n and \t' do
+      u = Unpacker.new(["\r".ord, 0x41, 0x41, 0x00, "\n".ord, 0x42, "\t".ord, 0x42, 0x00])
+      expect(u.get_string(SANITIZE_CC)).to eq(' AA')
+      expect(u.get_string(SANITIZE_CC)).to eq(' B B')
+      expect(u.get_string(SANITIZE_CC)).to eq(nil)
+    end
   end
 
   context 'Unpack single byte integers' do

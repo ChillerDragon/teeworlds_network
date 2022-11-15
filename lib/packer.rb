@@ -91,14 +91,24 @@ class Unpacker
     letters.join
   end
 
+  def str_sanitize_cc(str)
+    letters = str.chars
+    letters.map! do |c|
+      c.ord < 32 ? ' ' : c
+    end
+    letters.join
+  end
+
   def get_string(sanitize = SANITIZE)
     return nil if @data.nil?
 
     str = ''
+    p @data
     @data.each_with_index do |byte, index|
       if byte.zero?
         @data = index == @data.length - 1 ? nil : @data[(index + 1)..]
         str = str_sanitize(str) unless (sanitize & SANITIZE).zero?
+        str = str_sanitize_cc(str) unless (sanitize & SANITIZE_CC).zero?
         return str
       end
       str += byte.chr
