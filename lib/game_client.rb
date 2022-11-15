@@ -3,6 +3,7 @@
 require_relative 'models/player'
 require_relative 'models/chat_message'
 require_relative 'models/input_timing'
+require_relative 'models/sv_client_drop'
 require_relative 'packer'
 require_relative 'context'
 
@@ -58,23 +59,19 @@ class GameClient
 
   def on_input_timing(chunk)
     todo_rename_this = InputTiming.new(chunk.data[1..])
-    context = Context.new(todo_rename_this, chunk:, packet:)
+    context = Context.new(todo_rename_this, chunk:)
     call_hook(:input_timing, context)
   end
 
   def on_client_drop(chunk)
-    u = Unpacker.new(chunk.data[1..])
-    client_id = u.get_int
-    reason = u.get_string
-    silent = u.get_int
-
+    todo_rename_this = SvClientDrop.new(chunk.data[1..])
     context = Context.new(
       nil,
-      player: @players[client_id],
+      player: @players[todo_rename_this.client_id],
       chunk:,
-      client_id:,
-      reason: reason == '' ? nil : reason,
-      silent: silent != 0
+      client_id: todo_rename_this.client_id,
+      reason: todo_rename_this.reason,
+      silent: todo_rename_this.silent?
     )
     return if call_hook(:client_drop, context).nil?
 

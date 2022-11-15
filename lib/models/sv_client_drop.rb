@@ -21,12 +21,13 @@ class SvClientDrop
     u = Unpacker.new(data)
     @client_id = u.get_int
     @reason = u.get_string
+    @reason = @reason == '' ? nil : @reason
     @silent = u.get_int
   end
 
   def init_hash(attr)
     @client_id = attr[:client_id] || 0
-    @reason = attr[:reason] || ''
+    @reason = attr[:reason] == '' ? nil : attr[:reason]
     @silent = attr[:silent] || false
   end
 
