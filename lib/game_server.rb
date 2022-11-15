@@ -7,6 +7,7 @@ require_relative 'models/game_info'
 require_relative 'models/start_info'
 require_relative 'models/cl_say'
 require_relative 'models/chat_message'
+require_relative 'models/cl_emoticon'
 
 class GameServer
   attr_accessor :pred_game_tick, :ack_game_tick, :map
@@ -23,9 +24,9 @@ class GameServer
     )
   end
 
-  def on_emoticon(chunk, packet)
-    # TODO: generate ClEmoticon using
-    #       twgen g ClEmoticon emoticon:int
+  def on_emoticon(chunk, _packet)
+    todo_rename_this = ClEmoticon.new(chunk.data[1..])
+    p todo_rename_this
   end
 
   def on_info(chunk, packet)
