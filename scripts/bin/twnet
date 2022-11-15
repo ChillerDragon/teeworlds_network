@@ -239,12 +239,14 @@ function action_generate() {
 				if [ "$arg" == "server_packet" ] ||
 					[ "$arg" == "srv_pck" ] ||
 					[ "$arg" == "sv_pck" ] ||
-					[ "$arg" == "sp" ]
+					[ "$arg" == "sp" ] ||
+					[ "$arg" == "sv" ]
 				then
 					arg_type=server
 				elif [ "$arg" == "client_packet" ] ||
 					[ "$arg" == "cl_pck" ] ||
-					[ "$arg" == "cp" ]
+					[ "$arg" == "cp" ] ||
+					[ "$arg" == "cl" ]
 				then
 					arg_type=client
 				else
