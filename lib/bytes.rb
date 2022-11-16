@@ -66,6 +66,8 @@ def hexdump_lines(data, width = 2, notes = [], opts = {})
 
       # puts "from: #{from} to: #{to}"
       (from..to).each do |i|
+        next if byte_group[i].nil?
+
         byte_group[i] = byte_group[i].send(color)
       end
     end
@@ -111,6 +113,11 @@ def todo_make_this_a_unit_test
   end
 
   hexdump_lines("\x01\x41\x02\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\xef", 40, notes, long_legend: true).each do |l|
+    puts l
+  end
+
+  # should not crash when annotating bytes out of range
+  hexdump_lines("\x01\x41", 40, notes, long_legend: false).each do |l|
     puts l
   end
 end
