@@ -154,34 +154,33 @@ class GameClient
 
   def on_snapshot(chunk)
     u = Unpacker.new(chunk.data)
-    u.get_int
-    # msg = u.get_int
-    # msg >>= 1
+    msg_id = u.get_int
+    msg_id >>= 1
 
-    # num_parts = 1
-    # part = 0
+    num_parts = 1
+    part = 0
     game_tick = u.get_int
-    # delta_tick = u.get_int
-    # part_size = 0
-    # crc = 0
+    delta_tick = u.get_int
+    part_size = 0
+    crc = 0
     # complete_size = 0
     # data = nil
 
     # TODO: state check
 
-    # if msg == NETMSG_SNAP
-    #   num_parts = u.get_int
-    #   part = u.get_int
-    # end
+    if msg_id == NETMSG_SNAP
+      num_parts = u.get_int
+      part = u.get_int
+    end
 
-    # unless msg == NETMSG_SNAPEMPTY
-    #   crc = u.get_int
-    #   part_size = u.get_int
-    # end
+    unless msg_id == NETMSG_SNAPEMPTY
+      crc = u.get_int
+      part_size = u.get_int
+    end
 
-    # TODO: add get_raw(size)
     data = u.get_raw
-    puts 'snap:'
+    puts "snap id=#{msg_id} game_tick=#{game_tick} delta_tick=#{delta_tick}"
+    puts "  num_parts=#{num_parts} part=#{part} crc=#{crc} part_size=#{part_size}"
     notes = [
       [:green, 0, 4, 'who dis?']
     ]
