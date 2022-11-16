@@ -185,7 +185,7 @@ class GameClient
     notes = [
       [:green, 0, 4, 'who dis?']
     ]
-    hexdump_lines(data.pack('C*'), 2, notes, long_legend: true).each do |hex|
+    hexdump_lines(data.pack('C*'), 1, notes, long_legend: true).each do |hex|
       puts hex
     end
 
