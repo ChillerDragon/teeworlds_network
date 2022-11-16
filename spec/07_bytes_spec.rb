@@ -3,6 +3,25 @@
 require_relative '../lib/bytes'
 
 describe 'Bytes', :bytes do
+  context '#data_to_ascii' do
+    it 'Should encode printable and non printable chars"' do
+      expect(data_to_ascii("\x01\x41\x41\x01\x41\x42")).to eq('.AA.AB')
+    end
+  end
+  context '#hexdump_lines' do
+    it 'Should work with default width"' do
+      ex = ['01 41 02 03  03 03 03 03     .A......', '03 03 03 03  03 ef     ......']
+      expect(hexdump_lines("\x01\x41\x02\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\xef")).to eq(ex)
+    end
+    it 'Should work with width 1"' do
+      ex = ['01 41 02 03     .A..', '03 03 03 03     ....', '03 03 03 03     ....', '03 ef     ..']
+      expect(hexdump_lines("\x01\x41\x02\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\xef", 1)).to eq(ex)
+    end
+    it 'Should work with width 40"' do
+      ex = ['01 41 02 03  03 03 03 03  03 03 03 03  03 ef     .A............']
+      expect(hexdump_lines("\x01\x41\x02\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\xef", 40)).to eq(ex)
+    end
+  end
   context '#str_hex' do
     it 'Should format "\xFF" to "FF"' do
       expect(str_hex("\xFF")).to eq('FF')

@@ -5,6 +5,9 @@
 # AND DUUUUH .scan() IS BASICALLY ALREADY
 # .groups_of()
 # TODO: get rid of it?!
+# update: no
+# .scan(/../) works on strings and groups_of works on arrays
+# so it has its purpose
 class Array
   def groups_of(max_size)
     return [] if max_size < 1
