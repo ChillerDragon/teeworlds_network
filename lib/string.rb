@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+AVAILABLE_COLORS = %i[
+  red green yellow pink
+].freeze
+
 # String color
 class String
   def colorize(color_code)

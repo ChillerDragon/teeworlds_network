@@ -182,7 +182,10 @@ class GameClient
     # TODO: add get_raw(size)
     data = u.get_raw
     puts 'snap:'
-    hexdump_lines(data.pack('C*')).each do |hex|
+    notes = [
+      [:green, 0, 4, 'who dis?']
+    ]
+    hexdump_lines(data.pack('C*'), 2, notes, long_legend: true).each do |hex|
       puts hex
     end
 
