@@ -178,13 +178,27 @@ class GameClient
       part_size = u.get_int
     end
 
-    data = u.get_raw
     puts "snap id=#{msg_id} game_tick=#{game_tick} delta_tick=#{delta_tick}"
     puts "  num_parts=#{num_parts} part=#{part} crc=#{crc} part_size=#{part_size}"
+
+    header = []
+    notes = []
+    u.parsed.each_with_index do |parsed, index|
+      header += parsed[:raw]
+      color = (index % 2).zero? ? :green : :pink
+      notes.push([color, parsed[:pos], parsed[:len], "#{parsed[:type]} #{parsed[:value]}"])
+      parsed[:value]
+    end
+
+    hexdump_lines(header.pack('C*'), 1, notes, legend: :inline).each do |hex|
+      puts hex
+    end
+
+    data = u.get_raw
     notes = [
       [:green, 0, 4, 'who dis?']
     ]
-    hexdump_lines(data.pack('C*'), 1, notes, long_legend: true).each do |hex|
+    hexdump_lines(data.pack('C*'), 1, notes, legend: :long).each do |hex|
       puts hex
     end
 

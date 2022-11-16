@@ -16,7 +16,15 @@ def data_to_ascii(data)
   ascii
 end
 
-def hexdump_lines(data, width = 2, notes = [], opts = {})
+COL_LEN = 9
+
+# TODO: make this a gem?!
+#
+# opts
+# legend: :long
+# legend: :short
+# legend: :inline
+def hexdump_lines(data, width = 2, notes = [], opts = { legend: :long })
   byte_groups = data.unpack1('H*').scan(/../).groups_of(4)
   lines = []
   hex = ''
@@ -31,11 +39,12 @@ def hexdump_lines(data, width = 2, notes = [], opts = {})
     legend.push([color, info.last.send(color)])
   end
   unless legend.empty?
-    if opts[:long_legend]
+    case opts[:legend]
+    when :long
       legend.each do |leg|
         lines.push("#{leg.first}: #{leg.last}".send(leg.first))
       end
-    else
+    when :short
       lines.push(legend.map(&:last).join(' '))
     end
   end
@@ -43,6 +52,8 @@ def hexdump_lines(data, width = 2, notes = [], opts = {})
     hex += '  ' unless hex.empty?
     ascii += data_to_ascii(str_bytes(byte_group.join).pack('C*'))
     w += 1
+    note = ''
+    colors = 0
     notes.each do |info|
       color = info.first
       # p color
@@ -59,6 +70,8 @@ def hexdump_lines(data, width = 2, notes = [], opts = {})
         next
       end
 
+      note += " #{info[3]}".send(color) if opts[:legend] == :inline
+
       from -= byte
       to -= byte
       from = 0 if from.negative?
@@ -69,6 +82,7 @@ def hexdump_lines(data, width = 2, notes = [], opts = {})
         next if byte_group[i].nil?
 
         byte_group[i] = byte_group[i].send(color)
+        colors += 1
       end
     end
     byte += 4
@@ -76,11 +90,13 @@ def hexdump_lines(data, width = 2, notes = [], opts = {})
     next unless w >= width
 
     w = 0
-    lines.push("#{hex}     #{ascii}")
+    hex_pad = hex.ljust((width * 4 * 3) + (colors * COL_LEN), ' ')
+    ascii_pad = ascii.ljust(width * 4)
+    lines.push("#{hex_pad}     #{ascii_pad}#{note}")
     hex = ''
     ascii = ''
   end
-  lines.push("#{hex}     #{ascii}") unless hex.empty?
+  lines.push("#{hex_pad}     #{ascii_pad}#{note}") unless hex.empty?
   lines
 end
 
@@ -112,12 +128,12 @@ def todo_make_this_a_unit_test
     puts l
   end
 
-  hexdump_lines("\x01\x41\x02\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\xef", 40, notes, long_legend: true).each do |l|
+  hexdump_lines("\x01\x41\x02\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\xef", 40, notes, legend: long).each do |l|
     puts l
   end
 
   # should not crash when annotating bytes out of range
-  hexdump_lines("\x01\x41", 40, notes, long_legend: false).each do |l|
+  hexdump_lines("\x01\x41", 40, notes, legend: :long).each do |l|
     puts l
   end
 end

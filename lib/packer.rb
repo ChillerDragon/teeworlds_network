@@ -72,8 +72,14 @@ class Packer
 end
 
 class Unpacker
+  attr_reader :prev, :data, :parsed
+
   def initialize(data)
     @data = data
+    @prev = [] # all the data already unpacked
+    @parsed = []
+    @red_bytes = 0
+    # { type: 'int', value: 1, raw: "\x01", len: 1, pos: 0 }
     if data.instance_of?(String)
       @data = data.unpack('C*')
     elsif data.instance_of?(Array)
@@ -103,11 +109,19 @@ class Unpacker
     return nil if @data.nil?
 
     str = ''
+    raw = []
+    len = 0
+    pos = @red_bytes
     @data.each_with_index do |byte, index|
+      @prev.push(byte)
+      raw.push(raw)
+      @red_bytes += 1
+      len += 1
       if byte.zero?
         @data = index == @data.length - 1 ? nil : @data[(index + 1)..]
         str = str_sanitize(str) unless (sanitize & SANITIZE).zero?
         str = str_sanitize_cc(str) unless (sanitize & SANITIZE_CC).zero?
+        @parsed.push({ type: 'string', value: str, raw:, len:, pos: })
         return str
       end
       str += byte.chr
@@ -130,6 +144,7 @@ class Unpacker
 
     sign = first[1]
     bits = []
+    parsed = { type: 'int' }
 
     # extended
     if first[0] == '1'
@@ -143,17 +158,34 @@ class Unpacker
         break if eigth_bits[0] == '0'
       end
       bits = bits.reverse
+      @prev += @data[0...consumed]
+      parsed[:raw] = @data[0...consumed]
+      parsed[:len] = consumed
+      parsed[:pos] = @red_bytes
+      @red_bytes += consumed
       @data = @data[consumed..]
     else # single byte
       bits = [first[2..]]
+      @prev.push(@data[0])
+      parsed[:raw] = [@data[0]]
+      parsed[:len] = 1
+      parsed[:pos] = @red_bytes
+      @red_bytes += 1
       @data = @data[1..]
     end
     num = bits.join.to_i(2)
-    sign == '1' ? -(num + 1) : num
+    parsed[:value] = sign == '1' ? -(num + 1) : num
+    @parsed.push(parsed)
+    parsed[:value]
   end
 
   def get_raw(size = -1)
+    len = size == -1 ? @data.size : size
+    @prev += @data[...len]
+    pos = @red_bytes
+    @red_bytes += len
+    @parsed.push({ type: 'raw', value: @data[...len], raw: @data[...len], len:, pos: })
     # TODO: error if size exceeds @data.size
-    @data.shift(size == -1 ? @data.size : size)
+    @data.shift(len)
   end
 end
