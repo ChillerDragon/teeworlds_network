@@ -180,7 +180,10 @@ class GameClient
     # end
 
     # TODO: add get_raw(size)
-    # data = u.get_raw
+    data = u.get_raw
+    puts 'snap:'
+    p str_hex(data.pack('C*'))
+    p data
 
     # ack every snapshot no matter how broken
     @ack_game_tick = game_tick
