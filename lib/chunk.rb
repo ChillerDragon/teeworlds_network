@@ -5,7 +5,7 @@ require_relative 'network'
 require_relative 'bytes'
 
 class NetChunk
-  attr_reader :next, :data, :msg, :sys, :flags, :header_raw
+  attr_reader :next, :data, :msg, :sys, :flags, :header_raw, :full_raw
 
   @@sent_vital_chunks = 0
 
@@ -27,6 +27,7 @@ class NetChunk
     @sys = @msg & 1 == 1
     @msg >>= 1
     @next = data[chunk_end..] if data.size > chunk_end
+    @full_raw = data[..chunk_end]
   end
 
   def self.reset

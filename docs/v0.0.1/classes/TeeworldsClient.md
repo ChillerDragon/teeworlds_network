@@ -1,5 +1,107 @@
 # TeeworldsClient
 
+### <a name="on_maplist_entry_rem"></a> #on_maplist_entry_rem(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+TODO: generated documentation
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_maplist_entry_rem do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: true)
+```
+
+### <a name="on_maplist_entry_add"></a> #on_maplist_entry_add(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+TODO: generated documentation
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_maplist_entry_add do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: true)
+```
+
+### <a name="on_rcon_cmd_rem"></a> #on_rcon_cmd_rem(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+TODO: generated documentation
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_rcon_cmd_rem do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: true)
+```
+
+### <a name="on_rcon_cmd_add"></a> #on_rcon_cmd_add(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+TODO: generated documentation
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_rcon_cmd_add do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: true)
+```
+
+### <a name="on_auth_off"></a> #on_auth_off(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+TODO: generated documentation
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_auth_off do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: true)
+```
+
+### <a name="on_auth_on"></a> #on_auth_on(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+TODO: generated documentation
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_auth_on do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: true)
+```
+
 ### <a name="on_input_timing"></a> #on_input_timing(&block)
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
@@ -138,7 +240,7 @@ client.on_map_change do |context|
 
   # skip default behavior
   # in this case do not send the ready packet
-  context.cancle
+  context.cancel
 end
 
 client.connect('localhost', 8303, detach: true)

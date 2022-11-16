@@ -22,6 +22,9 @@ NETMSG_RCON_LINE = 13     # line that should be printed to the remote console
 NETMSG_RCON_CMD_ADD = 14
 NETMSG_RCON_CMD_REM = 15
 
+NETMSG_MAPLIST_ENTRY_ADD = 29 # TODO: 0.8: move up
+NETMSG_MAPLIST_ENTRY_REM = 30
+
 # sent by client
 NETMSG_READY = 18
 NETMSG_ENTERGAME = 19

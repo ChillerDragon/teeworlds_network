@@ -16,6 +16,7 @@ require_relative 'game_client'
 
 class TeeworldsClient
   attr_reader :state, :hooks, :game_client
+  attr_accessor :rcon_authed
 
   def initialize(options = {})
     @verbose = options[:verbose] || false
@@ -31,7 +32,13 @@ class TeeworldsClient
       disconnect: [],
       rcon_line: [],
       snapshot: [],
-      input_timing: []
+      input_timing: [],
+      auth_on: [],
+      auth_off: [],
+      rcon_cmd_add: [],
+      rcon_cmd_rem: [],
+      maplist_entry_add: [],
+      maplist_entry_rem: []
     }
     @thread_running = false
     @signal_disconnect = false
@@ -59,6 +66,35 @@ class TeeworldsClient
       color_feet: 0,
       color_eyes: 0
     }
+    @rcon_authed = false
+  end
+
+  def rcon_authed?
+    @rcon_authed
+  end
+
+  def on_auth_on(&block)
+    @hooks[:auth_on].push(block)
+  end
+
+  def on_auth_off(&block)
+    @hooks[:auth_off].push(block)
+  end
+
+  def on_rcon_cmd_add(&block)
+    @hooks[:rcon_cmd_add].push(block)
+  end
+
+  def on_rcon_cmd_rem(&block)
+    @hooks[:rcon_cmd_rem].push(block)
+  end
+
+  def on_maplist_entry_add(&block)
+    @hooks[:maplist_entry_add].push(block)
+  end
+
+  def on_maplist_entry_rem(&block)
+    @hooks[:maplist_entry_rem].push(block)
   end
 
   def on_chat(&block)
@@ -353,7 +389,7 @@ class TeeworldsClient
       on_message(chunk)
       return
     end
-    puts "proccess chunk with msg: #{chunk.msg}"
+    puts "proccess chunk with msg: #{chunk.msg}" if @verbose
     case chunk.msg
     when NETMSG_MAP_CHANGE
       @game_client.on_map_change(chunk)
@@ -369,8 +405,21 @@ class TeeworldsClient
       @game_client.on_snapshot(chunk)
     when NETMSG_INPUTTIMING
       @game_client.on_input_timing(chunk)
+    when NETMSG_RCON_AUTH_ON
+      @game_client.on_auth_on
+    when NETMSG_RCON_AUTH_OFF
+      @game_client.on_auth_off
+    when NETMSG_RCON_CMD_ADD
+      @game_client.on_rcon_cmd_add(chunk)
+    when NETMSG_RCON_CMD_REM
+      @game_client.on_rcon_cmd_rem(chunk)
+    when NETMSG_MAPLIST_ENTRY_ADD
+      @game_client.on_maplist_entry_add(chunk)
+    when NETMSG_MAPLIST_ENTRY_REM
+      @game_client.on_maplist_entry_rem(chunk)
     else
       puts "Unsupported system msg: #{chunk.msg}"
+      p str_hex(chunk.full_raw)
       exit(1)
     end
   end

@@ -103,7 +103,6 @@ class Unpacker
     return nil if @data.nil?
 
     str = ''
-    p @data
     @data.each_with_index do |byte, index|
       if byte.zero?
         @data = index == @data.length - 1 ? nil : @data[(index + 1)..]

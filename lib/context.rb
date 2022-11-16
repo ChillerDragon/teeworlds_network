@@ -6,7 +6,7 @@ class Context
 
   def initialize(todo_rename_this, keys = {})
     @todo_rename_this = todo_rename_this # the obj holding the parsed chunk
-    @cancle = false
+    @cancel = false
     @old_data = keys
     @data = keys
   end
@@ -19,11 +19,11 @@ class Context
     end
   end
 
-  def cancled?
-    @cancle
+  def canceld?
+    @cancel
   end
 
-  def cancle
-    @cancle = true
+  def cancel
+    @cancel = true
   end
 end

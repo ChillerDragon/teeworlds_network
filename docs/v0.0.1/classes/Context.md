@@ -5,15 +5,15 @@ When you hook into methods using a ``on_*`` method you can access its context.
 This gives you the ability to read and modify the data before the default behavior processes it.
 Or skip the default behavior and implement your own logic.
 
-### #cancle
+### #cancel
 
-Call the ``cancle()`` on the context object to not run any default code for that event.
+Call the ``cancel()`` on the context object to not run any default code for that event.
 
 ```ruby
 client.on_map_change do |context|
   # do nothing when a map change packet comes in
   # skips the send ready packet code
-  context.cancle
+  context.cancel
 end
 ```
 
@@ -23,12 +23,12 @@ Access the network client to send packets.
 
 **Example:**
 
-Reimplement your on on_connected logic and cancle the default one
+Reimplement your on on_connected logic and cancel the default one
 
 ```ruby
 client.on_connected do |ctx|
   ctx.client.send_msg_start_info
-  ctx.cancle
+  ctx.cancel
 end
 ```
 

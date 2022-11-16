@@ -4,6 +4,10 @@ require_relative 'models/player'
 require_relative 'models/chat_message'
 require_relative 'messages/input_timing'
 require_relative 'messages/sv_client_drop'
+require_relative 'messages/rcon_cmd_add'
+require_relative 'messages/rcon_cmd_rem'
+require_relative 'messages/maplist_entry_add'
+require_relative 'messages/maplist_entry_rem'
 require_relative 'packer'
 require_relative 'context'
 
@@ -27,9 +31,55 @@ class GameClient
     @client.hooks[hook_sym].each do |hook|
       hook.call(context, optional)
       context.verify
-      return nil if context.cancled?
+      return nil if context.canceld?
     end
     context
+  end
+
+  def on_auth_on
+    return if call_hook(:auth_on, Context.new(nil)).nil?
+
+    @client.rcon_authed = true
+    puts 'rcon logged in'
+  end
+
+  def on_auth_off
+    return if call_hook(:auth_off, Context.new(nil)).nil?
+
+    @client.rcon_authed = false
+    puts 'rcon logged out'
+  end
+
+  def on_rcon_cmd_add(chunk)
+    todo_rename_this = RconCmdAdd.new(chunk.data[1..])
+    context = Context.new(todo_rename_this)
+    return if call_hook(:rcon_cmd_add, context).nil?
+
+    p context.todo_rename_this
+  end
+
+  def on_rcon_cmd_rem(chunk)
+    todo_rename_this = RconCmdRem.new(chunk.data[1..])
+    context = Context.new(todo_rename_this)
+    return if call_hook(:rcon_cmd_rem, context).nil?
+
+    p context.todo_rename_this
+  end
+
+  def on_maplist_entry_add(chunk)
+    todo_rename_this = MaplistEntryAdd.new(chunk.data[1..])
+    context = Context.new(todo_rename_this)
+    return if call_hook(:maplist_entry_add, context).nil?
+
+    p context.todo_rename_this
+  end
+
+  def on_maplist_entry_rem(chunk)
+    todo_rename_this = MaplistEntryRem.new(chunk.data[1..])
+    context = Context.new(todo_rename_this)
+    return if call_hook(:maplist_entry_rem, context).nil?
+
+    p context.todo_rename_this
   end
 
   def on_client_info(chunk)
