@@ -178,28 +178,39 @@ class GameClient
       part_size = u.get_int
     end
 
-    puts "snap id=#{msg_id} game_tick=#{game_tick} delta_tick=#{delta_tick}"
+    snap_name = 'SNAP_INVALID'
+    case msg_id
+    when NETMSG_SNAP then snap_name = 'NETMSG_SNAP'
+    when NETMSG_SNAPSINGLE then snap_name = 'NETMSG_SNAPSINGLE'
+    when NETMSG_SNAPEMPTY then snap_name = 'NETMSG_SNAPEMPTY'
+    end
+
+    puts ">>> snap #{snap_name} (#{msg_id})"
+    puts "  id=#{msg_id} game_tick=#{game_tick} delta_tick=#{delta_tick}"
     puts "  num_parts=#{num_parts} part=#{part} crc=#{crc} part_size=#{part_size}"
+    puts "\n  header:"
 
     header = []
     notes = []
     u.parsed.each_with_index do |parsed, index|
-      header += parsed[:raw]
       color = (index % 2).zero? ? :green : :pink
-      notes.push([color, parsed[:pos], parsed[:len], "#{parsed[:type]} #{parsed[:value]}"])
-      parsed[:value]
+      txt = "#{parsed[:type]} #{parsed[:value]}"
+      txt += " >> 1 = #{parsed[:value] >> 1}" if header.empty?
+      notes.push([color, parsed[:pos], parsed[:len], txt])
+      header += parsed[:raw]
     end
 
     hexdump_lines(header.pack('C*'), 1, notes, legend: :inline).each do |hex|
-      puts hex
+      puts "  #{hex}"
     end
 
+    puts "\n  payload:"
     data = u.get_raw
     notes = [
       [:green, 0, 4, 'who dis?']
     ]
     hexdump_lines(data.pack('C*'), 1, notes, legend: :long).each do |hex|
-      puts hex
+      puts "  #{hex}"
     end
 
     # ack every snapshot no matter how broken
