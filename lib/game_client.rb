@@ -166,6 +166,8 @@ class GameClient
     # complete_size = 0
     # data = nil
 
+    chunk_num = 0
+
     # TODO: state check
 
     if msg_id == NETMSG_SNAP
@@ -176,6 +178,7 @@ class GameClient
     unless msg_id == NETMSG_SNAPEMPTY
       crc = u.get_int
       part_size = u.get_int
+      chunk_num = u.get_int
     end
 
     snap_name = 'SNAP_INVALID'
@@ -188,6 +191,7 @@ class GameClient
     puts ">>> snap #{snap_name} (#{msg_id})"
     puts "  id=#{msg_id} game_tick=#{game_tick} delta_tick=#{delta_tick}"
     puts "  num_parts=#{num_parts} part=#{part} crc=#{crc} part_size=#{part_size}"
+    puts "  chunk_num=#{chunk_num}"
     puts "\n  header:"
 
     header = []
