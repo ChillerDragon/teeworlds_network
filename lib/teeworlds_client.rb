@@ -8,12 +8,11 @@ require_relative 'bytes'
 require_relative 'network'
 require_relative 'packet'
 require_relative 'chunk'
-require_relative 'models/server_info'
+require_relative 'messages/server_info'
 require_relative 'net_base'
 require_relative 'packer'
 require_relative 'models/player'
 require_relative 'game_client'
-require_relative 'message'
 
 class TeeworldsClient
   attr_reader :state, :hooks, :game_client

@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require_relative 'models/map'
-require_relative 'models/server_info'
-require_relative 'models/server_settings'
-require_relative 'models/game_info'
-require_relative 'models/start_info'
-require_relative 'models/cl_say'
 require_relative 'models/chat_message'
-require_relative 'models/cl_emoticon'
+require_relative 'messages/game_info'
+require_relative 'messages/server_info'
+require_relative 'messages/server_settings'
+require_relative 'messages/start_info'
+require_relative 'messages/cl_say'
+require_relative 'messages/cl_emoticon'
 
 class GameServer
   attr_accessor :pred_game_tick, :ack_game_tick, :map

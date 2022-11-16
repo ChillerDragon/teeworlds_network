@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../lib/models/server_info'
+require_relative '../lib/messages/server_info'
 
 describe 'ServerInfo', :server_info do
   context 'Pack to network' do

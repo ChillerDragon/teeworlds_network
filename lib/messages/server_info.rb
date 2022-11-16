@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../network'
-require_relative 'player'
+require_relative '../models/player'
 require_relative '../packer'
 
 class ServerInfo

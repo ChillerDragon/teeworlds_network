@@ -2,8 +2,8 @@
 
 require_relative 'models/player'
 require_relative 'models/chat_message'
-require_relative 'models/input_timing'
-require_relative 'models/sv_client_drop'
+require_relative 'messages/input_timing'
+require_relative 'messages/sv_client_drop'
 require_relative 'packer'
 require_relative 'context'
 

@@ -12,7 +12,6 @@ require_relative 'net_base'
 require_relative 'models/net_addr'
 require_relative 'packer'
 require_relative 'game_server'
-require_relative 'message'
 require_relative 'models/token'
 
 class Client

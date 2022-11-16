@@ -427,7 +427,7 @@ function action_generate() {
 	fi
 
 	local destfile
-	destfile="lib/models/$(basename "$tmpfile")"
+	destfile="lib/messages/$(basename "$tmpfile")"
 	if [ -f "$destfile" ]
 	then
 		echo "Error: file already exists '$destfile'"
