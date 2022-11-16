@@ -188,6 +188,8 @@ class GameClient
     when NETMSG_SNAPEMPTY then snap_name = 'NETMSG_SNAPEMPTY'
     end
 
+    return unless msg_id == NETMSG_SNAPSINGLE
+
     puts ">>> snap #{snap_name} (#{msg_id})"
     puts "  id=#{msg_id} game_tick=#{game_tick} delta_tick=#{delta_tick}"
     puts "  num_parts=#{num_parts} part=#{part} crc=#{crc} part_size=#{part_size}"
@@ -210,10 +212,69 @@ class GameClient
 
     puts "\n  payload:"
     data = u.get_raw
-    notes = [
-      [:green, 0, 4, 'who dis?']
+    # [:green, 0, 4, 'who dis?']
+    notes = []
+    # data.groups_of(4).each_with_index do |item, index|
+    #   # reverse for little endian
+    #   type = item[0...2].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
+    #   notes.push([:green, index * 4, 2, "type=#{type}"])
+    #   next unless item.length == 4
+
+    #   # reverse for little endian
+    #   id = item[2...4].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
+    #   notes.push([:yellow, index * 4 + 2, 2, "id=#{id}"])
+    # end
+
+    @sizes = [
+      10,
+      6,
+      5,
+      3,
+      3,
+      3,
+      2,
+      4,
+      15,
+      22,
+      3,
+      4,
+      58,
+      5,
+      32,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      5
     ]
-    hexdump_lines(data.pack('C*'), 1, notes, legend: :long).each do |hex|
+
+    skip = 0
+    (0...data.size).each do |i|
+      skip -= 1
+      next unless skip.negative?
+
+      # reverse for little endian
+      type = data[i...(i + 2)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
+      size = @sizes[type]
+      p "type=#{type}"
+
+      next if size.nil?
+
+      notes.push([:green, i, 2, "type=#{type} size=#{size}"])
+      notes.push([:yellow, i + 2, size, 'data'])
+      skip += 3 + size
+
+      # next
+      # next unless item.length == 4
+
+      # # reverse for little endian
+      # id = item[2...4].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
+      # notes.push([:yellow, (index * 4) + 2, 2, "id=#{id}"])
+    end
+
+    hexdump_lines(data.pack('C*'), 1, notes, legend: :inline).each do |hex|
       puts "  #{hex}"
     end
 
