@@ -135,6 +135,7 @@ class Unpacker
 
   def get_int
     return nil if @data.nil?
+    return nil if @data.empty?
 
     # TODO: make this more performant
     #       it should not read in ALL bytes

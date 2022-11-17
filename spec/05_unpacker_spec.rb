@@ -49,6 +49,13 @@ describe 'Unpacker', :unpacker do
       expect(u.get_int).to eq(2)
     end
 
+    it 'Should return nil if no more int is found' do
+      u = Unpacker.new([0x01, 0x02])
+      expect(u.get_int).to eq(1)
+      expect(u.get_int).to eq(2)
+      expect(u.get_int).to eq(nil)
+    end
+
     it 'Should unpack negative integers' do
       u = Unpacker.new([0x40, 0x41, 0x42])
       # 0x40 => 1000 0000

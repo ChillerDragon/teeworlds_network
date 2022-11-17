@@ -300,34 +300,36 @@ class GameClient
     end
 
     item_delta = u.get_int
-    item_bits = item_delta.to_s(2).rjust(32, '0')
-    item_id_bits = item_bits[0...16]
-    item_type_bits = item_bits[16..]
-    item_id = item_id_bits.to_i(2)
-    item_type = item_type_bits.to_i(2)
-    item_meta = @snap_items[item_type]
-    item_name = item_meta[:name]
-    #   { name: 'obj_game_data', size: 3, fields: [
-    #     { type: 'int', name: 'start_tick' },
+    while item_delta
+      # item_bits = item_delta.to_s(2).rjust(32, '0')
+      item_type = item_delta
+      # item_id_bits = item_bits[0...16]
+      # item_type_bits = item_bits[16..]
+      # item_id = item_id_bits.to_i(2)
+      # item_type = item_type_bits.to_i(2)
+      item_meta = @snap_items[item_type]
+      item_name = item_meta[:name]
+      #   { name: 'obj_game_data', size: 3, fields: [
+      #     { type: 'int', name: 'start_tick' },
 
-    p = u.parsed.last
-    notes.push([:green, p[:pos], p[:len],
-                "\n  id   = #{item_id_bits} -> #{item_id}" \
-                "\n  type = #{item_type_bits} -> #{item_type} #{item_name}"])
-
-    who = u.get_int
-    p = u.parsed.last
-    notes.push([:cyan, p[:pos], p[:len], "who are you mr #{who} ?"])
-
-    size = item_meta[:size]
-    (0...size).each do |i|
-      val = u.get_int
       p = u.parsed.last
-      color = (i % 2).zero? ? :yellow : :pink
-      fields = item_meta[:fields]
-      desc = ''
-      desc = fields[i][:name] unless fields.nil? || fields[i].nil?
-      notes.push([color, p[:pos], p[:len], "data[#{i}]=#{val} #{desc}"])
+      notes.push([:green, p[:pos], p[:len], "type = #{item_type} #{item_name}"])
+
+      item_id = u.get_int
+      p = u.parsed.last
+      notes.push([:cyan, p[:pos], p[:len], "id=#{item_id}"])
+
+      size = item_meta[:size]
+      (0...size).each do |i|
+        val = u.get_int
+        p = u.parsed.last
+        color = (i % 2).zero? ? :yellow : :pink
+        fields = item_meta[:fields]
+        desc = ''
+        desc = fields[i][:name] unless fields.nil? || fields[i].nil?
+        notes.push([color, p[:pos], p[:len], "data[#{i}]=#{val} #{desc}"])
+      end
+      item_delta = u.get_int
     end
 
     # skip = 0
