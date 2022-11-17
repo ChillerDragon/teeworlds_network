@@ -281,8 +281,14 @@ class GameClient
       { name: 'event_damage', size: 5 }
     ]
 
+    u = Unpacker.new(data)
+    removed_items = u.get_int
+    notes.push([:red, 0, 4, "removed_items=#{removed_items}"])
+    notes.push([:green, 4, 4, 'num_items'])
+    notes.push([:yellow, 8, 4, 'zero?'])
+
     skip = 0
-    (0...data.size).each do |i|
+    ((3 * 4)...data.size).each do |i|
       skip -= 1
       unless skip.negative?
         # puts "skipped i=#{i} hex=#{str_hex([data[i]].pack('C*'))} skips_left=#{skip}"
