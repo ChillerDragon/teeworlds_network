@@ -191,7 +191,6 @@ class GameClient
     puts "  id=#{msg_id} game_tick=#{game_tick} delta_tick=#{delta_tick}"
     puts "  num_parts=#{num_parts} part=#{part} crc=#{crc} part_size=#{part_size}"
     puts "\n  header:"
-    return if msg_id == NETMSG_SNAPSINGLE
 
     header = []
     notes = []
@@ -208,7 +207,6 @@ class GameClient
     end
 
     puts "\n  payload:"
-    data = u.get_raw
     # [:green, 0, 4, 'who dis?']
     notes = []
     # data.groups_of(4).each_with_index do |item, index|
@@ -278,62 +276,111 @@ class GameClient
       { name: 'event_damage', size: 5 }
     ]
 
+    data = u.get_raw
+
+    # tw decompresses all bytes at once
+    # and pads it with zeros to get the 4 byte aligned ints
+    # we just grab one int at a time cuz yolo
     u = Unpacker.new(data)
-    removed_items = u.get_int
-    notes.push([:red, 0, 4, "removed_items=#{removed_items}"])
-    notes.push([:green, 4, 4, 'num_items'])
-    notes.push([:yellow, 8, 4, 'zero?'])
+    num_removed_items = u.get_int
+    p = u.parsed.last
+    notes.push([:red, p[:pos], p[:len], "removed_items=#{num_removed_items}"])
 
-    skip = 0
-    ((3 * 4)...data.size).each do |i|
-      skip -= 1
-      unless skip.negative?
-        # puts "skipped i=#{i} hex=#{str_hex([data[i]].pack('C*'))} skips_left=#{skip}"
-        next
-      end
+    num_item_deltas = u.get_int
+    p = u.parsed.last
+    notes.push([:blue, p[:pos], p[:len], "num_item_deltas=#{num_item_deltas}"])
 
-      # reverse for little endian
-      id = data[i...(i + 2)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
+    zero = u.get_int
+    p = u.parsed.last
+    notes.push([:cyan, p[:pos], p[:len], "_zero=#{zero}"])
 
-      if data[i + 4].nil? && i > 2
-        puts "Error: unexpected end of data at i=#{i + 4} data_size=#{data.size}"
-        next
-      end
-
-      type = data[(i + 2)...(i + 4)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
-      size = @sizes[type]
-      # p "id=#{id} type=#{type}"
-
-      if size.nil? && i > 2
-        puts "Error: could not get size for type=#{type} -> skip byte"
-        next
-      end
-
-      size *= 4
-
-      meta = @snap_items[type]
-
-      notes.push([:green, i, 2, "id=#{id}"])
-      notes.push([:pink, i + 2, 2, "type=#{type} (#{meta[:name]} size: #{size})"])
-
-      item_payload = data[(i + 4)..]
-      u = Unpacker.new(item_payload)
-      (0...(size / 4)).each do |d|
-        val = u.get_int
-        field_name = ''
-        field_name += meta[:fields][d][:name] unless meta[:fields].nil? || meta[:fields][d].nil?
-        notes.push([:yellow, i + 4 + (d * 4), 4, "data[#{d}]=#{val} #{field_name}"])
-      end
-      skip += 3 + size + 1
-      # puts "skip=#{skip}"
-
-      # next
-      # next unless item.length == 4
-
-      # # reverse for little endian
-      # id = item[2...4].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
-      # notes.push([:yellow, (index * 4) + 2, 2, "id=#{id}"])
+    (0...num_removed_items).each do |i|
+      deleted = u.get_int
+      notes.push([:red, p[:pos], p[:len], "del[#{i}]=#{deleted}"])
     end
+
+    item_delta = u.get_int
+    item_bits = item_delta.to_s(2).rjust(32, '0')
+    item_id_bits = item_bits[0...16]
+    item_type_bits = item_bits[16..]
+    item_id = item_id_bits.to_i(2)
+    item_type = item_type_bits.to_i(2)
+    item_meta = @snap_items[item_type]
+    item_name = item_meta[:name]
+    #   { name: 'obj_game_data', size: 3, fields: [
+    #     { type: 'int', name: 'start_tick' },
+
+    p = u.parsed.last
+    notes.push([:green, p[:pos], p[:len],
+                "\n  id   = #{item_id_bits} -> #{item_id}" \
+                "\n  type = #{item_type_bits} -> #{item_type} #{item_name}"])
+
+    who = u.get_int
+    p = u.parsed.last
+    notes.push([:cyan, p[:pos], p[:len], "who are you mr #{who} ?"])
+
+    size = item_meta[:size]
+    (0...size).each do |i|
+      val = u.get_int
+      p = u.parsed.last
+      color = (i % 2).zero? ? :yellow : :pink
+      fields = item_meta[:fields]
+      desc = ''
+      desc = fields[i][:name] unless fields.nil? || fields[i].nil?
+      notes.push([color, p[:pos], p[:len], "data[#{i}]=#{val} #{desc}"])
+    end
+
+    # skip = 0
+    # ((3 * 4)...data.size).each do |i|
+    #   skip -= 1
+    #   unless skip.negative?
+    #     # puts "skipped i=#{i} hex=#{str_hex([data[i]].pack('C*'))} skips_left=#{skip}"
+    #     next
+    #   end
+
+    #   # reverse for little endian
+    #   id = data[i...(i + 2)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
+
+    #   if data[i + 4].nil? && i > 2
+    #     puts "Error: unexpected end of data at i=#{i + 4} data_size=#{data.size}"
+    #     next
+    #   end
+
+    #   type = data[(i + 2)...(i + 4)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
+    #   size = @sizes[type]
+    #   # p "id=#{id} type=#{type}"
+
+    #   if size.nil? && i > 2
+    #     puts "Error: could not get size for type=#{type} -> skip byte"
+    #     next
+    #   end
+
+    #   size *= 4
+
+    #   meta = @snap_items[type]
+
+    #   notes.push([:green, i, 2, "id=#{id}"])
+    #   notes.push([:pink, i + 2, 2, "type=#{type} (#{meta[:name]} size: #{size})"])
+
+    #   item_payload = data[(i + 4)..]
+    #   u = Unpacker.new(item_payload)
+    #   (0...(size / 4)).each do |d|
+    #     # val = u.get_int
+    #     val='EMPTY'
+    #     field_name = ''
+    #     field_name += meta[:fields][d][:name] unless meta[:fields].nil? || meta[:fields][d].nil?
+    #     notes.push([:yellow, i + 4 + (d * 4), 4, "data[#{d}]=#{val} #{field_name}"])
+    #   end
+    #   skip += 3 + size + 1
+    #   # puts "skip=#{skip}"
+
+    #   # next
+    #   # next unless item.length == 4
+
+    #   # # reverse for little endian
+    #   # id = item[2...4].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
+    #   # notes.push([:yellow, (index * 4) + 2, 2, "id=#{id}"])
+    # end
 
     hexdump_lines(data.pack('C*'), 1, notes, legend: :inline).each do |hex|
       puts "  #{hex}"
@@ -344,7 +391,7 @@ class GameClient
     return unless (@pred_game_tick - @ack_game_tick).abs > 10
 
     @pred_game_tick = @ack_game_tick + 1
-    exit
+    # exit
   end
 
   def on_emoticon(chunk); end

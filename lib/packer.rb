@@ -78,6 +78,8 @@ class Unpacker
     @data = data
     @prev = [] # all the data already unpacked
     @parsed = []
+    # TODO: delete parsed or document it with examples
+    # @parsed.push({ type: 'string', value: str, raw:, len:, pos: })
     @red_bytes = 0
     # { type: 'int', value: 1, raw: "\x01", len: 1, pos: 0 }
     if data.instance_of?(String)
