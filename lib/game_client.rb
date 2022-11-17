@@ -285,19 +285,25 @@ class GameClient
       # reverse for little endian
       id = data[i...(i + 2)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
 
-      next if data[i + 4].nil?
+      next if data[i + 4].nil? && i > 2
 
       type = data[(i + 2)...(i + 4)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
       size = @sizes[type]
       # p "id=#{id} type=#{type}"
 
-      next if size.nil?
+      next if size.nil? && i > 2
 
-      # size *= 4
+      size *= 4
 
       notes.push([:green, i, 2, "id=#{id}"])
       notes.push([:pink, i + 2, 2, "type=#{type} (#{@snap_items[type][:name]} size: #{size})"])
-      notes.push([:yellow, i + 4, size, 'data'])
+
+      item_payload = data[(i + 4)..]
+      u = Unpacker.new(item_payload)
+      (0...(size / 4)).each do |d|
+        val = u.get_int
+        notes.push([:yellow, i + 4 + (d * 4), 4, "data[#{d}]=#{val}"])
+      end
       skip += 3 + size
 
       # next
@@ -317,6 +323,7 @@ class GameClient
     return unless (@pred_game_tick - @ack_game_tick).abs > 10
 
     @pred_game_tick = @ack_game_tick + 1
+    # exit
   end
 
   def on_emoticon(chunk); end
