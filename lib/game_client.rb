@@ -258,7 +258,11 @@ class GameClient
       { name: 'obj_laser', size: 5 },
       { name: 'obj_pickup', size: 3 },
       { name: 'obj_flag', size: 3 },
-      { name: 'obj_game_data', size: 3 },
+      { name: 'obj_game_data', size: 3, fields: [
+        { type: 'int', name: 'start_tick' },
+        { type: 'int', name: 'flags' },
+        { type: 'int', name: 'end_tick' }
+      ] },
       { name: 'obj_game_data_team', size: 2 },
       { name: 'obj_game_data_flag', size: 4 },
       { name: 'obj_character_core', size: 15 },
@@ -304,14 +308,18 @@ class GameClient
 
       size *= 4
 
+      meta = @snap_items[type]
+
       notes.push([:green, i, 2, "id=#{id}"])
-      notes.push([:pink, i + 2, 2, "type=#{type} (#{@snap_items[type][:name]} size: #{size})"])
+      notes.push([:pink, i + 2, 2, "type=#{type} (#{meta[:name]} size: #{size})"])
 
       item_payload = data[(i + 4)..]
       u = Unpacker.new(item_payload)
       (0...(size / 4)).each do |d|
         val = u.get_int
-        notes.push([:yellow, i + 4 + (d * 4), 4, "data[#{d}]=#{val}"])
+        field_name = ''
+        field_name += meta[:fields][d][:name] unless meta[:fields].nil? || meta[:fields][d].nil?
+        notes.push([:yellow, i + 4 + (d * 4), 4, "data[#{d}]=#{val} #{field_name}"])
       end
       skip += 3 + size + 1
       # puts "skip=#{skip}"
@@ -333,7 +341,7 @@ class GameClient
     return unless (@pred_game_tick - @ack_game_tick).abs > 10
 
     @pred_game_tick = @ack_game_tick + 1
-    # exit
+    exit
   end
 
   def on_emoticon(chunk); end
