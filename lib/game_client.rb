@@ -280,18 +280,27 @@ class GameClient
     skip = 0
     (0...data.size).each do |i|
       skip -= 1
-      next unless skip.negative?
+      unless skip.negative?
+        # puts "skipped i=#{i} hex=#{str_hex([data[i]].pack('C*'))} skips_left=#{skip}"
+        next
+      end
 
       # reverse for little endian
       id = data[i...(i + 2)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
 
-      next if data[i + 4].nil? && i > 2
+      if data[i + 4].nil? && i > 2
+        puts "Error: unexpected end of data at i=#{i + 4} data_size=#{data.size}"
+        next
+      end
 
       type = data[(i + 2)...(i + 4)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
       size = @sizes[type]
       # p "id=#{id} type=#{type}"
 
-      next if size.nil? && i > 2
+      if size.nil? && i > 2
+        puts "Error: could not get size for type=#{type} -> skip byte"
+        next
+      end
 
       size *= 4
 
@@ -304,7 +313,8 @@ class GameClient
         val = u.get_int
         notes.push([:yellow, i + 4 + (d * 4), 4, "data[#{d}]=#{val}"])
       end
-      skip += 3 + size
+      skip += 3 + size + 1
+      # puts "skip=#{skip}"
 
       # next
       # next unless item.length == 4
