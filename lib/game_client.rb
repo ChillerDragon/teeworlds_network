@@ -226,6 +226,7 @@ class GameClient
     # end
 
     @sizes = [
+      0,
       10,
       6,
       5,
@@ -250,20 +251,53 @@ class GameClient
       5
     ]
 
+    @snap_items = [
+      { name: 'placeholder', size: 0 },
+      { name: 'obj_player_input', size: 10 },
+      { name: 'obj_projectile', size: 6 },
+      { name: 'obj_laser', size: 5 },
+      { name: 'obj_pickup', size: 3 },
+      { name: 'obj_flag', size: 3 },
+      { name: 'obj_game_data', size: 3 },
+      { name: 'obj_game_data_team', size: 2 },
+      { name: 'obj_game_data_flag', size: 4 },
+      { name: 'obj_character_core', size: 15 },
+      { name: 'obj_character', size: 22 },
+      { name: 'obj_player_info', size: 3 },
+      { name: 'obj_spectator_info', size: 4 },
+      { name: 'obj_client_info', size: 58 },
+      { name: 'obj_game_info', size: 5 },
+      { name: 'obj_tune_params', size: 32 },
+      { name: 'event_common', size: 2 },
+      { name: 'event_explosion', size: 2 },
+      { name: 'event_spawn', size: 2 },
+      { name: 'event_hammerhit', size: 2 },
+      { name: 'event_death', size: 3 },
+      { name: 'event_sound_world', size: 3 },
+      { name: 'event_damage', size: 5 }
+    ]
+
     skip = 0
     (0...data.size).each do |i|
       skip -= 1
       next unless skip.negative?
 
       # reverse for little endian
-      type = data[i...(i + 2)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
+      id = data[i...(i + 2)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
+
+      next if data[i + 4].nil?
+
+      type = data[(i + 2)...(i + 4)].reverse.map { |b| b.to_s(2).rjust(8, '0') }.join.to_i(2)
       size = @sizes[type]
-      p "type=#{type}"
+      # p "id=#{id} type=#{type}"
 
       next if size.nil?
 
-      notes.push([:green, i, 2, "type=#{type} size=#{size}"])
-      notes.push([:yellow, i + 2, size, 'data'])
+      # size *= 4
+
+      notes.push([:green, i, 2, "id=#{id}"])
+      notes.push([:pink, i + 2, 2, "type=#{type} (#{@snap_items[type][:name]} size: #{size})"])
+      notes.push([:yellow, i + 4, size, 'data'])
       skip += 3 + size
 
       # next
