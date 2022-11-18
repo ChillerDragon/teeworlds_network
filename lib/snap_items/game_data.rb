@@ -7,46 +7,66 @@ class NetObj
     attr_accessor :game_start_tick, :game_state_flags, :game_state_end_tick
 
     def initialize(hash_or_raw)
+      @field_names = %i[
+        game_start_tick
+        game_state_flags
+        game_state_end_tick
+      ]
+      @fields = @field_names.map do |_|
+        0
+      end
+      @size = @fields.count
       if hash_or_raw.instance_of?(Hash)
         init_hash(hash_or_raw)
       else
         init_raw(hash_or_raw)
       end
-      @fields = instance_variables.map { |f| f.to_s[1..] }
-      @size = @fields.count
     end
 
     def match_type?(type)
       type == NETOBJTYPE_GAMEDATA
     end
 
+    def validate
+      @fields.select(&:nil?).empty?
+    end
+
     def init_raw(data)
       u = Unpacker.new(data)
-      @game_start_tick = u.get_int
-      @game_state_flags = u.get_int
-      @game_state_end_tick = u.get_int
+      @fields.map! do |_|
+        # TODO: as of right now it can get nil values here
+        #       the fix would be "u.get_int || 0"
+        #       but fixing it would probably make it harder
+        #       to debug invalid data
+        #
+        #       but do rethink this in a later point please :)
+        #       for now call .validate() everywhere
+        u.get_int
+      end
     end
 
     def init_hash(attr)
-      @game_start_tick = attr[:game_start_tick] || 0
-      @game_state_flags = attr[:game_state_flags] || 0
-      @game_state_end_tick = attr[:game_state_end_tick] || 0
+      @fields_names.each do |name|
+        instance_variable_set("@#{name}", attr[name] || 0)
+      end
     end
 
     def to_h
-      {
-        game_start_tick: @game_start_tick,
-        game_state_flags: @game_state_flags,
-        game_state_end_tick: @game_state_end_tick
-      }
+      hash = {}
+      @field_names.each_with_index do |name, index|
+        hash[name] = @fields[index]
+      end
+      hash
     end
 
     # basically to_network
     # int array the server sends to the client
     def to_a
-      Packer.pack_int(@game_start_tick) +
-        Packer.pack_int(@game_state_flags) +
-        Packer.pack_int(@game_state_end_tick)
+      arr = []
+      @fields.each do |value|
+        arr += Packer.pack_int(value)
+      end
+      arr
     end
 
     def to_s
@@ -54,5 +74,3 @@ class NetObj
     end
   end
 end
-
-p NetObj::GameData.new([])
