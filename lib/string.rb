@@ -2,6 +2,7 @@
 
 AVAILABLE_COLORS = %i[
   red green yellow pink magenta blue cyan white
+  bg_red bg_green bg_yellow bg_pink bg_magenta bg_blue bg_cyan bg_white
 ].freeze
 
 # String color

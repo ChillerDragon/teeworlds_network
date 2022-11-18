@@ -154,7 +154,9 @@ class GameClient
   end
 
   def on_snapshot(chunk)
-    game_tick = snap_single(chunk)
+    u = SnapshotUnpacker.new
+    game_tick = u.snap_single(chunk)
+    return if game_tick.nil?
 
     # ack every snapshot no matter how broken
     @ack_game_tick = game_tick

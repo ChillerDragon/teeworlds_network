@@ -16,14 +16,17 @@ class NetObj
         0
       end
       @size = @fields.count
+      @name = self.class.name
       if hash_or_raw.instance_of?(Hash)
         init_hash(hash_or_raw)
+      elsif hash_or_raw.instance_of?(Unpacker)
+        init_unpacker(hash_or_raw)
       else
         init_raw(hash_or_raw)
       end
     end
 
-    def match_type?(type)
+    def self.match_type?(type)
       type == NETOBJTYPE_GAMEDATA
     end
 
@@ -31,8 +34,7 @@ class NetObj
       @fields.select(&:nil?).empty?
     end
 
-    def init_raw(data)
-      u = Unpacker.new(data)
+    def init_unpacker(u)
       @fields.map! do |_|
         # TODO: as of right now it can get nil values here
         #       the fix would be "u.get_int || 0"
@@ -43,6 +45,11 @@ class NetObj
         #       for now call .validate() everywhere
         u.get_int
       end
+    end
+
+    def init_raw(data)
+      u = Unpacker.new(data)
+      init_unpacker(u)
     end
 
     def init_hash(attr)
