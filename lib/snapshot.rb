@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'snap_items/game_data'
+require_relative 'snap_items/character'
 require_relative 'packer'
 
 class SnapshotUnpacker
@@ -146,16 +147,21 @@ class SnapshotUnpacker
       obj = nil
       if NetObj::GameData.match_type?(item_type)
         obj = NetObj::GameData.new(u)
-        p obj
-      else
-        # puts "no match #{item_type}"
+        notes += obj.notes
+        # p obj
+      elsif NetObj::Character.match_type?(item_type)
+        obj = NetObj::Character.new(u)
+        notes += obj.notes
+        # p obj
+      elsif @verbose
+        puts "no match #{item_type}"
       end
       if obj
         notes.push([
                      :green,
                      id_parsed[:pos],
                      id_parsed[:len],
-                     "type=#{item_type}"
+                     "type=#{item_type} #{obj.name}"
                    ])
       else
         notes.push([
