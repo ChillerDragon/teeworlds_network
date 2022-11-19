@@ -155,11 +155,15 @@ class GameClient
 
   def on_snapshot(chunk)
     u = SnapshotUnpacker.new
-    game_tick = u.snap_single(chunk)
-    return if game_tick.nil?
+    snapshot = u.snap_single(chunk)
+
+    return if snapshot.game_tick.nil?
+
+    context = Context.new(nil, chunk:)
+    return if call_hook(:snapshot, context, snapshot).nil?
 
     # ack every snapshot no matter how broken
-    @ack_game_tick = game_tick
+    @ack_game_tick = snapshot.game_tick
     return unless (@pred_game_tick - @ack_game_tick).abs > 10
 
     @pred_game_tick = @ack_game_tick + 1

@@ -63,6 +63,7 @@ class SnapItemBase
 
   def to_h
     hash = {}
+    hash[:id] = @id
     @field_names.each_with_index do |name, index|
       hash[name] = @fields[index]
     end

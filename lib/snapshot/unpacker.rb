@@ -20,6 +20,14 @@ require_relative 'events/death'
 require_relative 'events/hammer_hit'
 require_relative '../packer'
 
+class Snapshot
+  attr_accessor :game_tick, :items
+
+  def initialize(items)
+    @items = items
+  end
+end
+
 class SnapshotUnpacker
   def snap_single(chunk)
     u = Unpacker.new(chunk.data)
@@ -104,6 +112,7 @@ class SnapshotUnpacker
     invalid = false
     item_type = u.get_int
     id_parsed = u.parsed.last
+    snap_items = []
     while item_type
       obj = nil
       if NetObj::PlayerInput.match_type?(item_type)
@@ -146,6 +155,7 @@ class SnapshotUnpacker
         puts "no match #{item_type}"
       end
       if obj
+        snap_items.push(obj)
         notes += obj.notes
         notes.push([
                      :green,
@@ -166,12 +176,14 @@ class SnapshotUnpacker
       id_parsed = u.parsed.last
     end
 
-    hexdump_lines(data.pack('C*'), 1, notes, legend: :inline).each do |hex|
-      puts "  #{hex}"
-    end
+    # hexdump_lines(data.pack('C*'), 1, notes, legend: :inline).each do |hex|
+    #   puts "  #{hex}"
+    # end
 
     exit 1 if invalid
 
-    game_tick
+    snapshot = Snapshot.new(snap_items)
+    snapshot.game_tick = game_tick
+    snapshot
   end
 end
