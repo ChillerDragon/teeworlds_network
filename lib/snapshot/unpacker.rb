@@ -2,9 +2,22 @@
 
 require_relative 'items/game_data'
 require_relative 'items/character'
-require_relative 'items/player_info'
 require_relative 'items/projectile'
+require_relative 'items/pickup'
+require_relative 'items/flag'
+require_relative 'items/game_data_team'
+require_relative 'items/game_data_flag'
+require_relative 'items/player_input'
+require_relative 'items/laser'
+require_relative 'items/player_info'
+require_relative 'items/spectator_info'
+require_relative 'items/client_info'
 require_relative 'events/sound_world'
+require_relative 'events/explosion'
+require_relative 'events/spawn'
+require_relative 'events/damage'
+require_relative 'events/death'
+require_relative 'events/hammer_hit'
 require_relative '../packer'
 
 class SnapshotUnpacker
@@ -93,16 +106,42 @@ class SnapshotUnpacker
     id_parsed = u.parsed.last
     while item_type
       obj = nil
-      if NetObj::GameData.match_type?(item_type)
+      if NetObj::PlayerInput.match_type?(item_type)
+        obj = NetObj::PlayerInput.new(u)
+      elsif NetObj::Projectile.match_type?(item_type)
+        obj = NetObj::Projectile.new(u)
+      elsif NetObj::Laser.match_type?(item_type)
+        obj = NetObj::Laser.new(u)
+      elsif NetObj::Pickup.match_type?(item_type)
+        obj = NetObj::Pickup.new(u)
+      elsif NetObj::Flag.match_type?(item_type)
+        obj = NetObj::Flag.new(u)
+      elsif NetObj::GameData.match_type?(item_type)
         obj = NetObj::GameData.new(u)
+      elsif NetObj::GameDataTeam.match_type?(item_type)
+        obj = NetObj::GameDataTeam.new(u)
+      elsif NetObj::GameDataFlag.match_type?(item_type)
+        obj = NetObj::GameDataFlag.new(u)
       elsif NetObj::Character.match_type?(item_type)
         obj = NetObj::Character.new(u)
       elsif NetObj::PlayerInfo.match_type?(item_type)
         obj = NetObj::PlayerInfo.new(u)
-      elsif NetObj::Projectile.match_type?(item_type)
-        obj = NetObj::Projectile.new(u)
+      elsif NetObj::SpectatorInfo.match_type?(item_type)
+        obj = NetObj::SpectatorInfo.new(u)
+      elsif NetObj::ClientInfo.match_type?(item_type)
+        obj = NetObj::ClientInfo.new(u)
+      elsif NetEvent::Explosion.match_type?(item_type)
+        obj = NetEvent::Explosion.new(u)
       elsif NetEvent::SoundWorld.match_type?(item_type)
         obj = NetEvent::SoundWorld.new(u)
+      elsif NetEvent::Spawn.match_type?(item_type)
+        obj = NetEvent::Spawn.new(u)
+      elsif NetEvent::Damage.match_type?(item_type)
+        obj = NetEvent::Damage.new(u)
+      elsif NetEvent::Death.match_type?(item_type)
+        obj = NetEvent::Death.new(u)
+      elsif NetEvent::HammerHit.match_type?(item_type)
+        obj = NetEvent::HammerHit.new(u)
       elsif @verbose
         puts "no match #{item_type}"
       end
