@@ -64,10 +64,12 @@ class SnapshotUnpacker
 
     return unless msg_id == NETMSG_SNAPSINGLE
 
-    puts ">>> snap #{snap_name} (#{msg_id})"
-    puts "  id=#{msg_id} game_tick=#{game_tick} delta_tick=#{delta_tick}"
-    puts "  num_parts=#{num_parts} part=#{part} crc=#{crc} part_size=#{part_size}"
-    puts "\n  header:"
+    if @verbose
+      puts ">>> snap #{snap_name} (#{msg_id})"
+      puts "  id=#{msg_id} game_tick=#{game_tick} delta_tick=#{delta_tick}"
+      puts "  num_parts=#{num_parts} part=#{part} crc=#{crc} part_size=#{part_size}"
+      puts "\n  header:"
+    end
 
     header = []
     notes = []
@@ -79,11 +81,13 @@ class SnapshotUnpacker
       header += parsed[:raw]
     end
 
-    hexdump_lines(header.pack('C*'), 1, notes, legend: :inline).each do |hex|
-      puts "  #{hex}"
+    if @verbose
+      hexdump_lines(header.pack('C*'), 1, notes, legend: :inline).each do |hex|
+        puts "  #{hex}"
+      end
+      puts "\n  payload:"
     end
 
-    puts "\n  payload:"
     notes = []
 
     data = u.get_raw
@@ -176,9 +180,11 @@ class SnapshotUnpacker
       id_parsed = u.parsed.last
     end
 
-    # hexdump_lines(data.pack('C*'), 1, notes, legend: :inline).each do |hex|
-    #   puts "  #{hex}"
-    # end
+    if @verbose
+      hexdump_lines(data.pack('C*'), 1, notes, legend: :inline).each do |hex|
+        puts "  #{hex}"
+      end
+    end
 
     exit 1 if invalid
 

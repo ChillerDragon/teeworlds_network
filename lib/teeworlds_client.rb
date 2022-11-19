@@ -16,13 +16,14 @@ require_relative 'game_client'
 
 class TeeworldsClient
   attr_reader :state, :hooks, :game_client
-  attr_accessor :rcon_authed
+  attr_accessor :rcon_authed, :local_client_id
 
   def initialize(options = {})
     @verbose = options[:verbose] || false
     @state = NET_CONNSTATE_OFFLINE
     @ip = 'localhost'
     @port = 8303
+    @local_client_id = 0
     @hooks = {
       chat: [],
       map_change: [],

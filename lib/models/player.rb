@@ -5,7 +5,7 @@ class Player
 
   def initialize(data = {})
     @id = data[:id] || -1
-    @local = data[:local] || 0
+    @local = data[:local] == 1
     @team = data[:team] || 0
     @name = data[:name] || '(connecting..)'
     @clan = data[:clan] || ''
@@ -15,6 +15,10 @@ class Player
     @skin_colors = data[:skin_colors] || Array.new(6, 0)
 
     @score = data[:score] || 0
+  end
+
+  def local?
+    @local
   end
 
   def set_start_info(start_info)

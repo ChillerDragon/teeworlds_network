@@ -105,6 +105,10 @@ class GameClient
     return if call_hook(:client_info, context).nil?
 
     player = context.data[:player]
+    if player.local?
+      @client.local_client_id = player.id
+      puts "Our client id is #{@client.local_client_id}"
+    end
     @players[player.id] = player
   end
 
@@ -157,7 +161,7 @@ class GameClient
     u = SnapshotUnpacker.new
     snapshot = u.snap_single(chunk)
 
-    return if snapshot.game_tick.nil?
+    return if snapshot.nil?
 
     context = Context.new(nil, chunk:)
     return if call_hook(:snapshot, context, snapshot).nil?
