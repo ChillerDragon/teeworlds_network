@@ -2,6 +2,7 @@
 
 require_relative 'items/game_data'
 require_relative 'items/character'
+require_relative 'items/player_info'
 require_relative '../packer'
 
 class SnapshotUnpacker
@@ -147,16 +148,15 @@ class SnapshotUnpacker
       obj = nil
       if NetObj::GameData.match_type?(item_type)
         obj = NetObj::GameData.new(u)
-        notes += obj.notes
-        # p obj
       elsif NetObj::Character.match_type?(item_type)
         obj = NetObj::Character.new(u)
-        notes += obj.notes
-        # p obj
+      elsif NetObj::PlayerInfo.match_type?(item_type)
+        obj = NetObj::PlayerInfo.new(u)
       elsif @verbose
         puts "no match #{item_type}"
       end
       if obj
+        notes += obj.notes
         notes.push([
                      :green,
                      id_parsed[:pos],

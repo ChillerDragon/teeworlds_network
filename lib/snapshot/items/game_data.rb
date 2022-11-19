@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require_relative '../../packer'
 require_relative '../snap_item_base'
 
 class NetObj
