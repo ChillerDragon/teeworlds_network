@@ -43,7 +43,7 @@ class SnapItemBase
       p = u.parsed.last
       color = (i % 2).zero? ? :yellow : :pink
       desc = @field_names[i]
-      @notes.push([color, p[:pos], p[:len], "data[#{i}]=#{val} #{desc}"])
+      @notes.push([color, p[:pos], p[:len], "#{desc}=#{val}"])
       i += 1
 
       val
