@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'snap_items/game_data'
-require_relative 'snap_items/character'
-require_relative 'packer'
+require_relative 'items/game_data'
+require_relative 'items/character'
+require_relative '../packer'
 
 class SnapshotUnpacker
   def snap_single(chunk)

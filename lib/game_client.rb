@@ -10,7 +10,7 @@ require_relative 'messages/maplist_entry_add'
 require_relative 'messages/maplist_entry_rem'
 require_relative 'packer'
 require_relative 'context'
-require_relative 'snapshot'
+require_relative 'snapshot/unpacker'
 
 class GameClient
   attr_accessor :players, :pred_game_tick, :ack_game_tick

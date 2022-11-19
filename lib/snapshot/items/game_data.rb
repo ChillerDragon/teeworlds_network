@@ -1,38 +1,17 @@
 # frozen_string_literal: true
 
-require_relative '../packer'
+require_relative '../../packer'
 
 class NetObj
-  class Character
-    attr_accessor :tick, :x, :y, :vel_x, :vel_y, :angle, :direction, :jumped, :hooked_player, :hook_state, :hook_tick,
-                  :hook_x, :hook_y, :hook_dx, :hook_dy,
-                  :health, :armor, :ammo_count, :weapon, :emote, :attack_tick, :triggered_events
+  class GameData
+    attr_accessor :game_start_tick, :game_state_flags, :game_state_end_tick
     attr_reader :notes, :name, :id
 
     def initialize(hash_or_raw)
       @field_names = %i[
-        tick
-        x
-        y
-        vel_x
-        vel_y
-        angle
-        direction
-        jumped
-        hooked_player
-        hook_state
-        hook_tick
-        hook_x
-        hook_y
-        hook_dx
-        hook_dy
-        health
-        armor
-        ammo_count
-        weapon
-        emote
-        attack_tick
-        triggered_events
+        game_start_tick
+        game_state_flags
+        game_state_end_tick
       ]
       @fields = @field_names.map do |_|
         0
@@ -50,7 +29,7 @@ class NetObj
     end
 
     def self.match_type?(type)
-      type == NETOBJTYPE_CHARACTER
+      type == NETOBJTYPE_GAMEDATA
     end
 
     def validate
