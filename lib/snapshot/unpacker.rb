@@ -4,6 +4,7 @@ require_relative 'items/game_data'
 require_relative 'items/character'
 require_relative 'items/player_info'
 require_relative 'items/projectile'
+require_relative 'events/sound_world'
 require_relative '../packer'
 
 class SnapshotUnpacker
@@ -100,6 +101,8 @@ class SnapshotUnpacker
         obj = NetObj::PlayerInfo.new(u)
       elsif NetObj::Projectile.match_type?(item_type)
         obj = NetObj::Projectile.new(u)
+      elsif NetEvent::SoundWorld.match_type?(item_type)
+        obj = NetEvent::SoundWorld.new(u)
       elsif @verbose
         puts "no match #{item_type}"
       end
@@ -128,7 +131,7 @@ class SnapshotUnpacker
       puts "  #{hex}"
     end
 
-    # exit 1 if invalid
+    exit 1 if invalid
 
     game_tick
   end
