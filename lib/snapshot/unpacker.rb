@@ -186,7 +186,17 @@ class SnapshotUnpacker
       end
     end
 
-    exit 1 if invalid
+    if invalid
+      # make sure if we did not print the hex already
+      # to print it now as error message
+      unless @verbose
+        hexdump_lines(data.pack('C*'), 1, notes, legend: :inline).each do |hex|
+          puts "  #{hex}"
+        end
+      end
+      puts 'Error: got invalid snap item'
+      exit 1
+    end
 
     snapshot = Snapshot.new(snap_items)
     snapshot.game_tick = game_tick
