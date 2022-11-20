@@ -8,11 +8,11 @@ args = { verbose: false, ip: nil, port: nil }
 ARGV.each do |arg|
   if ['--help', '-h'].include?(arg)
     puts 'usage: teeworlds.rb [OPTIONS..] [host] [port]'
-    echo 'options:'
-    echo '  --help|-h        show this help'
-    echo '  --verbose|-v     verbose output'
-    echo 'example:'
-    echo '  teeworlds.rb --verbose localhost 8303'
+    puts 'options:'
+    puts '  --help|-h        show this help'
+    puts '  --verbose|-v     verbose output'
+    puts 'example:'
+    puts '  teeworlds.rb --verbose localhost 8303'
     exit(0)
   elsif ['--verbose', '-v'].include?(arg)
     args[:verbose] = true
