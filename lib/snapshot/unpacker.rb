@@ -29,6 +29,10 @@ class Snapshot
 end
 
 class SnapshotUnpacker
+  def initialize(client)
+    @client = client
+  end
+
   def snap_single(chunk)
     u = Unpacker.new(chunk.data)
     msg_id = u.get_int
@@ -195,6 +199,7 @@ class SnapshotUnpacker
         end
       end
       puts 'Error: got invalid snap item'
+      @client.disconnect
       exit 1
     end
 

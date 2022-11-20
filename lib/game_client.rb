@@ -158,7 +158,7 @@ class GameClient
   end
 
   def on_snapshot(chunk)
-    u = SnapshotUnpacker.new
+    u = SnapshotUnpacker.new(@client)
     snapshot = u.snap_single(chunk)
 
     return if snapshot.nil?
