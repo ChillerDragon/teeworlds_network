@@ -160,6 +160,12 @@ then
 	then
 		fail "Error: server still running rcon shutdown failed"
 	fi
+elif [ "$testname" == "client/srv_say.rb" ]
+then
+	if ! grep -q '^\[chat\].*hello' "$logdir/ruby_client.txt"
+	then
+		fail "Error: missing 'hello' chat message in client log"
+	fi
 elif [ "$testname" == "client/multiple_blocks.rb" ]
 then
 	sleep 1

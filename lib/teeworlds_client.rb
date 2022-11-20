@@ -446,6 +446,9 @@ class TeeworldsClient
     # puts "tick"
     begin
       pck = @s.recvfrom_nonblock(1400)
+    rescue Errno::ECONNREFUSED
+      puts 'connection problems ...'
+      pck = nil
     rescue IO::EAGAINWaitReadable
       pck = nil
     end

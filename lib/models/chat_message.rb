@@ -26,6 +26,14 @@ class ChatMesage
   end
 
   def to_s
-    "#{@author.name}: #{@message}"
+    # server message
+    return "*** #{@message}" if @client_id == -1
+
+    # player message
+    # should never be from an invalid id
+    # but lets not crash if servers send weird stuff
+    name = ''
+    name = @author.name if @author
+    "#{name}: #{@message}"
   end
 end
