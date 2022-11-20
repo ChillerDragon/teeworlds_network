@@ -28,9 +28,36 @@ class Snapshot
   end
 end
 
+class DDNetSnapItem
+  attr_accessor :notes, :name
+
+  def initialize(u, _id)
+    @name = 'ddnet_uuid'
+    @notes = []
+    len = u.get_int
+    p = u.parsed.last
+    @notes.push([:green, p[:pos], p[:len], "len=#{len}"])
+    (0...len).each do |i|
+      val = u.get_int
+      p = u.parsed.last
+      col = (i % 2).zero? ? :bg_pink : :bg_yellow
+      @notes.push([col, p[:pos], p[:len], "val=#{val}"])
+    end
+  end
+end
+
 class SnapshotUnpacker
   def initialize(client)
     @client = client
+  end
+
+  def unpack_ddnet_item(u, notes)
+    id = u.get_int
+    p = u.parsed.last
+    notes.push([:cyan, p[:pos], p[:len], "id=#{id}"])
+    return nil if id < 0x4000 # ddnet offset uuid type
+
+    DDNetSnapItem.new(u, id)
   end
 
   def snap_single(chunk)
@@ -162,6 +189,7 @@ class SnapshotUnpacker
       elsif @verbose
         puts "no match #{item_type}"
       end
+      obj = unpack_ddnet_item(u, notes) if !obj && item_type.zero?
       if obj
         snap_items.push(obj)
         notes += obj.notes
