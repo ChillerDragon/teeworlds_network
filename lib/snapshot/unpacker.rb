@@ -233,6 +233,28 @@ class SnapshotUnpacker
                      "type=#{item_type} ddnet_ex_reg"
                    ])
         notes += DDNetSnapItem.parse(u, item_type)
+      elsif item_type < 50 # TODO: i made up this magic number xd
+        #                          figure out what a sane
+        #                          limit for the type is
+        #                          something that is a bit
+        #                          future proof
+        #                          and also strict enough
+        #                          to alert when something
+        #                          goes wrong
+        # item with non pre-agreed size
+        # first int of the payload is the size of the payload
+        id = u.get_int
+        p = u.parsed.last
+        notes.push([:cyan, p[:pos], p[:len], "id=#{id}"])
+        len = u.get_int
+        p = u.parsed.last
+        notes.push([:green, p[:pos], p[:len], "len=#{len}"])
+        (0...len).each do |i|
+          val = u.get_int
+          p = u.parsed.last
+          col = (i % 2).zero? ? :bg_pink : :bg_yellow
+          notes.push([col, p[:pos], p[:len], "val=#{val}"])
+        end
       else
         invalid = true
         notes.push([
