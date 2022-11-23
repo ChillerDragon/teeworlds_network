@@ -31,7 +31,10 @@ end
 class DDNetSnapItem
   attr_accessor :notes, :name
 
-  def initialize(u, _id)
+  @@registered_types = []
+
+  # TODO: rename to register uuid?!
+  def initialize(u, id)
     @name = 'ddnet_uuid'
     @notes = []
     len = u.get_int
@@ -43,6 +46,29 @@ class DDNetSnapItem
       col = (i % 2).zero? ? :bg_pink : :bg_yellow
       @notes.push([col, p[:pos], p[:len], "val=#{val}"])
     end
+    @@registered_types.push(id)
+  end
+
+  # parses registered ddnet items
+  def self.parse(u, _item_type)
+    id = u.get_int
+    p = u.parsed.last
+    notes = []
+    notes.push([:cyan, p[:pos], p[:len], "id=#{id}"])
+    len = u.get_int
+    p = u.parsed.last
+    notes.push([:green, p[:pos], p[:len], "len=#{len}"])
+    (0...len).each do |i|
+      val = u.get_int
+      p = u.parsed.last
+      col = (i % 2).zero? ? :bg_pink : :bg_yellow
+      notes.push([col, p[:pos], p[:len], "val=#{val}"])
+    end
+    notes
+  end
+
+  def self.valid_type?(type)
+    @@registered_types.include?(type)
   end
 end
 
@@ -199,6 +225,14 @@ class SnapshotUnpacker
                      id_parsed[:len],
                      "type=#{item_type} #{obj.name}"
                    ])
+      elsif DDNetSnapItem.valid_type?(item_type)
+        notes.push([
+                     :green,
+                     id_parsed[:pos],
+                     id_parsed[:len],
+                     "type=#{item_type} ddnet_ex_reg"
+                   ])
+        notes += DDNetSnapItem.parse(u, item_type)
       else
         invalid = true
         notes.push([
