@@ -1,4 +1,5 @@
 Gemfile.lock
+*.cfg
 scripts/tmp
 integration_test/*.txt
 integration_test/*.log

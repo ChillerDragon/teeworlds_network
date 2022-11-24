@@ -13,6 +13,7 @@ require_relative 'net_base'
 require_relative 'packer'
 require_relative 'models/player'
 require_relative 'game_client'
+require_relative 'config'
 
 class TeeworldsClient
   attr_reader :state, :hooks, :game_client
@@ -24,6 +25,7 @@ class TeeworldsClient
     @ip = 'localhost'
     @port = 8303
     @local_client_id = 0
+    @config = Config.new(file: options[:config])
     @hooks = {
       chat: [],
       map_change: [],
@@ -227,7 +229,7 @@ class TeeworldsClient
   def send_info
     data = []
     data += Packer.pack_str(GAME_NETVERSION)
-    data += Packer.pack_str('password')
+    data += Packer.pack_str(@config.password)
     data += Packer.pack_int(CLIENT_VERSION)
     msg = NetChunk.create_header(vital: true, size: data.size + 1) +
           [pack_msg_id(NETMSG_INFO, system: true)] +
