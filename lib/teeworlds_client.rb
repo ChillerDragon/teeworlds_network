@@ -436,7 +436,7 @@ class TeeworldsClient
     end
     chunks = BigChungusTheChunkGetter.get_chunks(data)
     chunks.each do |chunk|
-      if chunk.flags_vital && !chunk.flags_resend
+      if chunk.flags_vital && !chunk.flags_resend && chunk.msg != NETMSG_NULL
         @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
         puts "got ack: #{@netbase.ack}" if @verbose
       end
