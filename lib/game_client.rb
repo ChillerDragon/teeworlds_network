@@ -144,8 +144,11 @@ class GameClient
     @client.send_msg_start_info
   end
 
-  def on_disconnect
-    call_hook(:disconnect, Context.new(nil))
+  def on_disconnect(data)
+    context = Context.new(nil, reason: data)
+    return if call_hook(:disconnect, context).nil?
+
+    puts "got disconnect. reason='#{context.data[:reason]}'"
   end
 
   def on_rcon_line(chunk)

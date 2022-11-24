@@ -354,8 +354,8 @@ class TeeworldsClient
     send_info
   end
 
-  def on_msg_close
-    @game_client.on_disconnect
+  def on_msg_close(data)
+    @game_client.on_disconnect(data)
   end
 
   private
@@ -365,7 +365,7 @@ class TeeworldsClient
     case msg
     when NET_CTRLMSG_TOKEN then on_msg_token(data)
     when NET_CTRLMSG_ACCEPT then on_msg_accept
-    when NET_CTRLMSG_CLOSE then on_msg_close
+    when NET_CTRLMSG_CLOSE then on_msg_close(data)
     when NET_CTRLMSG_KEEPALIVE # silently ignore keepalive
     else
       puts "Uknown control message #{msg}"
