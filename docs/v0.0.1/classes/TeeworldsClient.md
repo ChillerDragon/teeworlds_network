@@ -1,5 +1,22 @@
 # TeeworldsClient
 
+### <a name="on_input_timing"></a> #on_input_timing(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+context.message is a [InputTiming](../classes/messages/InputTiming.md)
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_input_timing do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: true)
+```
+
 ### <a name="on_maplist_entry_rem"></a> #on_maplist_entry_rem(&block)
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
@@ -100,23 +117,6 @@ TODO: generated documentation
 client = TeeworldsClient.new
 
 client.on_auth_on do |context|
-  # TODO: generated documentation
-end
-
-client.connect('localhost', 8303, detach: true)
-```
-
-### <a name="on_input_timing"></a> #on_input_timing(&block)
-
-**Parameter: block [Block |[context](../classes/Context.md)|]**
-
-TODO: generated documentation
-
-**Example:**
-```ruby
-client = TeeworldsClient.new
-
-client.on_input_timing do |context|
   # TODO: generated documentation
 end
 
