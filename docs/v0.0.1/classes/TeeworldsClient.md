@@ -11,7 +11,9 @@ context.message is a [MaplistEntryRem](../classes/messages/MaplistEntryRem.md)
 client = TeeworldsClient.new
 
 client.on_maplist_entry_rem do |context|
-  # TODO: generated documentation
+  # print all map names the server
+  # sends to the client
+  puts context.message.name
 end
 
 client.connect('localhost', 8303, detach: true)
@@ -28,7 +30,9 @@ context.message is a [MaplistEntryAdd](../classes/messages/MaplistEntryAdd.md)
 client = TeeworldsClient.new
 
 client.on_maplist_entry_add do |context|
-  # TODO: generated documentation
+  # print all map names the server
+  # sends to the client
+  puts context.message.name
 end
 
 client.connect('localhost', 8303, detach: true)
