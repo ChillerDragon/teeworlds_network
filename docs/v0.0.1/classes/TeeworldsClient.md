@@ -21,14 +21,16 @@ client.connect('localhost', 8303, detach: true)
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
 
-TODO: generated documentation
+context.message is a [MaplistEntryAdd](../classes/messages/MaplistEntryAdd.md)
 
 **Example:**
 ```ruby
 client = TeeworldsClient.new
 
 client.on_maplist_entry_add do |context|
-  # TODO: generated documentation
+  # print all map names the server
+  # sends to the client
+  puts context.message.name
 end
 
 client.connect('localhost', 8303, detach: true)
@@ -38,14 +40,16 @@ client.connect('localhost', 8303, detach: true)
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
 
-TODO: generated documentation
+context.message is a [MaplistEntryRem](../classes/messages/MaplistEntryRem.md)
 
 **Example:**
 ```ruby
 client = TeeworldsClient.new
 
-client.on_rcon_cmd_rem do |context|
-  # TODO: generated documentation
+client.on_maplist_entry_rem do |context|
+  # print all map names the server
+  # sends to the client
+  puts context.message.name
 end
 
 client.connect('localhost', 8303, detach: true)

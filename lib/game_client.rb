@@ -52,35 +52,27 @@ class GameClient
   end
 
   def on_rcon_cmd_add(chunk)
-    todo_rename_this = RconCmdAdd.new(chunk.data[1..])
-    context = Context.new(todo_rename_this)
-    return if call_hook(:rcon_cmd_add, context).nil?
-
-    p context.todo_rename_this
+    message = RconCmdAdd.new(chunk.data[1..])
+    context = Context.new(message)
+    call_hook(:rcon_cmd_add, context)
   end
 
   def on_rcon_cmd_rem(chunk)
-    todo_rename_this = RconCmdRem.new(chunk.data[1..])
-    context = Context.new(todo_rename_this)
-    return if call_hook(:rcon_cmd_rem, context).nil?
-
-    p context.todo_rename_this
+    message = RconCmdRem.new(chunk.data[1..])
+    context = Context.new(message)
+    call_hook(:rcon_cmd_rem, context)
   end
 
   def on_maplist_entry_add(chunk)
-    todo_rename_this = MaplistEntryAdd.new(chunk.data[1..])
-    context = Context.new(todo_rename_this)
-    return if call_hook(:maplist_entry_add, context).nil?
-
-    p context.todo_rename_this
+    message = MaplistEntryAdd.new(chunk.data[1..])
+    context = Context.new(message)
+    call_hook(:maplist_entry_add, context)
   end
 
   def on_maplist_entry_rem(chunk)
-    todo_rename_this = MaplistEntryRem.new(chunk.data[1..])
-    context = Context.new(todo_rename_this)
-    return if call_hook(:maplist_entry_rem, context).nil?
-
-    p context.todo_rename_this
+    message = MaplistEntryRem.new(chunk.data[1..])
+    context = Context.new(message)
+    call_hook(:maplist_entry_rem, context)
   end
 
   def on_client_info(chunk)
@@ -113,20 +105,20 @@ class GameClient
   end
 
   def on_input_timing(chunk)
-    todo_rename_this = InputTiming.new(chunk.data[1..])
-    context = Context.new(todo_rename_this, chunk:)
+    message = InputTiming.new(chunk.data[1..])
+    context = Context.new(message, chunk:)
     call_hook(:input_timing, context)
   end
 
   def on_client_drop(chunk)
-    todo_rename_this = SvClientDrop.new(chunk.data[1..])
+    message = SvClientDrop.new(chunk.data[1..])
     context = Context.new(
       nil,
-      player: @players[todo_rename_this.client_id],
+      player: @players[message.client_id],
       chunk:,
-      client_id: todo_rename_this.client_id,
-      reason: todo_rename_this.reason,
-      silent: todo_rename_this.silent?
+      client_id: message.client_id,
+      reason: message.reason,
+      silent: message.silent?
     )
     return if call_hook(:client_drop, context).nil?
 

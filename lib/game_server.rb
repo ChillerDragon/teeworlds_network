@@ -25,8 +25,8 @@ class GameServer
   end
 
   def on_emoticon(chunk, _packet)
-    todo_rename_this = ClEmoticon.new(chunk.data[1..])
-    p todo_rename_this
+    message = ClEmoticon.new(chunk.data[1..])
+    p message
   end
 
   def on_info(chunk, packet)

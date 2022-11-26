@@ -2,10 +2,10 @@
 
 class Context
   attr_reader :old_data
-  attr_accessor :data, :todo_rename_this
+  attr_accessor :data, :message
 
-  def initialize(todo_rename_this, keys = {})
-    @todo_rename_this = todo_rename_this # the obj holding the parsed chunk
+  def initialize(message, keys = {})
+    @message = message # the obj holding the parsed chunk
     @cancel = false
     @old_data = keys
     @data = keys
