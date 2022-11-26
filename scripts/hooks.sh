@@ -25,6 +25,32 @@ function get_hooks() {
 	grep -o "^[[:space:]]*def on_.*(&block)" "$ruby_file" | grep -o "on_[^(]*" | awk NF
 }
 
+function get_msg_of_client_hook() {
+	local hook="$1"
+	local line
+	local ifs="$IFS"
+	local in_func=0
+	while IFS='' read -r line
+	do
+		if [ "$line" == "  def $hook(chunk)" ]
+		then
+			in_func=1
+		fi
+		if [[ "$line" =~ "  end" ]]
+		then
+			in_func=0
+		fi
+		if [ "$in_func" == "1" ]
+		then
+			if [[ "$line" =~ message\ =\ (.*).new ]]
+			then
+				echo "${BASH_REMATCH[1]}"
+			fi
+		fi
+	done < lib/game_client.rb
+	IFS="$ifs"
+}
+
 function add_hook_doc() {
 	local mdfile="$1"
 	local ruby_class="$2"
@@ -53,6 +79,13 @@ function add_hook_doc() {
 		obj_var=server
 		run="server.run('127.0.0.1', 8377)"
 	fi
+	local doc_text='TODO: generated documentation'
+	local msg_class
+	msg_class="$(get_msg_of_client_hook "$hook")"
+	if [ "$msg_class" != "" ]
+	then
+		doc_text="context.message is a [$msg_class](../classes/messages/$msg_class.md)"
+	fi
 	tmpdoc="$tmpdir/doc.md"
 	{
 		head -n "$class_ln" "$mdfile" 
@@ -65,7 +98,7 @@ function add_hook_doc() {
 
 		**Parameter: block [Block |[context](../classes/Context.md)|]**
 
-		TODO: generated documentation
+		$doc_text
 
 		**Example:**
 		EOF
