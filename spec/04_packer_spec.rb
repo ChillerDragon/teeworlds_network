@@ -23,10 +23,10 @@ describe 'Packer', :packer do
     end
 
     it 'Should pack negative match binary' do
-      expect(Packer.pack_int(-1).first.to_s(2)).to eq('1000000')
-      expect(Packer.pack_int(-2).first.to_s(2)).to eq('1000001')
-      expect(Packer.pack_int(-3).first.to_s(2)).to eq('1000010')
-      expect(Packer.pack_int(-4).first.to_s(2)).to eq('1000011')
+      expect(Packer.pack_int(-1).first.to_s(2).rjust(8, '0')).to eq('01000000')
+      expect(Packer.pack_int(-2).first.to_s(2).rjust(8, '0')).to eq('01000001')
+      expect(Packer.pack_int(-3).first.to_s(2).rjust(8, '0')).to eq('01000010')
+      expect(Packer.pack_int(-4).first.to_s(2).rjust(8, '0')).to eq('01000011')
     end
 
     # https://github.com/ddnet/ddnet/pull/6015
