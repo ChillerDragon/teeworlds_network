@@ -23,12 +23,22 @@ client.connect('localhost', 8303, detach: false)
 
 context.message is nil because there is no message payload.
 
+By default the client will respond with the startinfo message.
+This is crucial to establish a healthy connection to the server.
+If you know what you are doing and do not want to send this message call `context.cancel`
+
 **Example:**
 ```ruby
 client = TeeworldsClient.new
 
 client.on_connected do |context|
-  # TODO: generated documentation
+  puts "we got NETMSG_CON_READY from server"
+
+  # skip default behavior
+  context.cancel
+
+  # send start info manually
+  client.send_msg_start_info
 end
 
 client.connect('localhost', 8303, detach: false)

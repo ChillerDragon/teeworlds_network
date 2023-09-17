@@ -17,21 +17,6 @@ client.on_map_change do |context|
 end
 ```
 
-### @client [[TeeworldsClient](../classes/TeeworldsClient.md)]
-
-Access the network client to send packets.
-
-**Example:**
-
-Reimplement your on on_connected logic and cancel the default one
-
-```ruby
-client.on_connected do |ctx|
-  ctx.client.send_msg_start_info
-  ctx.cancel
-end
-```
-
 ### @data [Hash]
 
 This hash holds all the current data. They keys might vary depending on the current context.
