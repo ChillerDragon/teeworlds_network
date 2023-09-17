@@ -372,29 +372,43 @@ client.send_chat('hello world!')
 ```
 ### <a name="initialize"></a> #initialize(options = {})
 
-**Parameter: TODO**
+**Parameter: Hash**
+
+Available keys:
+- `:verbose` enables verbose output.
+- `:config` path to autoexec.cfg file. As of right now only those commands are supported:
+  + `password [yourpassword]` will be sent on connect
+  + `echo [message]` prints a message
+  + `quit` quits the client
 
 **Example:**
 ```ruby
-client = TeeworldsClient.new
-
-# TODO: generated documentation
-client.initialize(options = {})
+client = TeeworldsClient.new(verbose: true, config: "autoexec.cfg")
 
 client.connect('localhost', 8303, detach: false)
 ```
-### <a name="rcon_authed?"></a> #rcon_authed?
+### <a name="rcon_authed?"></a> #rcon_authed? -> Boolean
 
-**Parameter: TODO**
+Returns true if the client is currently rcon authenticated.
 
 **Example:**
 ```ruby
+
+# TODO: this does not work!
+
 client = TeeworldsClient.new
 
-# TODO: generated documentation
-client.rcon_authed?
 
-client.connect('localhost', 8303, detach: false)
+client.connect('localhost', 8303, detach: true)
+
+loop do
+  if client.rcon_authed?
+    puts "we are authenticated"
+  else
+    client.rcon_auth("", "rcon")
+  end
+  sleep(1)
+end
 ```
 ### <a name="send_ctrl_close"></a> #send_ctrl_close
 
