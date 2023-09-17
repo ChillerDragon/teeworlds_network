@@ -47,6 +47,6 @@ Version v0.0.1
 
 [#on_client_drop(&block)](classes/TeeworldsClient.md#on_client_drop)
 
-[#connect(ip, port, options)](classes/TeeworldsClient.md#connect)
+[#connect(ip, port, options = {})](classes/TeeworldsClient.md#connect)
 
 [#send_chat(str)](classes/TeeworldsClient.md#send_chat)
