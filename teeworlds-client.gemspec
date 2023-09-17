@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.authors     = ['ChillerDragon']
   s.email       = 'ChillerDragon@gmail.com'
   s.files       = FileList[
-    'lib/*.rb'
+    'lib/**/*.rb'
   ]
   s.required_ruby_version = '>= 3.1.2'
   s.add_dependency 'huffman_tw', '~> 0.0.1'
