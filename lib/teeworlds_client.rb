@@ -343,7 +343,10 @@ class TeeworldsClient
     @netbase.send_packet(msg)
   end
 
+  private
+
   def on_msg_token(data)
+    # TODO: add hook
     @token = bytes_to_str(data)
     @netbase.set_peer_token(@token)
     puts "Got token #{@token}"
@@ -351,6 +354,7 @@ class TeeworldsClient
   end
 
   def on_msg_accept
+    # TODO: add hook
     puts 'got accept. connection online'
     @state = NET_CONNSTATE_ONLINE
     send_info
@@ -359,8 +363,6 @@ class TeeworldsClient
   def on_msg_close(data)
     @game_client.on_disconnect(data)
   end
-
-  private
 
   # CClient::ProcessConnlessPacket
   def on_ctrl_message(msg, data)
