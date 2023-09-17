@@ -53,7 +53,12 @@ function gen_doc_index() {
 		mv "$tmpfile" "$index_file"
 		return
 	fi
-	local diff="$(diff "$tmpfile" "$index_file")"
+	local diff
+	if ! diff="$(diff "$tmpfile" "$index_file")"
+	then
+		echo "Error: failed to check diff"
+		exit 1
+	fi
 	if [ "$diff" != "" ]
 	then
 		echo "Error: documentation index is not up to date"
