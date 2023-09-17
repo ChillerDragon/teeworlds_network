@@ -9,11 +9,25 @@ fi
 
 arg_generate_docs=0
 
+function show_usage() {
+	echo "usage: ./scripts/hooks.sh [OPTION]"
+	echo "options:"
+	echo "  --fix | --generate-docs       to generate docs"
+	echo "  -h | --help                   to show this help"
+}
+
 for arg in "$@"
 do
 	if [ "$arg" == "--fix" ] || [ "$arg" == "--generate-docs" ]
 	then
 		arg_generate_docs=1
+	elif [ "$arg" == "-h" ] || [ "$arg" == "--help" ]
+	then
+		show_usage
+		exit 0
+	else
+		show_usage
+		exit 1
 	fi
 done
 
