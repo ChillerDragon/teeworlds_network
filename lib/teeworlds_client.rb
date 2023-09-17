@@ -40,6 +40,7 @@ class TeeworldsClient
       auth_off: [],
       rcon_cmd_add: [],
       rcon_cmd_rem: [],
+      tick: [],
       maplist_entry_add: [],
       maplist_entry_rem: []
     }
@@ -74,6 +75,10 @@ class TeeworldsClient
 
   def rcon_authed?
     @rcon_authed
+  end
+
+  def on_tick(&block)
+    @hooks[:tick].push(block)
   end
 
   def on_auth_on(&block)
@@ -466,6 +471,7 @@ class TeeworldsClient
         puts 'retrying connection ...'
       end
     end
+    @game_client.on_tick
     return unless pck
 
     data = pck.first

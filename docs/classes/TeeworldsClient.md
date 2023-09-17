@@ -632,3 +632,16 @@ loop do
         prev_weapon: 0)
 end
 ```
+### <a name="on_tick"></a> #on_tick(&block)
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.on_tick(&block)
+
+client.connect('localhost', 8303, detach: false)
+```

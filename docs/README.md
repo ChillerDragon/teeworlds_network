@@ -82,3 +82,5 @@ Version v0.0.4
 [#send_enter_game](classes/TeeworldsClient.md#send_enter_game)
 
 [#send_input(input = {})](classes/TeeworldsClient.md#send_input)
+
+[#on_tick(&block)](classes/TeeworldsClient.md#on_tick)

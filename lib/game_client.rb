@@ -38,6 +38,10 @@ class GameClient
     context
   end
 
+  def on_tick
+    call_hook(:tick, nil)
+  end
+
   def on_auth_on
     return if call_hook(:auth_on, Context.new(nil)).nil?
 
