@@ -143,16 +143,26 @@ client.connect('localhost', 8303, detach: false)
 
 ### <a name="on_snapshot"></a> #on_snapshot(&block)
 
-**Parameter: block [Block |[context](../classes/Context.md)|]**
+**Parameter: block [Block |[context](../classes/Context.md), [Snapshot](../classes/Snapshot.md)|]**
 
-TODO: generated documentation
+context.message is nil but the block takes a second argument of type [Snapshot](../classes/Snapshot.md)
+
+By default when a snapshot is received the `GameClient::ack_game_tick` and `GameClient::pred_game_tick`
+variables are updated. Those are crucial for a healthy connection to the server. So only call `context.cancel`
+if you know what you are doing
 
 **Example:**
 ```ruby
 client = TeeworldsClient.new
 
-client.on_snapshot do |context|
-  # TODO: generated documentation
+client.on_snapshot do |_, snapshot|
+  snapshot.items.each do |item|
+    next unless item.instance_of?(NetObj::Character)
+
+    p item.to_h
+    # => {:id=>0, :tick=>372118, :x=>1584, :y=>369, :vel_x=>0, :vel_y=>0, :angle=>0, :direction=>0, :jumped=>0, :hooked_player=>-1, :hook_state=>0, :hook_tick=>0, :hook_x=>1584, :hook_y=>369, :hook_dx=>0, :hook_dy=>0, :health=>0, :armor=>0, :ammo_count=>0, :weapon=>1, :emote=>0, :attack_tick=>0, :triggered_events=>0}
+
+  end
 end
 
 client.connect('localhost', 8303, detach: false)

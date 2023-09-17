@@ -24,6 +24,7 @@ class Snapshot
   attr_accessor :game_tick, :items
 
   def initialize(items)
+    @game_tick = 0
     @items = items
   end
 end
