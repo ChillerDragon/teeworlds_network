@@ -147,7 +147,9 @@ class GameClient
   def on_rcon_line(chunk)
     message = RconLine.new(chunk.data[1..])
     context = Context.new(message)
-    call_hook(:rcon_line, context)
+    return if call_hook(:rcon_line, context).nil?
+
+    puts "[rcon] #{context.message.command}"
   end
 
   def on_snapshot(chunk)

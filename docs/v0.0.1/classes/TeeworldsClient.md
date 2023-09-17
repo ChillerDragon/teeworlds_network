@@ -57,11 +57,18 @@ client.connect('localhost', 8303, detach: false)
 
 context.message is a [RconLine](../classes/messages/RconLine.md)
 
+By default the rcon line is printed to stdout in the following format `"[rcon] #{context.message.command}"`
+if you want to skip that behavior call `context.cancel`
+
 **Example:**
 ```ruby
 client = TeeworldsClient.new
 
 client.on_rcon_line do |context|
+  # skip default print
+  context.cancel
+
+  # implement custom print
   puts "[rcon] #{context.message.command}"
 end
 
@@ -325,7 +332,6 @@ client.on_client_drop do |ctx|
 end
 ```
 
-
 ### <a name="connect"></a> #connect(ip, port, options = {})
 
 **Parameter: ip [String]**
@@ -393,19 +399,18 @@ Returns true if the client is currently rcon authenticated.
 
 **Example:**
 ```ruby
-
-# TODO: this does not work!
-
 client = TeeworldsClient.new
 
-
 client.connect('localhost', 8303, detach: true)
+
+# give the client time to connect
+sleep(4)
 
 loop do
   if client.rcon_authed?
     puts "we are authenticated"
   else
-    client.rcon_auth("", "rcon")
+    client.rcon_auth(password: "rcon")
   end
   sleep(1)
 end
