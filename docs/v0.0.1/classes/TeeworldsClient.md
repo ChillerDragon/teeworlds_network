@@ -326,7 +326,7 @@ end
 ```
 
 
-### <a name="connect"></a> #connect(ip, port, options)
+### <a name="connect"></a> #connect(ip, port, options = {})
 
 **Parameter: ip [String]**
 
