@@ -14,13 +14,27 @@ Version v0.0.1
 
 ### [TeeworldsClient](classes/TeeworldsClient.md)
 
-[#on_snapshot(&block)](classes/TeeworldsClient.md#on_snapshot)
-
-[#on_rcon_line(&block)](classes/TeeworldsClient.md#on_rcon_line)
-
 [#on_disconnect(&block)](classes/TeeworldsClient.md#on_disconnect)
 
 [#on_connected(&block)](classes/TeeworldsClient.md#on_connected)
+
+[#on_rcon_line(&block)](classes/TeeworldsClient.md#on_rcon_line)
+
+[#on_auth_off(&block)](classes/TeeworldsClient.md#on_auth_off)
+
+[#on_auth_on(&block)](classes/TeeworldsClient.md#on_auth_on)
+
+[#on_input_timing(&block)](classes/TeeworldsClient.md#on_input_timing)
+
+[#on_maplist_entry_rem(&block)](classes/TeeworldsClient.md#on_maplist_entry_rem)
+
+[#on_maplist_entry_add(&block)](classes/TeeworldsClient.md#on_maplist_entry_add)
+
+[#on_rcon_cmd_rem(&block)](classes/TeeworldsClient.md#on_rcon_cmd_rem)
+
+[#on_rcon_cmd_add(&block)](classes/TeeworldsClient.md#on_rcon_cmd_add)
+
+[#on_snapshot(&block)](classes/TeeworldsClient.md#on_snapshot)
 
 [#on_client_info(&block)](classes/TeeworldsClient.md#on_client_info)
 
@@ -33,6 +47,3 @@ Version v0.0.1
 [#connect(ip, port, options)](classes/TeeworldsClient.md#connect)
 
 [#send_chat(str)](classes/TeeworldsClient.md#send_chat)
-
-
-
