@@ -6,6 +6,8 @@ Version v0.0.1
 
 ### [ChatMessage](classes/ChatMessage.md)
 
+### [Snapshot](classes/Snapshot.md)
+
 ### [Context](classes/Context.md)
 
 ### [Player](classes/Player.md)
