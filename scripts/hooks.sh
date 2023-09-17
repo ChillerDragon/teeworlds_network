@@ -46,7 +46,7 @@ function get_msg_of_client_hook() {
 	local in_func=0
 	while IFS='' read -r line
 	do
-		if [ "$line" == "  def $hook(chunk)" ]
+		if [ "$line" == "  def $hook(chunk)" ] || [ "$line" == "  def $hook" ]
 		then
 			in_func=1
 		fi
@@ -59,6 +59,12 @@ function get_msg_of_client_hook() {
 			if [[ "$line" =~ message\ =\ (.*).new ]]
 			then
 				echo "${BASH_REMATCH[1]}"
+				break
+			fi
+			if [[ "$line" =~ Context\.new\(nil ]]
+			then
+				echo nil
+				break
 			fi
 		fi
 	done < lib/game_client.rb
@@ -98,7 +104,12 @@ function add_hook_doc() {
 	msg_class="$(get_msg_of_client_hook "$hook")"
 	if [ "$msg_class" != "" ]
 	then
-		doc_text="context.message is a [$msg_class](../classes/messages/$msg_class.md)"
+		if [ "$msg_class" == "nil" ]
+		then
+			doc_text="context.message is nil because there is no message payload."
+		else
+			doc_text="context.message is a [$msg_class](../classes/messages/$msg_class.md)"
+		fi
 	fi
 	tmpdoc="$tmpdir/doc.md"
 	{
