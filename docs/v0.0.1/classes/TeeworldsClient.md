@@ -4,14 +4,21 @@
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
 
-context.message is nil because there is no message payload.
+context.message is nil but there is a key `:reason` set in the context.data hash.
+
+By default the following disconnect message is printed `puts "got disconnect. reason='#{context.data[:reason]}'"`
+if you want to skip that behavior call the `context.cancel` method.
 
 **Example:**
 ```ruby
 client = TeeworldsClient.new
 
 client.on_disconnect do |context|
-  # TODO: generated documentation
+  # remove default disconnect message
+  context.cancel
+
+  # implement custom disconnect message
+  puts "got disconnect. reason='#{context.data[:reason]}'"
 end
 
 client.connect('localhost', 8303, detach: false)
