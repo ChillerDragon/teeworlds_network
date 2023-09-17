@@ -39,7 +39,7 @@ class GameClient
   end
 
   def on_tick
-    call_hook(:tick, nil)
+    call_hook(:tick, Context.new(nil))
   end
 
   def on_auth_on
