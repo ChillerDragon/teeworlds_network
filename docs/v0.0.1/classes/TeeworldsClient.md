@@ -1,5 +1,56 @@
 # TeeworldsClient
 
+### <a name="on_rcon_line"></a> #on_rcon_line(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+context.message is a [RconLine](../classes/messages/RconLine.md)
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_rcon_line do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: false)
+```
+
+### <a name="on_auth_off"></a> #on_auth_off(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+context.message is nil because there is no message payload.
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_auth_off do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: false)
+```
+
+### <a name="on_auth_on"></a> #on_auth_on(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+context.message is nil because there is no message payload.
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_auth_on do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: false)
+```
+
 ### <a name="on_input_timing"></a> #on_input_timing(&block)
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
@@ -90,40 +141,6 @@ end
 client.connect('localhost', 8303, detach: false)
 ```
 
-### <a name="on_auth_off"></a> #on_auth_off(&block)
-
-**Parameter: block [Block |[context](../classes/Context.md)|]**
-
-TODO: generated documentation
-
-**Example:**
-```ruby
-client = TeeworldsClient.new
-
-client.on_auth_off do |context|
-  # TODO: generated documentation
-end
-
-client.connect('localhost', 8303, detach: false)
-```
-
-### <a name="on_auth_on"></a> #on_auth_on(&block)
-
-**Parameter: block [Block |[context](../classes/Context.md)|]**
-
-TODO: generated documentation
-
-**Example:**
-```ruby
-client = TeeworldsClient.new
-
-client.on_auth_on do |context|
-  # TODO: generated documentation
-end
-
-client.connect('localhost', 8303, detach: false)
-```
-
 ### <a name="on_snapshot"></a> #on_snapshot(&block)
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
@@ -135,23 +152,6 @@ TODO: generated documentation
 client = TeeworldsClient.new
 
 client.on_snapshot do |context|
-  # TODO: generated documentation
-end
-
-client.connect('localhost', 8303, detach: false)
-```
-
-### <a name="on_rcon_line"></a> #on_rcon_line(&block)
-
-**Parameter: block [Block |[context](../classes/Context.md)|]**
-
-TODO: generated documentation
-
-**Example:**
-```ruby
-client = TeeworldsClient.new
-
-client.on_rcon_line do |context|
   # TODO: generated documentation
 end
 
