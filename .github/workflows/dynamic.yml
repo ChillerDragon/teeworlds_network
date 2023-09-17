@@ -57,3 +57,4 @@ jobs:
     - name: Check doc index up to date
       run: |
         ./scripts/update_docs_index.sh
+        ./scripts/update_docs_methods.sh
