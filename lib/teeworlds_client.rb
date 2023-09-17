@@ -310,18 +310,18 @@ class TeeworldsClient
     )
   end
 
-  def send_input
+  def send_input(input = {})
     inp = {
-      direction: -1,
-      target_x: 10,
-      target_y: 10,
-      jump: rand(0..1),
-      fire: 0,
-      hook: 0,
-      player_flags: 0,
-      wanted_weapon: 0,
-      next_weapon: 0,
-      prev_weapon: 0
+      direction: input[:direction] || -1,
+      target_x: input[:target_x] || 10,
+      target_y: input[:target_y] || 10,
+      jump: input[:jump] || rand(0..1),
+      fire: input[:fire] || 0,
+      hook: input[:hook] || 0,
+      player_flags: input[:player_flags] || 0,
+      wanted_weapon: input[:wanted_weapon] || 0,
+      next_weapon: input[:next_weapon] || 0,
+      prev_weapon: input[:prev_weapon] || 0
     }
 
     data = []

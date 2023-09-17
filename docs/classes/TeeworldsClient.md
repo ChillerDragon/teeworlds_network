@@ -607,16 +607,28 @@ client.send_enter_game
 
 client.connect('localhost', 8303, detach: false)
 ```
-### <a name="send_input"></a> #send_input
 
-**Parameter: TODO**
+### <a name="send_input"></a> #send_input(input = {})
+
+**Parameter: Hash**
 
 **Example:**
 ```ruby
 client = TeeworldsClient.new
 
-# TODO: generated documentation
-client.send_input
-
 client.connect('localhost', 8303, detach: false)
+
+loop do
+  client.send_input(
+        direction: -1,
+        target_x: 10,
+        target_y: 10,
+        jump: rand(0..1),
+        fire: 0,
+        hook: 0,
+        player_flags: 0,
+        wanted_weapon: 0,
+        next_weapon: 0,
+        prev_weapon: 0)
+end
 ```
