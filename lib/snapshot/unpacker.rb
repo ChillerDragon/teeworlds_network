@@ -86,6 +86,12 @@ class SnapshotUnpacker
     DDNetSnapItem.new(u, id)
   end
 
+  ##
+  # Given a NetChunk this method
+  # dissects the snapshot header
+  # and its payload (snap items)
+  #
+  # @return [Snapshot]
   def snap_single(chunk)
     u = Unpacker.new(chunk.data)
     msg_id = u.get_int

@@ -4,6 +4,14 @@ require_relative 'array'
 require_relative 'network'
 require_relative 'bytes'
 
+##
+# The NetChunk class represents one individual
+# chunk of a teeworlds packet.
+#
+# A teeworlds packet holds multiple game and system messages
+# as its payload, those are called chunks or messages.
+#
+# https://chillerdragon.github.io/teeworlds-protocol/07/packet_layout.html
 class NetChunk
   attr_reader :next, :data, :msg, :sys, :flags, :header_raw, :full_raw
 
@@ -131,10 +139,12 @@ class NetChunk
     # in da third byte but who needs seq?!
   end
 
+  # @return [Boolean]
   def flags_vital
     @flags[:vital]
   end
 
+  # @return [Boolean]
   def flags_resend
     @flags[:resend]
   end
@@ -143,6 +153,12 @@ end
 MAX_NUM_CHUNKS = 1024
 
 class BigChungusTheChunkGetter
+  ##
+  # given a raw payload of a teeworlds packet
+  # it splits it into the indivudal chunks
+  # also known as messages
+  #
+  # @return [Array<NetChunk>]
   def self.get_chunks(data)
     chunks = []
     chunk = NetChunk.new(data)
