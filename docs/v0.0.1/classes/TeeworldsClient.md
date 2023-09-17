@@ -62,7 +62,7 @@ context.message is a [RconLine](../classes/messages/RconLine.md)
 client = TeeworldsClient.new
 
 client.on_rcon_line do |context|
-  # TODO: generated documentation
+  puts "[rcon] #{context.message.command}"
 end
 
 client.connect('localhost', 8303, detach: false)
@@ -74,12 +74,18 @@ client.connect('localhost', 8303, detach: false)
 
 context.message is nil because there is no message payload.
 
+By default the client will print "rcon logged out" if you want to skip that behavior call `context.cancel`
+
 **Example:**
 ```ruby
 client = TeeworldsClient.new
 
 client.on_auth_off do |context|
-  # TODO: generated documentation
+  # do not print default "rcon logged out" message
+  context.cancel
+
+  # implement custom message
+  puts "rcon logged out"
 end
 
 client.connect('localhost', 8303, detach: false)
@@ -91,12 +97,18 @@ client.connect('localhost', 8303, detach: false)
 
 context.message is nil because there is no message payload.
 
+By default the client will print "rcon logged in" if you want to skip that behavior call `context.cancel`
+
 **Example:**
 ```ruby
 client = TeeworldsClient.new
 
 client.on_auth_on do |context|
-  # TODO: generated documentation
+  # do not print default "rcon logged in" message
+  context.cancel
+
+  # implement custom message
+  puts "rcon logged in"
 end
 
 client.connect('localhost', 8303, detach: false)
@@ -169,7 +181,7 @@ context.message is a [RconCmdRem](../classes/messages/RconCmdRem.md)
 client = TeeworldsClient.new
 
 client.on_rcon_cmd_rem do |context|
-  # TODO: generated documentation
+  puts "[rcon] command '#{context.message.name}' was removed"
 end
 
 client.connect('localhost', 8303, detach: false)
@@ -186,7 +198,7 @@ context.message is a [RconCmdAdd](../classes/messages/RconCmdAdd.md)
 client = TeeworldsClient.new
 
 client.on_rcon_cmd_add do |context|
-  # TODO: generated documentation
+  puts "[rcon] command '#{context.message.name}' was added"
 end
 
 client.connect('localhost', 8303, detach: false)
@@ -223,14 +235,20 @@ client.connect('localhost', 8303, detach: false)
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
 
-TODO: generated documentation
+**WARNING THIS API IS PLANNED TO CHANGE!**
+
+context.message is nil but there is `context.data[:player]`
+
+By default this prints the message `Our client id is <id>` if you want to skip that behavior
+call `context.cancel`
 
 **Example:**
 ```ruby
 client = TeeworldsClient.new
 
 client.on_client_info do |context|
-  # TODO: generated documentation
+  # print new player info
+  p context.data[:player]
 end
 
 client.connect('localhost', 8303, detach: false)
