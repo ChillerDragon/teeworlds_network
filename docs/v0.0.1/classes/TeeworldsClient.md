@@ -11,7 +11,8 @@ context.message is a [InputTiming](../classes/messages/InputTiming.md)
 client = TeeworldsClient.new
 
 client.on_input_timing do |context|
-  # TODO: generated documentation
+  puts "intended_tick: #{context.message.intended_tick}"
+  puts "time_left: #{context.message.time_left}"
 end
 
 client.connect('localhost', 8303, detach: true)
