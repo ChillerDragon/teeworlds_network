@@ -49,3 +49,11 @@ jobs:
         gem install bundler
         bundle install --jobs 4 --retry 3
         ./scripts/hooks.sh
+  doc-index:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Check doc index up to date
+      run: |
+        ./scripts/update_docs_index.sh
