@@ -1,5 +1,39 @@
 # TeeworldsClient
 
+### <a name="on_disconnect"></a> #on_disconnect(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+context.message is nil because there is no message payload.
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_disconnect do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: false)
+```
+
+### <a name="on_connected"></a> #on_connected(&block)
+
+**Parameter: block [Block |[context](../classes/Context.md)|]**
+
+context.message is nil because there is no message payload.
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+client.on_connected do |context|
+  # TODO: generated documentation
+end
+
+client.connect('localhost', 8303, detach: false)
+```
+
 ### <a name="on_rcon_line"></a> #on_rcon_line(&block)
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
@@ -163,40 +197,6 @@ client.on_snapshot do |_, snapshot|
     # => {:id=>0, :tick=>372118, :x=>1584, :y=>369, :vel_x=>0, :vel_y=>0, :angle=>0, :direction=>0, :jumped=>0, :hooked_player=>-1, :hook_state=>0, :hook_tick=>0, :hook_x=>1584, :hook_y=>369, :hook_dx=>0, :hook_dy=>0, :health=>0, :armor=>0, :ammo_count=>0, :weapon=>1, :emote=>0, :attack_tick=>0, :triggered_events=>0}
 
   end
-end
-
-client.connect('localhost', 8303, detach: false)
-```
-
-### <a name="on_disconnect"></a> #on_disconnect(&block)
-
-**Parameter: block [Block |[context](../classes/Context.md)|]**
-
-TODO: generated documentation
-
-**Example:**
-```ruby
-client = TeeworldsClient.new
-
-client.on_disconnect do |context|
-  # TODO: generated documentation
-end
-
-client.connect('localhost', 8303, detach: false)
-```
-
-### <a name="on_connected"></a> #on_connected(&block)
-
-**Parameter: block [Block |[context](../classes/Context.md)|]**
-
-TODO: generated documentation
-
-**Example:**
-```ruby
-client = TeeworldsClient.new
-
-client.on_connected do |context|
-  # TODO: generated documentation
 end
 
 client.connect('localhost', 8303, detach: false)
