@@ -73,7 +73,7 @@ function add_hook_doc() {
 	fi
 	local tmpdoc
 	local obj_var=client
-	local run="client.connect('localhost', 8303, detach: true)"
+	local run="client.connect('localhost', 8303, detach: false)"
 	if [[ "$ruby_class" =~ Server ]]
 	then
 		obj_var=server

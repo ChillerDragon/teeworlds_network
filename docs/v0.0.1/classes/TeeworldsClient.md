@@ -15,7 +15,7 @@ client.on_input_timing do |context|
   puts "time_left: #{context.message.time_left}"
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_maplist_entry_rem"></a> #on_maplist_entry_rem(&block)
@@ -34,7 +34,7 @@ client.on_maplist_entry_rem do |context|
   puts context.message.name
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_maplist_entry_add"></a> #on_maplist_entry_add(&block)
@@ -53,7 +53,7 @@ client.on_maplist_entry_add do |context|
   puts context.message.name
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_rcon_cmd_rem"></a> #on_rcon_cmd_rem(&block)
@@ -70,7 +70,7 @@ client.on_rcon_cmd_rem do |context|
   # TODO: generated documentation
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_rcon_cmd_add"></a> #on_rcon_cmd_add(&block)
@@ -87,7 +87,7 @@ client.on_rcon_cmd_add do |context|
   # TODO: generated documentation
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_auth_off"></a> #on_auth_off(&block)
@@ -104,7 +104,7 @@ client.on_auth_off do |context|
   # TODO: generated documentation
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_auth_on"></a> #on_auth_on(&block)
@@ -121,7 +121,7 @@ client.on_auth_on do |context|
   # TODO: generated documentation
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_snapshot"></a> #on_snapshot(&block)
@@ -138,7 +138,7 @@ client.on_snapshot do |context|
   # TODO: generated documentation
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_rcon_line"></a> #on_rcon_line(&block)
@@ -155,7 +155,7 @@ client.on_rcon_line do |context|
   # TODO: generated documentation
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_disconnect"></a> #on_disconnect(&block)
@@ -172,7 +172,7 @@ client.on_disconnect do |context|
   # TODO: generated documentation
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_connected"></a> #on_connected(&block)
@@ -189,7 +189,7 @@ client.on_connected do |context|
   # TODO: generated documentation
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_client_info"></a> #on_client_info(&block)
@@ -206,7 +206,7 @@ client.on_client_info do |context|
   # TODO: generated documentation
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_chat"></a> #on_chat(&block)
@@ -227,7 +227,7 @@ client.on_chat do |context, msg|
   puts "[chat] #{msg}"
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 ### <a name="on_map_change"></a> #on_map_change(&block)
 
@@ -248,7 +248,7 @@ client.on_map_change do |context|
   context.cancel
 end
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 ```
 
 ### <a name="on_client_drop"></a> #on_client_drop(&block)
@@ -321,7 +321,7 @@ Send a chat message. Takes the chat message as String.
 ```ruby
 client = TeeworldsClient.new(verbose: true)
 
-client.connect('localhost', 8303, detach: true)
+client.connect('localhost', 8303, detach: false)
 
 client.send_chat('hello world!')
 ```
