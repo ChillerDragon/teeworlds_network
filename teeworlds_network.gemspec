@@ -4,7 +4,7 @@ require 'rake'
 
 Gem::Specification.new do |s|
   s.name        = 'teeworlds_network'
-  s.version     = '0.0.4'
+  s.version     = '0.0.5'
   s.summary     = 'teeworlds 0.7 network protocol (client and server)'
   s.description = <<-DESC
   A library wrapping the network protocol of the game teeworlds.
