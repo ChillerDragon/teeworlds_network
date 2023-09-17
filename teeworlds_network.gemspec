@@ -21,4 +21,5 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/ChillerDragon/teeworlds_network'
   s.license     = 'Unlicense'
   s.metadata['rubygems_mfa_required'] = 'true'
+  s.metadata['documentation_uri'] = 'https://github.com/ChillerDragon/teeworlds_network/tree/master/docs'
 end
