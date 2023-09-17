@@ -370,3 +370,211 @@ client.connect('localhost', 8303, detach: false)
 
 client.send_chat('hello world!')
 ```
+### <a name="initialize"></a> #initialize(options = {})
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.initialize(options = {})
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="rcon_authed?"></a> #rcon_authed?
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.rcon_authed?
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="send_ctrl_close"></a> #send_ctrl_close
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.send_ctrl_close
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="disconnect"></a> #disconnect
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.disconnect
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="set_startinfo"></a> #set_startinfo(info)
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.set_startinfo(info)
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="send_msg"></a> #send_msg(data)
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.send_msg(data)
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="send_ctrl_keepalive"></a> #send_ctrl_keepalive
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.send_ctrl_keepalive
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="send_msg_connect"></a> #send_msg_connect
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.send_msg_connect
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="send_ctrl_with_token"></a> #send_ctrl_with_token
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.send_ctrl_with_token
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="send_info"></a> #send_info
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.send_info
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="rcon_auth"></a> #rcon_auth(name, password = nil)
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.rcon_auth(name, password = nil)
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="rcon"></a> #rcon(command)
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.rcon(command)
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="send_msg_start_info"></a> #send_msg_start_info
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.send_msg_start_info
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="send_msg_ready"></a> #send_msg_ready
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.send_msg_ready
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="send_enter_game"></a> #send_enter_game
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.send_enter_game
+
+client.connect('localhost', 8303, detach: false)
+```
+### <a name="send_input"></a> #send_input
+
+**Parameter: TODO**
+
+**Example:**
+```ruby
+client = TeeworldsClient.new
+
+# TODO: generated documentation
+client.send_input
+
+client.connect('localhost', 8303, detach: false)
+```
