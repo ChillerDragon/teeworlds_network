@@ -50,3 +50,35 @@ Version v0.0.1
 [#connect(ip, port, options = {})](classes/TeeworldsClient.md#connect)
 
 [#send_chat(str)](classes/TeeworldsClient.md#send_chat)
+
+[#initialize(options = {})](classes/TeeworldsClient.md#initialize)
+
+[#rcon_authed?](classes/TeeworldsClient.md#rcon_authed?)
+
+[#send_ctrl_close](classes/TeeworldsClient.md#send_ctrl_close)
+
+[#disconnect](classes/TeeworldsClient.md#disconnect)
+
+[#set_startinfo(info)](classes/TeeworldsClient.md#set_startinfo)
+
+[#send_msg(data)](classes/TeeworldsClient.md#send_msg)
+
+[#send_ctrl_keepalive](classes/TeeworldsClient.md#send_ctrl_keepalive)
+
+[#send_msg_connect](classes/TeeworldsClient.md#send_msg_connect)
+
+[#send_ctrl_with_token](classes/TeeworldsClient.md#send_ctrl_with_token)
+
+[#send_info](classes/TeeworldsClient.md#send_info)
+
+[#rcon_auth(name, password = nil)](classes/TeeworldsClient.md#rcon_auth)
+
+[#rcon(command)](classes/TeeworldsClient.md#rcon)
+
+[#send_msg_start_info](classes/TeeworldsClient.md#send_msg_start_info)
+
+[#send_msg_ready](classes/TeeworldsClient.md#send_msg_ready)
+
+[#send_enter_game](classes/TeeworldsClient.md#send_enter_game)
+
+[#send_input](classes/TeeworldsClient.md#send_input)
