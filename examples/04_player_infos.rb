@@ -9,7 +9,7 @@ client = TeeworldsClient.new(verbose: true)
 
 # all keys are optional
 # if not provided they will fall back to the default value
-client.set_start_info(
+client.set_startinfo(
   name: 'ruby gamer',
   clan: '',
   country: -1,
