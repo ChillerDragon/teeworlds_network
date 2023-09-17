@@ -375,8 +375,8 @@ client.send_chat('hello world!')
 **Parameter: Hash**
 
 Available keys:
-- `:verbose` enables verbose output.
-- `:config` path to autoexec.cfg file. As of right now only those commands are supported:
+- `:verbose [Boolean]` enables verbose output.
+- `:config [String]` path to autoexec.cfg file. As of right now only those commands are supported:
   + `password [yourpassword]` will be sent on connect
   + `echo [message]` prints a message
   + `quit` quits the client
