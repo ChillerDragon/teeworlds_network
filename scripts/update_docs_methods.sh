@@ -11,13 +11,6 @@ tmpdir=scripts/tmp
 mkdir -p scripts/tmp
 tmpfile="$tmpdir/README.md"
 
-version="$(grep TEEWORLDS_NETWORK_VERSION lib/version.rb | cut -d"'" -f2)"
-if [ "$version" == "" ]
-then
-	echo "Error: failed to get library version"
-	exit 1
-fi
-
 arg_generate_docs=0
 
 for arg in "$@"
@@ -138,7 +131,7 @@ function check_diff_or_fix() {
 }
 
 function main() {
-	gen_class_methods TeeworldsClient ./lib/teeworlds_client.rb ./docs/"$version"/classes/TeeworldsClient.md
+	gen_class_methods TeeworldsClient ./lib/teeworlds_client.rb ./docs/classes/TeeworldsClient.md
 }
 
 main

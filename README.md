@@ -38,4 +38,4 @@ client.connect('localhost', 8303, detach: false)
 
 ## Documentation
 
-Checkout [docs/v0.0.1/READE.md](docs/v0.0.1/README.md) for a full library documentation.
+Checkout [docs/READE.md](docs/README.md) for a full library documentation.

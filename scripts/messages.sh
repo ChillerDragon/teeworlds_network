@@ -19,7 +19,6 @@ done
 
 function missing_doc() {
 	local rb_file="$1"
-	local version="$2"
 	local line
 	local ifs="$IFS"
 	local dir=''
@@ -65,7 +64,7 @@ function missing_doc() {
 		fi
 	done < "$rb_file"
 	IFS="$ifs"
-	dst_file="docs/$version/classes/messages/$class_name.md"
+	dst_file="docs/classes/messages/$class_name.md"
 	if [ -f "$dst_file" ]
 	then
 		return 1
@@ -85,18 +84,11 @@ function missing_doc() {
 }
 
 function generate_msg_docs() {
-	local version
-	version="$(grep TEEWORLDS_NETWORK_VERSION lib/version.rb | cut -d"'" -f2)"
-	if [ "$version" == "" ]
-	then
-		echo "Error: failed to get library version"
-		exit 1
-	fi
 	local rb_file
 	for rb_file in ./lib/messages/*.rb
 	do
 		echo -n "[*] $(basename "$rb_file") .. "
-		if missing_doc "$rb_file" "$version"
+		if missing_doc "$rb_file"
 		then
 			echo "ERROR: missing doc try --fix"
 		else

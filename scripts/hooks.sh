@@ -150,15 +150,8 @@ function check_file() {
 	local ruby_file="$2"
 	local hooks
 	local hook
-	local version
 	local got_err=0
-	version="$(grep TEEWORLDS_NETWORK_VERSION lib/version.rb | cut -d"'" -f2)"
 	hooks="$(get_hooks "$ruby_file")"
-	if [ "$version" == "" ]
-	then
-		echo "Error: failed to get library version"
-		exit 1
-	fi
 
 	# self testing the test
 	# if the test finds no hooks the test is wrong not the code
@@ -175,7 +168,7 @@ function check_file() {
 		echo -n "[*] checking hook: $hook"
 		# check documentation
 		local mdfile
-		mdfile="docs/$version/classes/$ruby_class.md"
+		mdfile="docs/classes/$ruby_class.md"
 		if [ ! -f "$mdfile" ]
 		then
 			echo "ERROR: documentation not found $mdfile"

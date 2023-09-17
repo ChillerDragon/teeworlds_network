@@ -41,16 +41,16 @@ function print_instance_methods() {
 		hook_slug="${hook_slug%%\?*}"
 		echo ""
 		echo "[#$hook](classes/$class.md#$hook_slug)"
-	done < <(grep '### <a name="' "docs/$version/classes/$class.md" | cut -d'#' -f5)
+	done < <(grep '### <a name="' "docs/classes/$class.md" | cut -d'#' -f5)
 }
 
 function list_classes() {
 	local class_path
 	local class_name
-	for class_path in ./docs/"$version"/classes/*.md
+	for class_path in ./docs/classes/*.md
 	do
 		class_name="$(basename "$class_path" .md)"
-		class_path="$(echo "$class_path" | cut -d'/' -f4-)"
+		class_path="$(echo "$class_path" | cut -d'/' -f3-)"
 		{
 			echo ""
 			echo "### [$class_name]($class_path)"
@@ -60,7 +60,7 @@ function list_classes() {
 }
 
 function check_diff_or_fix() {
-	local index_file="docs/$version/README.md"
+	local index_file="docs/README.md"
 	if [ ! -f "$index_file" ]
 	then
 		echo "Error: missing index file $index_file"
