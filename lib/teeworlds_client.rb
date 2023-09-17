@@ -191,8 +191,9 @@ class TeeworldsClient
 
   def disconnect
     puts 'disconnecting.'
-    send_ctrl_close
+    send_ctrl_close unless @s.nil?
     @s&.close
+    @s = nil
     @signal_disconnect = true
   end
 

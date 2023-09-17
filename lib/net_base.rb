@@ -63,6 +63,10 @@ class NetBase
     # // TTTTTTTT
     # // TTTTTTTT
     # // TTTTTTTT
+    if @s.nil?
+      puts "Error: no active socket"
+      return
+    end
     flags_bits = PacketFlags.new(opts).bits
     ack = @ack
     ip = @ip
