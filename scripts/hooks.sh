@@ -46,7 +46,9 @@ function get_msg_of_client_hook() {
 	local in_func=0
 	while IFS='' read -r line
 	do
-		if [ "$line" == "  def $hook(chunk)" ] || [ "$line" == "  def $hook" ]
+		if [ "$line" == "  def $hook(chunk)" ] \
+			|| [ "$line" == "  def $hook(data)" ] \
+			|| [ "$line" == "  def $hook" ]
 		then
 			in_func=1
 		fi
