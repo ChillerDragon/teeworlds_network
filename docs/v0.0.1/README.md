@@ -53,7 +53,7 @@ Version v0.0.1
 
 [#initialize(options = {})](classes/TeeworldsClient.md#initialize)
 
-[#rcon_authed? -> Boolean](classes/TeeworldsClient.md#rcon_authed? -> Boolean)
+[#rcon_authed? -> Boolean](classes/TeeworldsClient.md#rcon_authed)
 
 [#send_ctrl_close](classes/TeeworldsClient.md#send_ctrl_close)
 

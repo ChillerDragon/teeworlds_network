@@ -54,6 +54,7 @@ function print_method_doc() {
 	local method="$2"
 	local method_slug
 	method_slug="${method%%(*}"
+	method_slug="${method_slug%%\?*}"
 	local obj_var=client
 	local run="client.connect('localhost', 8303, detach: false)"
 	if [[ "$ruby_class" =~ Server ]]

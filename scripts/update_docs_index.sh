@@ -38,6 +38,7 @@ function print_instance_methods() {
 	while read -r hook
 	do
 		hook_slug="${hook%%(*}"
+		hook_slug="${hook_slug%%\?*}"
 		echo ""
 		echo "[#$hook](classes/$class.md#$hook_slug)"
 	done < <(grep '### <a name="' "docs/$version/classes/$class.md" | cut -d'#' -f5)

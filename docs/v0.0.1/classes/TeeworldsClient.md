@@ -387,7 +387,7 @@ client = TeeworldsClient.new(verbose: true, config: "autoexec.cfg")
 
 client.connect('localhost', 8303, detach: false)
 ```
-### <a name="rcon_authed?"></a> #rcon_authed? -> Boolean
+### <a name="rcon_authed"></a> #rcon_authed? -> Boolean
 
 Returns true if the client is currently rcon authenticated.
 
