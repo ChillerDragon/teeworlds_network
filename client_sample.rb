@@ -13,16 +13,16 @@ args = {
 verbose_level = 0
 
 def show_help
-    puts 'usage: client_sample.rb [OPTIONS..] [host] [port]'
-    puts 'options:'
-    puts '  --help|-h             show this help'
-    puts '  --verbose|-v          verbose output'
-    puts '  --verbose-snap|-s     verbose snap item output'
-    puts 'example:'
-    puts '  client_sample.rb --verbose localhost 8303'
-    puts '  client_sample.rb -s'
-    puts '  client_sample.rb -vv ger.ddnet.org 8307'
-    exit(0)
+  puts 'usage: client_sample.rb [OPTIONS..] [host] [port]'
+  puts 'options:'
+  puts '  --help|-h             show this help'
+  puts '  --verbose|-v          verbose output'
+  puts '  --verbose-snap|-s     verbose snap item output'
+  puts 'example:'
+  puts '  client_sample.rb --verbose localhost 8303'
+  puts '  client_sample.rb -s'
+  puts '  client_sample.rb -vv ger.ddnet.org 8307'
+  exit(0)
 end
 
 ARGV.each do |arg|
