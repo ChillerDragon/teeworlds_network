@@ -17,6 +17,8 @@ Version v0.0.6
 
 ### [TeeworldsClient](classes/TeeworldsClient.md)
 
+[#initialize(options = {})](classes/TeeworldsClient.md#initialize)
+
 [#on_disconnect(&block)](classes/TeeworldsClient.md#on_disconnect)
 
 [#on_connected(&block)](classes/TeeworldsClient.md#on_connected)
@@ -50,8 +52,6 @@ Version v0.0.6
 [#connect(ip, port, options = {})](classes/TeeworldsClient.md#connect)
 
 [#send_chat(str)](classes/TeeworldsClient.md#send_chat)
-
-[#initialize(options = {})](classes/TeeworldsClient.md#initialize)
 
 [#rcon_authed? -> Boolean](classes/TeeworldsClient.md#rcon_authed)
 

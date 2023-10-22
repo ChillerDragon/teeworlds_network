@@ -1,5 +1,24 @@
 # TeeworldsClient
 
+### <a name="initialize"></a> #initialize(options = {})
+
+**Parameter: Hash**
+
+Available keys:
+- `:verbose [Boolean]` enables verbose output.
+- `:verbose_snap [Boolean]` enables verbose output specific to the snap message.
+- `:config [String]` path to autoexec.cfg file. As of right now only those commands are supported:
+  + `password [yourpassword]` will be sent on connect
+  + `echo [message]` prints a message
+  + `quit` quits the client
+
+**Example:**
+```ruby
+client = TeeworldsClient.new(verbose: true, config: "autoexec.cfg")
+
+client.connect('localhost', 8303, detach: false)
+```
+
 ### <a name="on_disconnect"></a> #on_disconnect(&block)
 
 **Parameter: block [Block |[context](../classes/Context.md)|]**
@@ -376,23 +395,7 @@ client.connect('localhost', 8303, detach: false)
 
 client.send_chat('hello world!')
 ```
-### <a name="initialize"></a> #initialize(options = {})
 
-**Parameter: Hash**
-
-Available keys:
-- `:verbose [Boolean]` enables verbose output.
-- `:config [String]` path to autoexec.cfg file. As of right now only those commands are supported:
-  + `password [yourpassword]` will be sent on connect
-  + `echo [message]` prints a message
-  + `quit` quits the client
-
-**Example:**
-```ruby
-client = TeeworldsClient.new(verbose: true, config: "autoexec.cfg")
-
-client.connect('localhost', 8303, detach: false)
-```
 ### <a name="rcon_authed"></a> #rcon_authed? -> Boolean
 
 Returns true if the client is currently rcon authenticated.

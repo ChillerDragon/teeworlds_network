@@ -16,11 +16,12 @@ require_relative 'game_client'
 require_relative 'config'
 
 class TeeworldsClient
-  attr_reader :state, :hooks, :game_client
+  attr_reader :state, :hooks, :game_client, :verbose_snap
   attr_accessor :rcon_authed, :local_client_id
 
   def initialize(options = {})
     @verbose = options[:verbose] || false
+    @verbose_snap = options[:verbose_snap] || false
     @state = NET_CONNSTATE_OFFLINE
     @ip = 'localhost'
     @port = 8303

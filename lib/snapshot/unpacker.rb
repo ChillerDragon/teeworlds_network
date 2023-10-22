@@ -76,6 +76,7 @@ end
 class SnapshotUnpacker
   def initialize(client)
     @client = client
+    @verbose = client.verbose_snap
   end
 
   def unpack_ddnet_item(u, notes)
