@@ -462,6 +462,8 @@ class TeeworldsClient
       pck = nil
     rescue IO::EAGAINWaitReadable
       pck = nil
+    rescue IO::EWOULDBLOCKWaitReadable # windows
+      pck = nil
     end
     if pck.nil? && @token.nil?
       @wait_for_token ||= 0
