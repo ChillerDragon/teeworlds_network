@@ -22,7 +22,7 @@ class SnapItemBase
   end
 
   def validate
-    @fields.select(&:nil?).empty?
+    @fields.none?(&:nil?)
   end
 
   def init_unpacker(u)

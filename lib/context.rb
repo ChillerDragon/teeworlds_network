@@ -12,7 +12,7 @@ class Context
   end
 
   def verify
-    @data.each do |key, _value|
+    @data.each_key do |key|
       next if @old_data.key? key
 
       raise "Error: invalid data key '#{key}'\n       valid keys: #{@old_data.keys}"

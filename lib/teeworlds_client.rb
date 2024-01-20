@@ -438,7 +438,7 @@ class TeeworldsClient
 
   def process_server_packet(packet)
     data = packet.payload
-    if data.size.zero?
+    if data.empty?
       puts 'Error: packet payload is empty'
       puts packet
       return

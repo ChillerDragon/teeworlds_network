@@ -380,7 +380,7 @@ class TeeworldsServer
     # msg_snap_single = NetChunk.create_header(vital: false, size: data.size + 1) +
     #                  [pack_msg_id(NETMSG_SNAPSINGLE, system: true)] +
     #                  data
-    @clients.each do |_id, client|
+    @clients.each_value do |client|
       next unless client.in_game?
 
       @netbase.send_packet(msg_snap_empty, chunks: 1, client:)

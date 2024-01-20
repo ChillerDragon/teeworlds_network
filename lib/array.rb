@@ -22,7 +22,7 @@ class Array
         group = []
       end
     end
-    groups.push(group) unless group.size.zero?
+    groups.push(group) unless group.empty?
     groups
   end
 end

@@ -68,7 +68,7 @@ class Gui < Gosu::Window
     own_tee = @tees[@client.local_client_id]
     own_tee = @tees.first.last if own_tee.nil?
     offset = center_around_tee(own_tee)
-    @tees.each do |_id, tee|
+    @tees.each_value do |tee|
       @tee_image.draw(tee.x + offset.x, tee.y + offset.y)
     end
   end
