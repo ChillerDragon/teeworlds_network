@@ -32,12 +32,20 @@ jobs:
         unzip DDNet-headless.zip
         sudo mv DDNet-headless /usr/local/bin
         rm DDNet-headless.zip
-    - name: Test sending chat messages
+        wget https://github.com/ChillerDragon/ddnet/releases/download/v17.4.2-headless-0.7/DDNet7-headless.zip
+        unzip DDNet7-headless.zip
+        chmod +x DDNet7-headless
+        sudo mv DDNet7-headless /usr/local/bin
+        rm DDNet7-headless.zip
+    - name: '[CLIENT] Test sending chat messages'
       run: |
         ./integration_test/run.sh client/chat.rb
-    - name: Test reconnect
+    - name: '[CLIENT] Test reconnect'
       run: |
         ./integration_test/run.sh client/reconnect.rb
-    - name: Test rcon
+    - name: '[CLIENT] Test rcon'
       run: |
         ./integration_test/run.sh client/rcon.rb
+    - name: '[SERVER] Test connect'
+      run: |
+        ./integration_test/run.sh server/connect.rb
