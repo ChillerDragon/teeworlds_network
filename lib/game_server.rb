@@ -149,7 +149,7 @@ class GameServer
     return if call_hook(:shutdown, Context.new(nil)).nil?
 
     puts '[gameserver] disconnecting all clients ...'
-    @server.clients.each do |id, client|
+    @server.clients.each do |_id, client|
       @server.send_ctrl_close(client, @server.shutdown_reason)
     end
     puts '[gameserver] shutting down ...'

@@ -105,6 +105,6 @@ class NetBase
     end
     @s.send(data, 0, ip, port)
 
-    puts Packet.new(data, '>').to_s if @verbose || opts[:test]
+    puts Packet.new(data, '>') if @verbose || opts[:test]
   end
 end

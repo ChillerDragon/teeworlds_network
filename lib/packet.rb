@@ -27,7 +27,7 @@ class Packet
     flags_byte = @data[0].unpack('B*')
     @flags = PacketFlags.new(flags_byte.first[2..5]).hash
     @payload = @data[PACKET_HEADER_SIZE..]
-    return unless  flags_compressed
+    return unless flags_compressed
 
     @payload = @huffman.decompress(@payload.unpack('C*'))
     @payload = @payload.pack('C*')

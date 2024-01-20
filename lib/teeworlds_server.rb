@@ -15,8 +15,7 @@ require_relative 'game_server'
 require_relative 'models/token'
 
 class Client
-  attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token, :player, :in_game
-  attr_accessor :authed
+  attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token, :player, :in_game, :authed
   attr_reader :ack
 
   def initialize(attr = {})
@@ -423,7 +422,7 @@ class TeeworldsServer
       packet.client = client
     end
 
-    puts packet.to_s if @verbose
+    puts packet if @verbose
     on_packet(packet)
   end
 end

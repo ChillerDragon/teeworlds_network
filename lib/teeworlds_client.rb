@@ -440,7 +440,7 @@ class TeeworldsClient
     data = packet.payload
     if data.size.zero?
       puts 'Error: packet payload is empty'
-      puts packet.to_s
+      puts packet
       return
     end
     chunks = BigChungusTheChunkGetter.get_chunks(data)
@@ -480,7 +480,7 @@ class TeeworldsClient
     data = pck.first
 
     packet = Packet.new(data, '<')
-    puts packet.to_s if @verbose
+    puts packet if @verbose
 
     # process connless packets data
     if packet.flags_control

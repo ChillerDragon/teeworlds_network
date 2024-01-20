@@ -28,7 +28,7 @@ WINDOW_HEIGHT = 500
 
 class Gui < Gosu::Window
   def initialize
-    super WINDOW_WIDTH, WINDOW_HEIGHT
+    super(WINDOW_WIDTH, WINDOW_HEIGHT)
     self.caption = 'ruby teeworlds client'
     @client = TeeworldsClient.new
     @client.connect('localhost', 8303, detach: true)
