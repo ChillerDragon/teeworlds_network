@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative'context'
+require_relative 'context'
 require_relative 'models/map'
 require_relative 'models/chat_message'
 require_relative 'messages/game_info'
