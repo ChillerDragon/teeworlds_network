@@ -59,6 +59,7 @@ end
 
 class TeeworldsServer
   attr_accessor :clients
+  attr_reader :hooks
 
   def initialize(options = {})
     @verbose = options[:verbose] || false
@@ -68,6 +69,13 @@ class TeeworldsServer
     @clients = {}
     @current_game_tick = 0
     @last_snap_time = Time.now
+    @hooks = {
+      chat: []
+    }
+  end
+
+  def on_chat(&block)
+    @hooks[:chat].push(block)
   end
 
   def run(ip, port)

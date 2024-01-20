@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative'context'
 require_relative 'models/map'
 require_relative 'models/chat_message'
 require_relative 'messages/game_info'
@@ -22,6 +23,21 @@ class GameServer
       size: 6793,
       sha256: '491af17a510214506270904f147a4c30ae0a85b91bb854395bef8c397fc078c3'
     )
+  end
+
+  ##
+  # call_hook
+  #
+  # @param: hook_sym [Symbol] name of the symbol to call
+  # @param: context [Context] context object to pass on data
+  # @param: optional [Any] optional 2nd parameter passed to the callback
+  def call_hook(hook_sym, context, optional = nil)
+    @server.hooks[hook_sym].each do |hook|
+      hook.call(context, optional)
+      context.verify
+      return nil if context.canceld?
+    end
+    context
   end
 
   def on_emoticon(chunk, _packet)
@@ -69,6 +85,9 @@ class GameServer
     say = ClSay.new(chunk.data[1..])
     author = packet.client.player
     msg = ChatMesage.new(say.to_h.merge(client_id: author.id, author:))
+    context = Context.new(say, chunk:)
+    return if call_hook(:chat, context, msg).nil?
+
     puts msg.to_s
   end
 
