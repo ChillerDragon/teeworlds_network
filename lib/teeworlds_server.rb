@@ -16,6 +16,7 @@ require_relative 'models/token'
 
 class Client
   attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token, :player, :in_game
+  attr_accessor :authed
   attr_reader :ack
 
   def initialize(attr = {})
@@ -33,8 +34,13 @@ class Client
       clan: '',
       country: -1
     )
+    @authed = false
     @token = attr[:token]
     SecurityToken.validate(@token)
+  end
+
+  def authed?
+    @authed
   end
 
   def in_game?
@@ -70,17 +76,39 @@ class TeeworldsServer
     @current_game_tick = 0
     @last_snap_time = Time.now
     @hooks = {
-      chat: []
+      chat: [],
+      rcon_auth: [],
+      rcon_cmd: [],
+      shutdown: []
     }
     @thread_running = false
+    @is_shutting_down = false
+  end
+
+  def shutdown!
+    @is_shutting_down = true
   end
 
   def on_chat(&block)
     @hooks[:chat].push(block)
   end
 
+  def on_rcon_auth(&block)
+    @hooks[:rcon_auth].push(block)
+  end
+
+  def on_rcon_cmd(&block)
+    @hooks[:rcon_cmd].push(block)
+  end
+
+  def on_shutdown(&block)
+    @hooks[:shutdown].push(block)
+  end
+
   def main_loop
     loop do
+      break if @is_shutting_down
+
       tick
       # TODO: proper tick speed sleep
       #       replace by blocking network read
@@ -123,6 +151,8 @@ class TeeworldsServer
     else
       main_loop
     end
+
+    @game_server.on_shutdown
   end
 
   def on_message(chunk, packet)
@@ -154,6 +184,8 @@ class TeeworldsServer
       @game_server.on_input(chunk, packet)
     when NETMSG_RCON_CMD
       @game_server.on_rcon_cmd(chunk, packet)
+    when NETMSG_RCON_AUTH
+      @game_server.on_rcon_auth(chunk, packet)
     else
       puts "Unsupported system msg: #{chunk.msg}"
       exit(1)

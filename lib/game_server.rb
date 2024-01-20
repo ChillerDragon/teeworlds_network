@@ -88,7 +88,7 @@ class GameServer
     context = Context.new(say, chunk:)
     return if call_hook(:chat, context, msg).nil?
 
-    puts msg.to_s
+    puts msg
   end
 
   def on_enter_game(_chunk, packet)
@@ -108,8 +108,26 @@ class GameServer
 
   def on_rcon_cmd(chunk, _packet)
     u = Unpacker.new(chunk.data[1..])
-    cmd = u.get_string
-    puts "got rcon_cmd=#{cmd}"
+    command = u.get_string
+    return if call_hook(:rcon_cmd, Context.new(nil, chunk:, packet:, command:)).nil?
+    return unless packet.client.authed?
+
+    puts "[server] ClientID=#{packet.client.player.id} rcon='#{command}'"
+    if command == 'shutdown'
+      @server.shutdown!
+    else
+      puts "[console] No such command: #{command}:"
+    end
+  end
+
+  def on_rcon_auth(chunk, packet)
+    u = Unpacker.new(chunk.data[1..])
+    password = u.get_string
+    return if call_hook(:rcon_auth, Context.new(nil, chunk:, packet:, password:)).nil?
+
+    # TODO: we accept any password lol
+    puts "[server] ClientID=#{packet.client.player.id} addr=#{packet.client.addr} authed (admin)"
+    packet.client.authed = true
   end
 
   def on_input(chunk, packet)
@@ -124,6 +142,12 @@ class GameServer
   def on_client_drop(client, reason = nil)
     reason = reason.nil? ? '' : " (#{reason})"
     puts "'#{client.player.name}' left the game#{reason}"
+  end
+
+  def on_shutdown
+    return if call_hook(:shutdown, Context.new(nil)).nil?
+
+    puts '[gameserver] shutting down ...'
   end
 
   def on_tick
