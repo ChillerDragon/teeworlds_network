@@ -11,4 +11,4 @@ srv.on_chat do |context, msg|
   puts "[chat] #{msg.author.name}: #{msg.message}"
 end
 
-srv.run('127.0.0.1', 8303)
+srv.run('127.0.0.1', 8303, detach: false)

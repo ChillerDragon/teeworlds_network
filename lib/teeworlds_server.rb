@@ -72,24 +72,14 @@ class TeeworldsServer
     @hooks = {
       chat: []
     }
+    @thread_running = false
   end
 
   def on_chat(&block)
     @hooks[:chat].push(block)
   end
 
-  def run(ip, port)
-    @server_token = (1..4).to_a.map { |_| rand(0..255) }
-    @server_token = @server_token.map { |b| b.to_s(16).rjust(2, '0') }.join
-    puts "server token #{@server_token}"
-    @netbase = NetBase.new(verbose: @verbose)
-    NetChunk.reset
-    @ip = ip
-    @port = port
-    puts "listening on #{@ip}:#{@port} .."
-    @s = UDPSocket.new
-    @s.bind(@ip, @port)
-    @netbase.bind(@s)
+  def main_loop
     loop do
       tick
       # TODO: proper tick speed sleep
@@ -104,6 +94,34 @@ class TeeworldsServer
       #         1,
       #         1000/SERVER_TICK_SPEED/2));
       sleep 0.001
+    end
+  end
+
+  def run(ip, port, options = {})
+    options[:detach] = options[:detach] || false
+    if options[:detach] && @thread_running
+      puts 'Error: server already running in a thread'
+      return
+    end
+    @server_token = (1..4).to_a.map { |_| rand(0..255) }
+    @server_token = @server_token.map { |b| b.to_s(16).rjust(2, '0') }.join
+    puts "server token #{@server_token}"
+    @netbase = NetBase.new(verbose: @verbose)
+    NetChunk.reset
+    @ip = ip
+    @port = port
+    puts "listening on #{@ip}:#{@port} .."
+    @s = UDPSocket.new
+    @s.bind(@ip, @port)
+    @netbase.bind(@s)
+
+    if options[:detach]
+      @thread_running = true
+      Thread.new do
+        main_loop
+      end
+    else
+      main_loop
     end
   end
 
