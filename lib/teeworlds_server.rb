@@ -65,7 +65,7 @@ end
 
 class TeeworldsServer
   attr_accessor :clients
-  attr_reader :hooks
+  attr_reader :hooks, :shutdown_reason
 
   def initialize(options = {})
     @verbose = options[:verbose] || false
@@ -83,10 +83,12 @@ class TeeworldsServer
     }
     @thread_running = false
     @is_shutting_down = false
+    @shutdown_reason = ''
   end
 
-  def shutdown!
+  def shutdown!(reason)
     @is_shutting_down = true
+    @shutdown_reason = reason
   end
 
   def on_chat(&block)
@@ -257,6 +259,12 @@ class TeeworldsServer
     msg = NetChunk.create_header(vital: true, size: data.size + 1, client:) +
           [pack_msg_id(NETMSG_MAP_CHANGE, system: true)] +
           data
+    @netbase.send_packet(msg, chunks: 1, client:)
+  end
+
+  def send_rcon_auth_on(client)
+    msg = NetChunk.create_header(vital: true, size: 1, client:) +
+          [pack_msg_id(NETMSG_RCON_AUTH_ON, system: true)]
     @netbase.send_packet(msg, chunks: 1, client:)
   end
 

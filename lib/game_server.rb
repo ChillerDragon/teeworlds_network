@@ -106,7 +106,7 @@ class GameServer
     puts "'#{packet.client.player.name}' joined the game"
   end
 
-  def on_rcon_cmd(chunk, _packet)
+  def on_rcon_cmd(chunk, packet)
     u = Unpacker.new(chunk.data[1..])
     command = u.get_string
     return if call_hook(:rcon_cmd, Context.new(nil, chunk:, packet:, command:)).nil?
@@ -114,7 +114,7 @@ class GameServer
 
     puts "[server] ClientID=#{packet.client.player.id} rcon='#{command}'"
     if command == 'shutdown'
-      @server.shutdown!
+      @server.shutdown!('Server shutdown')
     else
       puts "[console] No such command: #{command}:"
     end
@@ -128,6 +128,7 @@ class GameServer
     # TODO: we accept any password lol
     puts "[server] ClientID=#{packet.client.player.id} addr=#{packet.client.addr} authed (admin)"
     packet.client.authed = true
+    @server.send_rcon_auth_on(packet.client)
   end
 
   def on_input(chunk, packet)
@@ -147,6 +148,10 @@ class GameServer
   def on_shutdown
     return if call_hook(:shutdown, Context.new(nil)).nil?
 
+    puts '[gameserver] disconnecting all clients ...'
+    @server.clients.each do |id, client|
+      @server.send_ctrl_close(client, @server.shutdown_reason)
+    end
     puts '[gameserver] shutting down ...'
   end
 
