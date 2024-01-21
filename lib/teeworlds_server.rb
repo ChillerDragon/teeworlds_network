@@ -162,6 +162,7 @@ class TeeworldsServer
     when NETMSGTYPE_CL_STARTINFO then @game_server.on_start_info(chunk, packet)
     when NETMSGTYPE_CL_SAY then @game_server.on_say(chunk, packet)
     when NETMSGTYPE_CL_EMOTICON then @game_server.on_emoticon(chunk, packet)
+    when NETMSG_NULL then nil # TODO: ddnet ex messages
     else
       puts "Unsupported game msg: #{chunk.msg}"
       exit(1)
@@ -187,6 +188,8 @@ class TeeworldsServer
       @game_server.on_rcon_cmd(chunk, packet)
     when NETMSG_RCON_AUTH
       @game_server.on_rcon_auth(chunk, packet)
+    when NETSMSG_NULL
+      nil # TODO: ddnet ex messages
     else
       puts "Unsupported system msg: #{chunk.msg}"
       exit(1)
