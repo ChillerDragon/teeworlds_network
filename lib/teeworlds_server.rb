@@ -199,8 +199,13 @@ class TeeworldsServer
       # TODO: turn this into a silent return
       #       otherwise bad actors can easily trigger this
       #       with handcrafted packets
-      puts 'Error: got client packet from unknown client'
-      exit 1
+      #
+      #       This is currently triggerd by ddnet TKEN packets
+      #       we should handle those correctly somewhere else i think
+      #       if this warning does not show up anymore it can be removed
+      p packet
+      puts 'Warning: got client packet from unknown client'
+      return
     end
     chunks = BigChungusTheChunkGetter.get_chunks(packet.payload)
     chunks.each do |chunk|
