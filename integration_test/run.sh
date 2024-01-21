@@ -3,15 +3,15 @@
 cd "$(dirname "$0")" || exit 1
 
 tw_srv_bin=teeworlds_srv
-tw_cl_bin=teeworlds
 logdir=logs
 tmpdir=tmp
 srvcfg='sv_rcon_password rcon;sv_port 8377;killme'
 cl_fifo="$tmpdir/client.fifo"
 clcfg="cl_input_fifo $cl_fifo;connect 127.0.0.1:8377;killme"
 tw_srv_running=0
-tw_client_running=0
 ruby_logfile=ruby_client.txt
+
+_kill_pids=()
 
 mkdir -p logs
 mkdir -p tmp
@@ -39,36 +39,29 @@ function connect_tw_client() {
 	if [[ -x "$(command -v teeworlds-headless)" ]]
 	then
 		teeworlds-headless "$clcfg"
-		tw_cl_bin=teeworlds-headless
 	elif [[ -x "$(command -v /usr/local/bin/teeworlds-headless)" ]]
 	then
 		/usr/local/bin/teeworlds-headless "$clcfg"
-		tw_cl_bin=/usr/local/bin/teeworlds-headless
 	elif [[ -x "$(command -v teeworlds)" ]]
 	then
 		teeworlds "$clcfg" "$logdir/client.txt"
-		tw_cl_bin=teeworlds
 	else
 		echo "Error: please install a teeworlds"
 		exit 1
 	fi
-	tw_client_running=1
 }
 
 function connect_ddnet7_client() {
 	if [[ -x "$(command -v DDNet7-headless)" ]]
 	then
 		DDNet7-headless "$clcfg"
-		tw_cl_bin=DDNet7-headless
 	elif [[ -x "$(command -v /usr/local/bin/DDNet7-headless)" ]]
 	then
 		/usr/local/bin/DDNet7-headless "$clcfg"
-		tw_cl_bin=/usr/local/bin/DDNet7-headless
 	else
 		echo "Error: please install a DDNet7-headless"
 		exit 1
 	fi
-	tw_client_running=1
 }
 
 function get_test_names() {
@@ -102,18 +95,29 @@ else
 	ruby_logfile="$logdir/ruby_server.txt"
 fi
 
+function kill_all_jobs() {
+	local i
+	local kill_pid
+	for i in "${!_kill_pids[@]}"
+	do
+		kill_pid="${_kill_pids[i]}"
+		[[ "$kill_pid" != "" ]] || continue
+		ps -p "$kill_pid" > /dev/null || continue
+
+		kill "$kill_pid" &> /dev/null
+		_kill_pids[i]='' # does not work because different job
+	done
+}
+
 function cleanup() {
 	if [ "$tw_srv_running" == "1" ]
 	then
 		echo "[*] shutting down server ..."
 		pkill -f "$tw_srv_bin $srvcfg"
 	fi
-	if [ "$tw_client_running" == "1" ]
-	then
-		echo "[*] shutting down client ..."
-		pkill -f "$tw_cl_bin $clcfg"
-	fi
-	[[ "$_timeout_pid" != "" ]] && kill "$_timeout_pid" &> /dev/null
+	kill_all_jobs
+	# timeout is extra otherwise it kills it self
+	[[ "$_timeout_pid" != "" ]] && ps -p "$_timeout_pid" >/dev/null && kill "$_timeout_pid"
 }
 
 trap cleanup EXIT
@@ -149,6 +153,7 @@ function timeout() {
 	echo "[-] Timeout -> killing: $testname"
 	touch timeout.txt
 	pkill -f "$testname killme"
+	kill_all_jobs
 	fail "[-] Timeout"
 }
 
@@ -163,19 +168,24 @@ else
 	echo "ddnet7 client log $(date)" > "$logdir/client.txt"
 	echo "ruby server log $(date)" > "$ruby_logfile"
 fi
-timeout 6 killme &
-_timeout_pid=$!
-if ! ruby "$testname" killme &> "$ruby_logfile"
-then
-	fail "test $testname finished with non zero exit code"
-fi
+function run_ruby_test() {
+	if ! ruby "$testname" killme &> "$ruby_logfile"
+	then
+		fail "test $testname finished with non zero exit code"
+	fi
+}
+run_ruby_test &
+_kill_pids+=($!)
 
 if [[ "$testname" =~ ^server/ ]]
 then
-	connect_ddnet7_client &>> "$logdir/client.txt" &
+	connect_ddnet7_client killme &>> "$logdir/client.txt" &
+	_kill_pids+=($!)
 	sleep 1
 	echo "connect 127.0.0.1" > "$cl_fifo"
 fi
+timeout 6 killme &
+_timeout_pid=$!
 
 if [ "$testname" == "client/chat.rb" ]
 then
@@ -241,6 +251,9 @@ else
 	echo "Error: unkown test '$testname'"
 	exit 1
 fi
+
+echo "[*] waiting for jobs to finish ..."
+wait
 
 if [ -f timeout.txt ]
 then
