@@ -124,24 +124,28 @@ trap cleanup EXIT
 
 function fail() {
 	local msg="$1"
-	# the first tail get swalloed
-	# idk why so tail twice to ensure
-	# getting output
-	# this is a bit ugly but it works
-	# maybe a sleep does as well
-	# or I still did not get flushing
-	tail "$ruby_logfile" &>/dev/null
-	if [[ "$testname" =~ ^client/ ]]
+	if [ ! -f "$tmpdir/fail.txt" ]
 	then
-		echo "[-] end of ruby client log:"
-		tail "$ruby_logfile"
-		echo "[-] end of server log:"
-		tail "$logdir/server.txt"
-	else
-		echo "[-] end of ruby server log:"
-		tail "$ruby_logfile"
-		echo "[-] end of client log:"
-		tail "$logdir/client.txt"
+		touch "$tmpdir/fail.txt"
+		# the first tail get swalloed
+		# idk why so tail twice to ensure
+		# getting output
+		# this is a bit ugly but it works
+		# maybe a sleep does as well
+		# or I still did not get flushing
+		tail "$ruby_logfile" &>/dev/null
+		if [[ "$testname" =~ ^client/ ]]
+		then
+			echo "[-] end of ruby client log:"
+			tail "$ruby_logfile"
+			echo "[-] end of server log:"
+			tail "$logdir/server.txt"
+		else
+			echo "[-] end of ruby server log:"
+			tail "$ruby_logfile"
+			echo "[-] end of client log:"
+			tail "$logdir/client.txt"
+		fi
 	fi
 	echo "$msg"
 	exit 1
@@ -151,14 +155,15 @@ function timeout() {
 	local seconds="$1"
 	sleep "$seconds"
 	echo "[-] Timeout -> killing: $testname"
-	touch timeout.txt
+	touch "$tmpdir/timeout.txt"
 	pkill -f "$testname killme"
 	kill_all_jobs
 	fail "[-] Timeout"
 }
 
 echo "[*] running test '$testname' ..."
-[[ -f timeout.txt ]] && rm timeout.txt
+[[ -f "$tmpdir/timeout.txt" ]] && rm "$tmpdir"/timeout.txt
+[[ -f "$tmpdir/fail.txt" ]] && rm "$tmpdir"/fail.txt
 if [[ "$testname" =~ ^client/ ]]
 then
 	echo "ruby client log $(date)" > "$ruby_logfile"
@@ -255,7 +260,7 @@ fi
 echo "[*] waiting for jobs to finish ..."
 wait
 
-if [ -f timeout.txt ]
+if [ -f "$tmpdir/timeout.txt" ]
 then
 	echo "[-] Error timeouted"
 	exit 1
