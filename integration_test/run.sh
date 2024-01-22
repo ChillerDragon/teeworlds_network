@@ -21,14 +21,14 @@ mkdir -p tmp
 function start_tw_server() {
 	if [[ -x "$(command -v teeworlds_srv)" ]]
 	then
-		teeworlds_srv "$srvcfg" &> "$logdir/server.txt" &
+		teeworlds_srv "$srvcfg" &> "$logdir/server.txt"
 	elif [[ -x "$(command -v teeworlds-server)" ]]
 	then
-		teeworlds-server "$srvcfg" &> "$logdir/server.txt" &
+		teeworlds-server "$srvcfg" &> "$logdir/server.txt"
 		tw_srv_bin='teeworlds-server'
 	elif [[ -x "$(command -v teeworlds-srv)" ]]
 	then
-		teeworlds-srv "$srvcfg" &> "$logdir/server.txt" &
+		teeworlds-srv "$srvcfg" &> "$logdir/server.txt"
 		tw_srv_bin='teeworlds-srv'
 	else
 		echo "Error: please install a teeworlds_srv"
@@ -172,7 +172,8 @@ if [[ "$testname" =~ ^client/ ]]
 then
 	echo "ruby client log $(date)" > "$ruby_logfile"
 	echo "server log $(date)" > "$logdir/server.txt"
-	start_tw_server
+	start_tw_server &
+	_kill_pids+=($!)
 else
 	echo "ddnet7 client log $(date)" > "$logdir/client.txt"
 	echo "ruby server log $(date)" > "$ruby_logfile"
@@ -183,8 +184,14 @@ function run_ruby_test() {
 		fail "test $testname finished with non zero exit code"
 	fi
 }
-run_ruby_test &
-_kill_pids+=($!)
+if [[ "$testname" =~ ^server/ ]]
+then
+	run_ruby_test &
+	_kill_pids+=($!)
+else
+	run_ruby_test
+	kill_all_jobs
+fi
 
 if [[ "$testname" =~ ^server/ ]]
 then
