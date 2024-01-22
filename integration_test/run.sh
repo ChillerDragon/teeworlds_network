@@ -8,7 +8,7 @@ tmpdir=tmp
 kill_marker=kill_me_d5af0410
 server_port=8377
 srvcfg="sv_rcon_password rcon;sv_port $server_port;$kill_marker"
-cl_fifo="$tmpdir/client.fifo"
+cl_fifo="$PWD/$tmpdir/client.fifo"
 clcfg="cl_input_fifo $cl_fifo;connect 127.0.0.1:$server_port;$kill_marker"
 tw_srv_running=0
 ruby_logfile=ruby_client.txt
@@ -191,10 +191,16 @@ then
 	connect_ddnet7_client "$kill_marker" &>> "$logdir/client.txt" &
 	_kill_pids+=($!)
 	sleep 1
-	echo "connect 127.0.0.1" > "$cl_fifo"
 fi
 timeout 6 "$kill_marker" &
 _timeout_pid=$!
+
+function fifo() {
+	local cmd="$1"
+	local fifo_file="$2"
+	echo "[*] $cmd >> $fifo_file"
+	echo "$cmd" >> "$fifo_file"
+}
 
 if [ "$testname" == "client/chat.rb" ]
 then
@@ -253,16 +259,28 @@ then
 	fi
 elif [ "$testname" == "server/connect.rb" ]
 then
-	echo "rcon_auth test" >> "$cl_fifo"
+	fifo "rcon_auth test" "$cl_fifo"
 	sleep 1
-	echo "shutdown" >> "$cl_fifo"
+	fifo "rcon shutdown" "$cl_fifo"
+	sleep 1
+	fifo "quit" "$cl_fifo"
 else
 	echo "Error: unkown test '$testname'"
 	exit 1
 fi
 
 echo "[*] waiting for jobs to finish ..."
-wait
+while true
+do
+	running_jobs="$(jobs | grep -v timeout)"
+	if [ "$running_jobs" == "" ]
+	then
+		break
+	fi
+	echo "[*] waiting for:"
+	echo "$running_jobs"
+	sleep 1
+done
 
 if [ -f "$tmpdir/timeout.txt" ]
 then
