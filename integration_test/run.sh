@@ -6,9 +6,10 @@ tw_srv_bin=teeworlds_srv
 logdir=logs
 tmpdir=tmp
 kill_marker=kill_me_d5af0410
-srvcfg="sv_rcon_password rcon;sv_port 8377;$kill_marker"
+server_port=8377
+srvcfg="sv_rcon_password rcon;sv_port $server_port;$kill_marker"
 cl_fifo="$tmpdir/client.fifo"
-clcfg="cl_input_fifo $cl_fifo;connect 127.0.0.1:8377;$kill_marker"
+clcfg="cl_input_fifo $cl_fifo;connect 127.0.0.1:$server_port;$kill_marker"
 tw_srv_running=0
 ruby_logfile=ruby_client.txt
 
@@ -53,12 +54,14 @@ function connect_tw_client() {
 }
 
 function connect_ddnet7_client() {
+	local clcfg_dd7
+	clcfg_dd7="$(echo "$clcfg" | sed 's/127.0.0.1/tw-0.7+udp:\/\/127.0.0.1/')"
 	if [[ -x "$(command -v DDNet7-headless)" ]]
 	then
-		DDNet7-headless "$clcfg"
+		DDNet7-headless "$clcfg_dd7"
 	elif [[ -x "$(command -v /usr/local/bin/DDNet7-headless)" ]]
 	then
-		/usr/local/bin/DDNet7-headless "$clcfg"
+		/usr/local/bin/DDNet7-headless "$clcfg_dd7"
 	else
 		echo "Error: please install a DDNet7-headless"
 		exit 1
