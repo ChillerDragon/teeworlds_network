@@ -253,9 +253,9 @@ then
 	fi
 elif [ "$testname" == "server/connect.rb" ]
 then
-	echo "rcon test" > "$cl_fifo"
+	echo "rcon_auth test" >> "$cl_fifo"
 	sleep 1
-	echo "shutdown" > "$cl_fifo"
+	echo "shutdown" >> "$cl_fifo"
 else
 	echo "Error: unkown test '$testname'"
 	exit 1
