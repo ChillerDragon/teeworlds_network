@@ -30,11 +30,11 @@ class Packet
     return unless flags_compressed
 
     @payload = @huffman.decompress(@payload.unpack('C*'))
-    if @payload.nil?
-      @payload = ''
-    else
-      @payload = @payload.pack('C*')
-    end
+    @payload = if @payload.nil?
+                 ''
+               else
+                 @payload.pack('C*')
+               end
   end
 
   def annotate_first_row(bytes)
