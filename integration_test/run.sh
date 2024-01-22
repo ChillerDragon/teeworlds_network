@@ -5,9 +5,10 @@ cd "$(dirname "$0")" || exit 1
 tw_srv_bin=teeworlds_srv
 logdir=logs
 tmpdir=tmp
-srvcfg='sv_rcon_password rcon;sv_port 8377;killme'
+kill_marker=kill_me_d5af0410
+srvcfg="sv_rcon_password rcon;sv_port 8377;$kill_marker"
 cl_fifo="$tmpdir/client.fifo"
-clcfg="cl_input_fifo $cl_fifo;connect 127.0.0.1:8377;killme"
+clcfg="cl_input_fifo $cl_fifo;connect 127.0.0.1:8377;$kill_marker"
 tw_srv_running=0
 ruby_logfile=ruby_client.txt
 
@@ -107,6 +108,7 @@ function kill_all_jobs() {
 		kill "$kill_pid" &> /dev/null
 		_kill_pids[i]='' # does not work because different job
 	done
+	pkill -f "$kill_marker"
 }
 
 function cleanup() {
@@ -156,7 +158,6 @@ function timeout() {
 	sleep "$seconds"
 	echo "[-] Timeout -> killing: $testname"
 	touch "$tmpdir/timeout.txt"
-	pkill -f "$testname killme"
 	kill_all_jobs
 	fail "[-] Timeout"
 }
@@ -174,7 +175,7 @@ else
 	echo "ruby server log $(date)" > "$ruby_logfile"
 fi
 function run_ruby_test() {
-	if ! ruby "$testname" killme &> "$ruby_logfile"
+	if ! ruby "$testname" "$kill_marker" &> "$ruby_logfile"
 	then
 		fail "test $testname finished with non zero exit code"
 	fi
@@ -184,12 +185,12 @@ _kill_pids+=($!)
 
 if [[ "$testname" =~ ^server/ ]]
 then
-	connect_ddnet7_client killme &>> "$logdir/client.txt" &
+	connect_ddnet7_client "$kill_marker" &>> "$logdir/client.txt" &
 	_kill_pids+=($!)
 	sleep 1
 	echo "connect 127.0.0.1" > "$cl_fifo"
 fi
-timeout 6 killme &
+timeout 6 "$kill_marker" &
 _timeout_pid=$!
 
 if [ "$testname" == "client/chat.rb" ]
