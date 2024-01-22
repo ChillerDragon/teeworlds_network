@@ -188,7 +188,7 @@ class TeeworldsServer
       @game_server.on_rcon_cmd(chunk, packet)
     when NETMSG_RCON_AUTH
       @game_server.on_rcon_auth(chunk, packet)
-    when NETSMSG_NULL
+    when NETMSG_NULL
       nil # TODO: ddnet ex messages
     else
       puts "Unsupported system msg: #{chunk.msg}"

@@ -9,16 +9,18 @@ kill_marker=kill_me_d5af0410
 server_port=8377
 srvcfg="sv_rcon_password rcon;sv_port $server_port;$kill_marker"
 cl_fifo="$PWD/$tmpdir/client.fifo"
-clcfg="cl_input_fifo $cl_fifo;connect 127.0.0.1:$server_port;$kill_marker"
+clcfg="cl_input_fifo $cl_fifo;connect 127.0.0.1:$server_port;player_name test_client;$kill_marker"
 tw_srv_running=0
 ruby_logfile=ruby_client.txt
+ruby_logfile_err=ruby_client_stderr.txt
 
+_client_pid=''
 _kill_pids=()
 
 mkdir -p logs
 mkdir -p tmp
 
-function start_tw_server() {
+start_tw_server() {
 	if [[ -x "$(command -v teeworlds_srv)" ]]
 	then
 		teeworlds_srv "$srvcfg" &> "$logdir/server.txt"
@@ -37,7 +39,7 @@ function start_tw_server() {
 	tw_srv_running=1
 }
 
-function connect_tw_client() {
+connect_tw_client() {
 	if [[ -x "$(command -v teeworlds-headless)" ]]
 	then
 		teeworlds-headless "$clcfg"
@@ -53,7 +55,7 @@ function connect_tw_client() {
 	fi
 }
 
-function connect_ddnet7_client() {
+connect_ddnet7_client() {
 	local clcfg_dd7
 	clcfg_dd7="$(echo "$clcfg" | sed 's/127.0.0.1/tw-0.7+udp:\/\/127.0.0.1/')"
 	if [[ -x "$(command -v DDNet7-headless)" ]]
@@ -68,10 +70,10 @@ function connect_ddnet7_client() {
 	fi
 }
 
-function get_test_names() {
+get_test_names() {
 	(find client -name "*.rb";find server -name "*.rb") | tr '\n' ' '
 }
-function invalid_test() {
+invalid_test() {
 	local name="$1"
 	echo "Error: invalid test name '$name'"
 	echo "       valid tests: $(get_test_names)"
@@ -95,11 +97,13 @@ fi
 if [[ "$testname" =~ ^client/ ]]
 then
 	ruby_logfile="$logdir/ruby_client.txt"
+	ruby_logfile_err="$logdir/ruby_client_stderr.txt"
 else
 	ruby_logfile="$logdir/ruby_server.txt"
+	ruby_logfile_err="$logdir/ruby_server_stderr.txt"
 fi
 
-function kill_all_jobs() {
+kill_all_jobs() {
 	local i
 	local kill_pid
 	for i in "${!_kill_pids[@]}"
@@ -114,7 +118,7 @@ function kill_all_jobs() {
 	pkill -f "$kill_marker"
 }
 
-function cleanup() {
+cleanup() {
 	if [ "$tw_srv_running" == "1" ]
 	then
 		echo "[*] shutting down server ..."
@@ -127,7 +131,7 @@ function cleanup() {
 
 trap cleanup EXIT
 
-function fail() {
+fail() {
 	local msg="$1"
 	if [ ! -f "$tmpdir/fail.txt" ]
 	then
@@ -139,35 +143,42 @@ function fail() {
 		# maybe a sleep does as well
 		# or I still did not get flushing
 		tail "$ruby_logfile" &>/dev/null
+		tail "$ruby_logfile_err" &>/dev/null
 		if [[ "$testname" =~ ^client/ ]]
 		then
 			echo "[-] end of ruby client log:"
-			tail "$ruby_logfile"
+			tail -n 10 "$ruby_logfile"
 			echo "[-] end of server log:"
 			tail "$logdir/server.txt"
 		else
 			echo "[-] end of ruby server log:"
-			tail "$ruby_logfile"
+			tail -n 10 "$ruby_logfile"
 			echo "[-] end of client log:"
-			tail "$logdir/client.txt"
+			cat "$logdir/client.txt"
+		fi
+		if [ ! -s "$ruby_logfile_err" ]
+		then
+			echo "[-] got ruby stderr $ruby_logfile_err"
+			cat "$ruby_logfile_err"
 		fi
 	fi
-	echo "$msg"
+	echo "[-][FATAL] $msg"
 	exit 1
 }
 
-function timeout() {
+timeout() {
 	local seconds="$1"
 	sleep "$seconds"
 	echo "[-] Timeout -> killing: $testname"
 	touch "$tmpdir/timeout.txt"
 	kill_all_jobs
-	fail "[-] Timeout"
+	fail "Timeout"
 }
 
 echo "[*] running test '$testname' ..."
 [[ -f "$tmpdir/timeout.txt" ]] && rm "$tmpdir"/timeout.txt
 [[ -f "$tmpdir/fail.txt" ]] && rm "$tmpdir"/fail.txt
+:>"$ruby_logfile_err"
 if [[ "$testname" =~ ^client/ ]]
 then
 	echo "ruby client log $(date)" > "$ruby_logfile"
@@ -178,8 +189,8 @@ else
 	echo "ddnet7 client log $(date)" > "$logdir/client.txt"
 	echo "ruby server log $(date)" > "$ruby_logfile"
 fi
-function run_ruby_test() {
-	if ! ruby "$testname" "$kill_marker" &> "$ruby_logfile"
+run_ruby_test() {
+	if ! ruby "$testname" "$kill_marker" 2> "$ruby_logfile_err" 1> "$ruby_logfile"
 	then
 		fail "test $testname finished with non zero exit code"
 	fi
@@ -196,73 +207,110 @@ fi
 if [[ "$testname" =~ ^server/ ]]
 then
 	connect_ddnet7_client "$kill_marker" &>> "$logdir/client.txt" &
-	_kill_pids+=($!)
+	_client_pid=$!
+	_kill_pids+=("$_client_pid")
 	sleep 1
 fi
-timeout 6 "$kill_marker" &
+timeout 20 "$kill_marker" &
 _timeout_pid=$!
 
-function fifo() {
+fifo() {
 	local cmd="$1"
 	local fifo_file="$2"
 	echo "[*] $cmd >> $fifo_file"
 	echo "$cmd" >> "$fifo_file"
+}
+assert_in_log() {
+	# usage: assert_in_log string path [num_matches"
+	# examples:
+	#   assert_in_log "string to find" "/path/to/log.txt"
+	#   assert_in_log "string to find" "/path/to/log.txt" 2
+	local needle="$1"
+	local logfile_path="$2"
+	local num_matches="$3"
+	if ! grep -q "$needle" "$logfile_path"
+	then
+		echo "[-] Error: did not find expected string in logs"
+		echo "[-]"
+		echo "[-]  expected: $needle"
+		echo "[-]  in  file: $ruby_logfile"
+		echo "[-]"
+		fail "assert failed"
+	fi
+	if [ "$num_matches" != "" ]
+	then
+		local actual_matches
+		actual_matches="$(grep -c "$needle" "$logfile_path")"
+		if [ "$actual_matches" != "$num_matches" ]
+		then
+			echo "[-] Error: found string unexpected amount of times in log file"
+			echo "[-]"
+			echo "[-]  expected: $needle"
+			echo "[-]  in  file: $ruby_logfile"
+			echo "[-]"
+			echo "[-]  expected num hits: $num_matches"
+			echo "[-]       got num hits: $actual_matches"
+			echo "[-]"
+			fail "assert failed"
+		fi
+	fi
+	echo "[*] $needle .. OK"
 }
 
 if [ "$testname" == "client/chat.rb" ]
 then
 	if ! grep -q 'hello world' "$logdir/server.txt"
 	then
-		fail "Error: did not find chat message in server log"
+		fail "did not find chat message in server log"
 	fi
 elif [ "$testname" == "client/reconnect.rb" ]
 then
 	if ! grep -q 'bar' "$logdir/server.txt"
 	then
-		fail "Error: did not find 2nd chat message in server log"
+		fail "did not find 2nd chat message in server log"
 	fi
 elif [ "$testname" == "client/rcon.rb" ]
 then
 	sleep 1
 	if pgrep -f "$tw_srv_bin $srvcfg"
 	then
-		fail "Error: server still running rcon shutdown failed"
+		fail "server still running rcon shutdown failed"
 	fi
 elif [ "$testname" == "client/srv_say.rb" ]
 then
 	if ! grep -q '^\[chat\].*hello' "$logdir/ruby_client.txt"
 	then
-		fail "Error: missing 'hello' chat message in client log"
+		fail "missing 'hello' chat message in client log"
 	fi
 elif [ "$testname" == "client/multiple_blocks.rb" ]
 then
 	sleep 1
 	if pgrep -f "$tw_srv_bin $srvcfg"
 	then
-		fail "Error: server still running rcon shutdown failed (2 blocks)"
+		fail "server still running rcon shutdown failed (2 blocks)"
 	fi
 	block1_ln="$(grep -n "block 1" "$ruby_logfile" | cut -d':' -f1)"
 	block2_ln="$(grep -n "block 2" "$ruby_logfile" | cut -d':' -f1)"
 	if [ "$block1_ln" == "" ]
 	then
-		fail "Error: 'block 1' not found in client log"
+		fail "'block 1' not found in client log"
 	fi
 	if [ "$block2_ln" == "" ]
 	then
-		fail "Error: 'block 2' not found in client log"
+		fail "'block 2' not found in client log"
 	fi
 	if [[ ! "$block1_ln" =~ ^[0-9]+$ ]]
 	then
-		fail "Error: failed to parse line number of 'block 1' got='$block1_ln'"
+		fail "failed to parse line number of 'block 1' got='$block1_ln'"
 	fi
 	if [[ ! "$block2_ln" =~ ^[0-9]+$ ]]
 	then
-		fail "Error: failed to parse line number of 'block 2' got='$block2_ln'"
+		fail "failed to parse line number of 'block 2' got='$block2_ln'"
 	fi
 	# ensure block call order matches definition order
 	if [ "$block1_ln" -gt "$block2_ln" ]
 	then
-		fail "Error: 'block 1' found after 'block 2' in client log"
+		fail "'block 1' found after 'block 2' in client log"
 	fi
 elif [ "$testname" == "server/connect.rb" ]
 then
@@ -271,6 +319,11 @@ then
 	fifo "rcon shutdown" "$cl_fifo"
 	sleep 1
 	fifo "quit" "$cl_fifo"
+	# ddnet quitting can get stuck so send a kill to ensure it dies
+	kill "$_client_pid"
+
+	assert_in_log "'test_client' joined the game" "$ruby_logfile" 1
+	assert_in_log "rcon='shutdown'" "$ruby_logfile" 1
 else
 	echo "Error: unkown test '$testname'"
 	exit 1
