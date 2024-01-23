@@ -154,7 +154,7 @@ fail() {
 			echo "[-] end of ruby server log:"
 			tail -n 10 "$ruby_logfile"
 			echo "[-] end of client log:"
-			cat "$logdir/client.txt"
+			tail -n 10 "$logdir/client.txt"
 		fi
 		if [ ! -s "$ruby_logfile_err" ]
 		then
@@ -228,7 +228,7 @@ assert_in_log() {
 	local needle="$1"
 	local logfile_path="$2"
 	local num_matches="$3"
-	if ! grep -q "$needle" "$logfile_path"
+	if ! grep -qF "$needle" "$logfile_path"
 	then
 		echo "[-] Error: did not find expected string in logs"
 		echo "[-]"
@@ -240,7 +240,7 @@ assert_in_log() {
 	if [ "$num_matches" != "" ]
 	then
 		local actual_matches
-		actual_matches="$(grep -c "$needle" "$logfile_path")"
+		actual_matches="$(grep -cF "$needle" "$logfile_path")"
 		if [ "$actual_matches" != "$num_matches" ]
 		then
 			echo "[-] Error: found string unexpected amount of times in log file"
@@ -324,6 +324,22 @@ then
 
 	assert_in_log "'test_client' joined the game" "$ruby_logfile" 1
 	assert_in_log "rcon='shutdown'" "$ruby_logfile" 1
+elif [ "$testname" == "server/chat.rb" ]
+then
+	fifo "say hello gamers" "$cl_fifo"
+	sleep 1
+	fifo "say uwu" "$cl_fifo"
+	sleep 1
+	fifo "rcon_auth test" "$cl_fifo"
+	sleep 1
+	fifo "rcon shutdown" "$cl_fifo"
+	sleep 1
+	fifo "quit" "$cl_fifo"
+	# ddnet quitting can get stuck so send a kill to ensure it dies
+	kill "$_client_pid"
+
+	assert_in_log "hello gamers" "$ruby_logfile" 1
+	assert_in_log "[testchat] test_client: uwu" "$ruby_logfile" 1
 else
 	echo "Error: unkown test '$testname'"
 	exit 1

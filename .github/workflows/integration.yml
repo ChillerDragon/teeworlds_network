@@ -58,3 +58,6 @@ jobs:
     - name: '[SERVER] Test connect'
       run: |
         ./integration_test/run.sh server/connect.rb
+    - name: '[SERVER] Test chat'
+      run: |
+        ./integration_test/run.sh server/chat.rb
