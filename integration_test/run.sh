@@ -152,9 +152,9 @@ fail() {
 			tail "$logdir/server.txt"
 		else
 			echo "[-] end of ruby server log:"
-			tail -n 10 "$ruby_logfile"
+			cat "$ruby_logfile"
 			echo "[-] end of client log:"
-			tail -n 10 "$logdir/client.txt"
+			cat "$logdir/client.txt"
 		fi
 		if [ ! -s "$ruby_logfile_err" ]
 		then
@@ -337,6 +337,8 @@ then
 	fifo "quit" "$cl_fifo"
 	# ddnet quitting can get stuck so send a kill to ensure it dies
 	kill "$_client_pid"
+
+	sleep 1 # wait for logfiles to be written
 
 	assert_in_log "hello gamers" "$ruby_logfile" 1
 	assert_in_log "[testchat] test_client: uwu" "$ruby_logfile" 1
