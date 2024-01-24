@@ -19,6 +19,7 @@ jobs:
     - name: Prepare
       run: |
         sudo apt-get update -y
+        sudo apt-get install -y tcpdump tshark
         sudo apt-get install -y shellcheck teeworlds-server teeworlds teeworlds-data
         sudo apt install -y build-essential glslang-tools libavcodec-extra libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpng-dev libsdl2-dev libsqlite3-dev libssl-dev libvulkan-dev libwavpack-dev libx264-dev
         gem install bundler
@@ -57,7 +58,27 @@ jobs:
         ./integration_test/run.sh client/rcon.rb
     - name: '[SERVER] Test connect'
       run: |
-        ./integration_test/run.sh server/connect.rb
+        sudo tcpdump -i lo "port 8377" -w dump.pcap &
+        tcpdump_pid=$!
+        fail=0
+        if ! ./integration_test/run.sh server/connect.rb
+        then
+          fail=1
+        fi
+        kill $tcpdump_pid
+        sleep 1
+        tcpdump -r dump.pcap -nX || true
+        [[ "$fail" == "1" ]] && exit 1
     - name: '[SERVER] Test chat'
       run: |
-        ./integration_test/run.sh server/chat.rb
+        sudo tcpdump -i lo "port 8377" -w dump.pcap &
+        tcpdump_pid=$!
+        fail=0
+        if ! ./integration_test/run.sh server/chat.rb
+        then
+          fail=1
+        fi
+        kill $tcpdump_pid
+        sleep 1
+        tcpdump -r dump.pcap -nX || true
+        [[ "$fail" == "1" ]] && exit 1
