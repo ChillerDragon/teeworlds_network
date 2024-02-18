@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
     'lib/**/*.rb'
   ]
   s.required_ruby_version = '>= 3.1.2'
-  s.add_dependency 'huffman_tw', '~> 0.0.2'
+  s.add_dependency 'huffman_tw', '~> 0.0.4'
   s.add_dependency 'rspec', '~> 3.9.0'
   s.homepage    = 'https://github.com/ChillerDragon/teeworlds_network'
   s.license     = 'Unlicense'
