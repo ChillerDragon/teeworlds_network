@@ -164,7 +164,12 @@ describe 'Unpacker', :unpacker do
       expect(u.get_int).to eq(64)
     end
 
-    it 'Should unpack 1100 0000  0000 0001 to -65' do
+    it 'Should unpack 0111 1111 to -64 (last single)' do
+      u = Unpacker.new(['01111111'.to_i(2)])
+      expect(u.get_int).to eq(-64)
+    end
+
+    it 'Should unpack 1100 0000  0000 0001 to -65 (first multi)' do
       u = Unpacker.new(['11000000'.to_i(2), '00000001'.to_i(2)])
       expect(u.get_int).to eq(-65)
     end
