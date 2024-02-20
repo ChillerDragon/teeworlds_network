@@ -1,0 +1,15 @@
+# name: Integration tests dockerized
+
+# on:
+#   push:
+#     branches: [ "master" ]
+#   pull_request:
+#     branches: [ "master" ]
+
+# jobs:
+#   docker:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v3
+#     - name: Run integration tests in docker
+#       run: docker build . --file integration_test/Dockerfile --tag teeworlds_network-integration-tests:$(date +%s)

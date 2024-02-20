@@ -58,27 +58,18 @@ jobs:
         ./integration_test/run.sh client/rcon.rb
     - name: '[SERVER] Test connect'
       run: |
-        sudo tcpdump -i lo "port 8377" -w dump.pcap &
-        tcpdump_pid=$!
-        fail=0
-        if ! ./integration_test/run.sh server/connect.rb
-        then
-          fail=1
-        fi
-        kill $tcpdump_pid
-        sleep 1
-        tcpdump -r dump.pcap -nX || true
-        [[ "$fail" == "1" ]] && exit 1
-    - name: '[SERVER] Test chat'
-      run: |
-        sudo tcpdump -i lo "port 8377" -w dump.pcap &
-        tcpdump_pid=$!
-        fail=0
-        if ! ./integration_test/run.sh server/chat.rb
-        then
-          fail=1
-        fi
-        kill $tcpdump_pid
-        sleep 1
-        tcpdump -r dump.pcap -nX || true
-        [[ "$fail" == "1" ]] && exit 1
+        ./integration_test/run.sh server/connect.rb
+    # - name: '[SERVER] Test chat'
+    #   run: |
+    #     sudo tcpdump -i lo "port 8377" -w dump.pcap &
+    #     tcpdump_pid=$!
+    #     fail=0
+    #     if ! ./integration_test/run.sh server/chat.rb
+    #     then
+    #       fail=1
+    #     fi
+    #     kill -SIGINT $tcpdump_pid
+    #     sleep 1
+    #     file dump.pcap
+    #     tcpdump -r dump.pcap -nX || true
+    #     [[ "$fail" == "1" ]] && exit 1

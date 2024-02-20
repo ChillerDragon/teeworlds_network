@@ -17,6 +17,8 @@ ruby_logfile_err=ruby_client_stderr.txt
 _client_pid=''
 _kill_pids=()
 
+[[ -d tmp ]] && rm -rf tmp
+
 mkdir -p logs
 mkdir -p tmp
 
@@ -32,6 +34,10 @@ start_tw_server() {
 	then
 		teeworlds-srv "$srvcfg" &> "$logdir/server.txt"
 		tw_srv_bin='teeworlds-srv'
+	elif [ -f /usr/games/teeworlds-server ] # needed for docker ubuntu:24.04
+	then
+		/usr/games/teeworlds-server "$srvcfg" &> "$logdir/server.txt"
+		tw_srv_bin='/usr/games/teeworlds-server'
 	else
 		echo "Error: please install a teeworlds_srv"
 		exit 1
@@ -220,6 +226,9 @@ fifo() {
 	local cmd="$1"
 	local fifo_file="$2"
 	echo "[*] $cmd >> $fifo_file"
+	local cmd_slug
+	cmd_slug="${cmd//[^a-zA-Z0-9]/_}"
+	echo "echo \"FIFO: $cmd_slug\"" >> "$fifo_file"
 	echo "$cmd" >> "$fifo_file"
 }
 assert_in_log() {
