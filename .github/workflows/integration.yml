@@ -18,35 +18,7 @@ jobs:
         ruby-version: 3.1.x
     - name: Prepare
       run: |
-        sudo apt-get update -y
-        sudo apt-get install -y tcpdump tshark
-        sudo apt-get install -y shellcheck teeworlds-server teeworlds teeworlds-data
-        sudo apt install -y build-essential glslang-tools libavcodec-extra libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libcurl4-openssl-dev libfreetype6-dev libglew-dev libnotify-dev libogg-dev libopus-dev libopusfile-dev libpng-dev libsdl2-dev libsqlite3-dev libssl-dev libvulkan-dev libwavpack-dev libx264-dev
-        gem install bundler
-        gem install rubocop:1.31.2
-        bundle install --jobs 4 --retry 3
-
-        wget https://github.com/ChillerDragon/teeworlds/releases/download/v0.7.5-headless/teeworlds-0.7.5-linux_x86_64.tar.gz
-        tar -xvzf teeworlds-0.7.5-linux_x86_64.tar.gz
-        sudo mkdir -p /usr/local/bin/
-        sudo mv teeworlds-0.7.5-linux_x86_64/teeworlds /usr/local/bin/teeworlds-headless
-        rm -rf teeworlds-0.7.5-linux_x86_64*
-
-        wget https://github.com/ChillerDragon/ddnet/releases/download/v16.5-headless/DDNet-headless.zip
-        unzip DDNet-headless.zip
-        sudo mv DDNet-headless /usr/local/bin
-        rm DDNet-headless.zip
-
-        wget https://github.com/ChillerDragon/ddnet/releases/download/v17.4.2-headless-0.7/DDNet7-headless-linux.zip
-        unzip DDNet7-headless-linux.zip
-        chmod +x DDNet7-headless
-        sudo mv DDNet7-headless /usr/local/bin
-        rm DDNet7-headless-linux.zip
-
-        echo 'TODO: remove this ugly hack!'
-        mkdir -p ~/.teeworlds/downloadedmaps
-        cd ~/.teeworlds/downloadedmaps
-        wget https://heinrich5991.de/teeworlds/maps/maps/dm1_64548818.map
+        curl https://raw.githubusercontent.com/ChillerDragon/teeworlds_network/master/.github/workflows/prepare.sh | bash
     - name: '[CLIENT] Test sending chat messages'
       run: |
         ./integration_test/run.sh client/chat.rb
@@ -59,6 +31,10 @@ jobs:
     - name: '[SERVER] Test connect'
       run: |
         ./integration_test/run.sh server/connect.rb
+    # TODO: the ci refuses to pass two server tests in a row
+    #       it works fine locally
+    #       i see nothing suspicious via lsof/netstat/ls/tcpdump
+    #       well tcpdump is sus as in on the run it fails it creates a 0 byte dump file
     # - name: '[SERVER] Test chat'
     #   run: |
     #     sudo tcpdump -i lo "port 8377" -w dump.pcap &
@@ -73,3 +49,20 @@ jobs:
     #     file dump.pcap
     #     tcpdump -r dump.pcap -nX || true
     #     [[ "$fail" == "1" ]] && exit 1
+
+
+  srv-chat:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Ruby 3.1
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 3.1.x
+    - name: Prepare
+      run: |
+        curl https://raw.githubusercontent.com/ChillerDragon/teeworlds_network/master/.github/workflows/prepare.sh | bash
+    - name: '[SERVER] Test chat'
+      run: |
+        ./integration_test/run.sh server/chat.rb
