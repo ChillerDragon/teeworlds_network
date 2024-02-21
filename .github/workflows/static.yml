@@ -18,3 +18,7 @@ jobs:
         ruby-version: 3.1.x
     - name: Check code
       run: ./scripts/bad_code.sh
+    - name: Check docs
+      run: |
+        gem install yard
+        yard --fail-on-warning --no-save --no-output | grep -E '(warn|error)' && exit 1 || true
