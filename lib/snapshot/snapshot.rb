@@ -7,7 +7,7 @@ class Snapshot
   def initialize(items)
     # @type game_tick [Integer]
     @game_tick = 0
-    # @type items [Array<SnapItemBase>]
+    # @type items [Array<SnapItemBase>, Array<SnapItem>]
     @items = items
   end
 

@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
 require_relative '../packer'
+require_relative '../network'
 
 class SnapItemBase
-  attr_reader :notes, :name, :type, :id
+  attr_reader :notes, :name, :type
+  attr_accessor :id
 
   def initialize(hash_or_raw)
     @fields = @field_names.map do |_|
@@ -23,6 +25,10 @@ class SnapItemBase
 
   def validate
     @fields.none?(&:nil?)
+  end
+
+  def size
+    @fields.size
   end
 
   def init_unpacker(u)
@@ -56,8 +62,12 @@ class SnapItemBase
   end
 
   def init_hash(attr)
-    @fields_names.each do |name|
-      instance_variable_set("@#{name}", attr[name] || 0)
+    @field_names.each_with_index do |name, i|
+      # direct instance variables work
+      # but using the @fields array is easier to then pack
+      # idk how to iterate just the instance variables that i need on packing
+      # instance_variable_set("@#{name}", attr[name] || 0)
+      @fields[i] = attr[name] || 0
     end
   end
 
@@ -74,6 +84,8 @@ class SnapItemBase
   # int array the server sends to the client
   def to_a
     arr = []
+    arr += Packer.pack_int(@type)
+    arr += Packer.pack_int(@id)
     @fields.each do |value|
       arr += Packer.pack_int(value)
     end

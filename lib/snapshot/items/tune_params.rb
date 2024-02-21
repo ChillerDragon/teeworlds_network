@@ -59,7 +59,7 @@ class NetObj
     end
 
     def init_hash(attr)
-      @fields_names.each do |name|
+      @field_names.each do |name|
         instance_variable_set("@#{name}", attr[name] || 0)
       end
     end
