@@ -73,6 +73,7 @@ class TeeworldsServer
     @ip = '127.0.0.1'
     @port = 8303
     @game_server = GameServer.new(self)
+    # @type clients [Hash<Integer, Client>]
     @clients = {}
     @current_game_tick = 0
     @last_snap_time = Time.now
@@ -370,6 +371,19 @@ class TeeworldsServer
     @netbase.send_packet(msg, chunks: 1, client:)
   end
 
+  ##
+  # https://chillerdragon.github.io/teeworlds-protocol/07/game_messages.html#NETMSGTYPE_SV_CLIENTINFO
+  #
+  # @param client [Client] recipient of the message
+  # @param client_info [ClientInfo] client info net message
+  def send_client_info(client, client_info)
+    data = client_info.to_a
+    msg = NetChunk.create_header(vital: true, size: 1 + data.size, client:) +
+          [pack_msg_id(NETMSGTYPE_SV_CLIENTINFO, system: false)] +
+          data
+    @netbase.send_packet(msg, chunks: 1, client:)
+  end
+
   def send_server_info(client, server_info)
     msg = NetChunk.create_header(vital: true, size: 1 + server_info.size, client:) +
           [pack_msg_id(NETMSG_SERVERINFO, system: true)] +
@@ -474,9 +488,18 @@ class TeeworldsServer
   require_relative 'snapshot/items/game_data'
   require_relative 'snapshot/items/game_data_team'
   require_relative 'snapshot/items/game_data_flag'
+  require_relative 'snapshot/items/player_info'
+  require_relative 'snapshot/items/character'
+  require_relative 'snapshot/items/flag'
 
   def do_snap_single
     builder = SnapshotBuilder.new
+    builder.new_item(0, NetObj::Flag.new(
+                          x: 1200, y: 304, team: 0
+                        ))
+    builder.new_item(1, NetObj::Flag.new(
+                          x: 1296, y: 304, team: 1
+                        ))
     builder.new_item(0, NetObj::GameData.new(
                           game_start_tick: 0,
                           game_state_flags: 1,
@@ -491,6 +514,22 @@ class TeeworldsServer
                           flag_carrier_blue: -2,
                           flag_drop_tick_red: 0,
                           flag_drop_tick_blue: 0
+                        ))
+    builder.new_item(0, NetObj::PlayerInfo.new(
+                          player_flags: 8,
+                          score: 0,
+                          latency: 0
+                        ))
+    builder.new_item(0, NetObj::Character.new(
+                          x: 784, y: 305,
+                          vel_x: 0, vel_y: 0,
+                          angle: 0, direction: 0, jumped: 0,
+                          hooked_player: -1, hook_state: 0,
+                          hook_tick: 0, hook_x: 784, hook_y: 304,
+                          hook_dx: 784, hook_dy: 0,
+                          health: 10, armor: 0, ammo_count: 10,
+                          weapon: 1, emote: 0,
+                          attack_tick: 0, triggered_events: 0
                         ))
     snap = builder.finish
     items = snap.to_a

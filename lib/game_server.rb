@@ -11,6 +11,7 @@ require_relative 'messages/cl_say'
 require_relative 'messages/cl_emoticon'
 require_relative 'messages/cl_info'
 require_relative 'messages/cl_input'
+require_relative 'messages/client_info'
 
 class GameServer
   attr_accessor :pred_game_tick, :ack_game_tick, :map
@@ -97,6 +98,16 @@ class GameServer
     puts msg
   end
 
+  # https://chillerdragon.github.io/teeworlds-protocol/07/game_messages.html#NETMSGTYPE_SV_CLIENTINFO
+  # send infos about currently connected clients to the newly joined client
+  # send info of the newly joined client to all currently connected clients
+  #
+  # @param client [Client] newly joined client
+  def send_client_infos(client)
+    client_info = ClientInfo.new(client_id: client.id, local: 1)
+    @server.send_client_info(client, client_info)
+  end
+
   def on_enter_game(_chunk, packet)
     # vanilla server responds to enter game with two packets
     # first:
@@ -109,6 +120,7 @@ class GameServer
 
     packet.client.in_game = true
     @server.send_server_info(packet.client, ServerInfo.new.to_a)
+    send_client_infos(packet.client)
     @server.send_game_info(packet.client, GameInfo.new.to_a)
 
     puts "'#{packet.client.player.name}' joined the game"
