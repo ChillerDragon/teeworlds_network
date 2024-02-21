@@ -78,7 +78,15 @@ class TeeworldsServer
       chat: [],
       rcon_auth: [],
       rcon_cmd: [],
-      shutdown: []
+      shutdown: [],
+      emote: [],
+      info: [],
+      ready: [],
+      start_info: [],
+      enter_game: [],
+      input: [],
+      client_drop: [],
+      tick: []
     }
     @thread_running = false
     @is_shutting_down = false
@@ -104,6 +112,38 @@ class TeeworldsServer
 
   def on_shutdown(&block)
     @hooks[:shutdown].push(block)
+  end
+
+  def on_emote(&block)
+    @hooks[:emote].push(block)
+  end
+
+  def on_info(&block)
+    @hooks[:info].push(block)
+  end
+
+  def on_ready(&block)
+    @hooks[:ready].push(block)
+  end
+
+  def on_start_info(&block)
+    @hooks[:start_info].push(block)
+  end
+
+  def on_enter_game(&block)
+    @hooks[:enter_game].push(block)
+  end
+
+  def on_input(&block)
+    @hooks[:input].push(block)
+  end
+
+  def on_client_drop(&block)
+    @hooks[:client_drop].push(block)
+  end
+
+  def on_tick(&block)
+    @hooks[:tick].push(block)
   end
 
   def main_loop

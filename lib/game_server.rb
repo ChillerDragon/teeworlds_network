@@ -9,6 +9,7 @@ require_relative 'messages/server_settings'
 require_relative 'messages/start_info'
 require_relative 'messages/cl_say'
 require_relative 'messages/cl_emoticon'
+require_relative 'messages/cl_info'
 
 class GameServer
   attr_accessor :pred_game_tick, :ack_game_tick, :map
@@ -41,19 +42,17 @@ class GameServer
   end
 
   def on_emoticon(chunk, _packet)
-    message = ClEmoticon.new(chunk.data[1..])
-    p message
+    msg = ClEmoticon.new(chunk.data[1..])
+    return if call_hook(:emote, Context.new(msg, chunk:, packet:)).nil?
   end
 
   def on_info(chunk, packet)
-    u = Unpacker.new(chunk.data[1..])
-    net_version = u.get_string
-    password = u.get_string
-    client_version = u.get_int
-    puts "vers=#{net_version} vers=#{client_version} pass=#{password}"
+    msg = ClInfo.new(chunk.data[1..])
+
+    return if call_hook(:info, Context.new(msg, chunk:, packet:)).nil?
 
     # TODO: check version and password
-
+    puts "vers=#{msg.net_version} vers=#{msg.client_version} pass=#{msg.password}"
     @server.send_map(packet.client)
   end
 
@@ -63,6 +62,8 @@ class GameServer
     #  - server settings
     #  - ready
     #
+    return if call_hook(:ready, Context.new(nil, chunk: nil, packet:)).nil?
+
     @server.send_server_settings(packet.client, ServerSettings.new.to_a)
     @server.send_ready(packet.client)
   end
@@ -75,6 +76,8 @@ class GameServer
     #
     # We only send ready to enter for now
     info = StartInfo.new(chunk.data[1..])
+    return if call_hook(:start_info, Context.new(info, chunk: nil, packet:)).nil?
+
     packet.client.player.set_start_info(info)
     info_str = info.to_s
     puts "got start info: #{info_str}" if @verbose
@@ -99,6 +102,8 @@ class GameServer
     #  - game info
     #  - client info
     #  - snap single
+    return if call_hook(:enter_game, Context.new(nil, chunk: nil, packet:)).nil?
+
     packet.client.in_game = true
     @server.send_server_info(packet.client, ServerInfo.new.to_a)
     @server.send_game_info(packet.client, GameInfo.new.to_a)
@@ -136,12 +141,17 @@ class GameServer
     #  - input_timing
     #  - snap (empty)
 
-    # we do nothing for now
-    # TODO: do something
+    msg = ClInput.new(chunk.data[1..])
+    return if call_hook(:input, Context.new(msg, chunk:, packet:)).nil?
+
+    dir = msg.direction
+    puts "#{packet.client.player.id} tried to move #{dir}"  unless dir.zero?
   end
 
   def on_client_drop(client, reason = nil)
     reason = reason.nil? ? '' : " (#{reason})"
+    return if call_hook(:client_drop, Context.new(nil, chunk:, packet:, reason:)).nil?
+
     puts "'#{client.player.name}' left the game#{reason}"
   end
 
@@ -156,6 +166,8 @@ class GameServer
   end
 
   def on_tick
+    return if call_hook(:tick, Context.new(nil, chunk:, packet:)).nil?
+
     now = Time.now
     timeout_ids = []
     @server.clients.each do |id, client|
