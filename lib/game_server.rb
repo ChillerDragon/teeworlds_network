@@ -10,6 +10,7 @@ require_relative 'messages/start_info'
 require_relative 'messages/cl_say'
 require_relative 'messages/cl_emoticon'
 require_relative 'messages/cl_info'
+require_relative 'messages/cl_input'
 
 class GameServer
   attr_accessor :pred_game_tick, :ack_game_tick, :map
@@ -41,9 +42,11 @@ class GameServer
     context
   end
 
-  def on_emoticon(chunk, _packet)
+  def on_emoticon(chunk, packet)
     msg = ClEmoticon.new(chunk.data[1..])
-    call_hook(:emote, Context.new(msg, chunk:, packet:)).nil?
+    return if call_hook(:emote, Context.new(msg, chunk:, packet:)).nil?
+
+    @server.send_emoticon(packet.client.player.id, msg.emoticon)
   end
 
   def on_info(chunk, packet)
@@ -150,7 +153,7 @@ class GameServer
 
   def on_client_drop(client, reason = nil)
     reason = reason.nil? ? '' : " (#{reason})"
-    return if call_hook(:client_drop, Context.new(nil, chunk:, packet:, reason:)).nil?
+    return if call_hook(:client_drop, Context.new(nil, client:, reason:)).nil?
 
     puts "'#{client.player.name}' left the game#{reason}"
   end
@@ -166,7 +169,7 @@ class GameServer
   end
 
   def on_tick
-    return if call_hook(:tick, Context.new(nil, chunk:, packet:)).nil?
+    return if call_hook(:tick, Context.new(nil)).nil?
 
     now = Time.now
     timeout_ids = []

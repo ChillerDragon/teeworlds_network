@@ -13,6 +13,7 @@ require_relative 'models/net_addr'
 require_relative 'packer'
 require_relative 'game_server'
 require_relative 'models/token'
+require_relative 'messages/sv_emoticon'
 
 class Client
   attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token, :player, :in_game, :authed
@@ -307,6 +308,40 @@ class TeeworldsServer
           [pack_msg_id(NETMSG_MAP_CHANGE, system: true)] +
           data
     @netbase.send_packet(msg, chunks: 1, client:)
+  end
+
+  ##
+  # sends emoticon to all connected clients
+  #
+  # emote ids:
+  # 0 - oop!
+  # 1 - alert
+  # 2 - heart
+  # 3 - tear
+  # 4 - ...
+  # 5 - music
+  # 6 - sorry
+  # 7 - ghost
+  # 8 - annoyed
+  # 9 - angry
+  # 10 - devil
+  # 11 - swearing
+  # 12 - zzZ
+  # 13 - WTF
+  # 14 - happy
+  # 15 - ??
+  #
+  # @param client_id [Integer] id of the client who sent the emoticon
+  # @param emoticon [Integer] emoticon id see list above
+  def send_emoticon(client_id, emoticon)
+    emote = SvEmoticon.new(client_id:, emoticon:)
+    data = emote.to_a
+    @clients.each_value do |client|
+      msg = NetChunk.create_header(vital: true, size: 1, client:) +
+            [pack_msg_id(NETMSGTYPE_SV_EMOTICON, system: false)] +
+            data
+      @netbase.send_packet(msg, chunks: 1, client:)
+    end
   end
 
   def send_rcon_auth_on(client)
