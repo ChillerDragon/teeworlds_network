@@ -7,6 +7,7 @@ class NetObj
     attr_accessor :x, :y, :team
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_FLAG
       @field_names = %i[
         x
         y

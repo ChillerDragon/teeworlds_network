@@ -7,6 +7,7 @@ class NetObj
     attr_accessor :x, :y, :vel_x, :vel_y, :type, :start_tick
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_PROJECTILE
       @field_names = %i[
         x
         y

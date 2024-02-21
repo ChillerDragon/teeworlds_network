@@ -7,6 +7,7 @@ class NetEvent
     attr_accessor :client_id
 
     def initialize(hash_or_raw)
+      @type = NETEVENTTYPE_DEATH
       @field_names = %i[
         client_id
       ]

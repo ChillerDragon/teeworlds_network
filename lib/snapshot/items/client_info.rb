@@ -7,6 +7,7 @@ class NetObj
     attr_accessor :local, :team
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_DE_CLIENTINFO
       @field_names = %i[
         local
         team

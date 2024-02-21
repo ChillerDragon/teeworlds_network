@@ -7,6 +7,7 @@ class NetObj
     attr_accessor :x, :y, :from_x, :from_y, :start_tick
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_LASER
       @field_names = %i[
         x
         y

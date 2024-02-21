@@ -9,6 +9,7 @@ class NetObj
                   :health, :armor, :ammo_count, :weapon, :emote, :attack_tick, :triggered_events
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_CHARACTER
       @field_names = %i[
         tick
         x

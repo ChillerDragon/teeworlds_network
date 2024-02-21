@@ -3,7 +3,7 @@
 require_relative '../packer'
 
 class SnapItemBase
-  attr_reader :notes, :name, :id
+  attr_reader :notes, :name, :type, :id
 
   def initialize(hash_or_raw)
     @fields = @field_names.map do |_|

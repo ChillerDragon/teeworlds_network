@@ -7,6 +7,7 @@ class NetObj
     attr_accessor :spec_mode, :spectator_id, :x, :y
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_SPECTATORINFO
       @field_names = %i[
         spec_mode
         spectator_id

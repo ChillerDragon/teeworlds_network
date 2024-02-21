@@ -7,6 +7,7 @@ class NetObj
     attr_accessor :teamscore_red, :teamscore_blue
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_GAMEDATATEAM
       @field_names = %i[
         teamscore_red
         teamscore_blue

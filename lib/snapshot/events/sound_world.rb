@@ -7,6 +7,7 @@ class NetEvent
     attr_accessor :sound_id
 
     def initialize(hash_or_raw)
+      @type = NETEVENTTYPE_SOUNDWORLD
       @field_names = %i[
         sound_id
       ]

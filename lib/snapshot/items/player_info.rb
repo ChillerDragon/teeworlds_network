@@ -7,6 +7,7 @@ class NetObj
     attr_accessor :player_flags, :score, :latency
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_PLAYERINFO
       @field_names = %i[
         player_flags
         score

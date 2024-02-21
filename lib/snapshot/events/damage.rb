@@ -7,6 +7,7 @@ class NetEvent
     attr_accessor :client_id, :angle, :health_ammount, :armor_amount, :self
 
     def initialize(hash_or_raw)
+      @type = NETEVENTTYPE_DAMAGE
       @field_names = %i[
         client_id
         angle

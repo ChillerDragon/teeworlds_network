@@ -7,6 +7,7 @@ class NetObj
     attr_accessor :x, :y, :type
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_PICKUP
       @field_names = %i[
         x
         y

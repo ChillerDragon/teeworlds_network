@@ -7,6 +7,7 @@ class NetObj
     attr_accessor :game_start_tick, :game_state_flags, :game_state_end_tick
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_GAMEDATA
       @field_names = %i[
         game_start_tick
         game_state_flags

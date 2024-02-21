@@ -5,6 +5,7 @@ require_relative '../snap_item_base'
 class NetEvent
   class Explosion < SnapEventBase
     def initialize(hash_or_raw)
+      @type = NETEVENTTYPE_EXPLOSION
       @field_names = []
       super
     end

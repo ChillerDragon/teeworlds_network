@@ -8,6 +8,7 @@ class NetObj
                   :flag_drop_tick_red, :flag_drop_tick_blue
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_GAMEDATAFLAG
       @field_names = %i[
         flag_carrier_red
         flag_carrier_blue

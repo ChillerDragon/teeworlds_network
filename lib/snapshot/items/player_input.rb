@@ -10,6 +10,7 @@ class NetObj
                   :next_weapon, :prev_weapon
 
     def initialize(hash_or_raw)
+      @type = NETOBJTYPE_PLAYERINPUT
       @field_names = %i[
         direction
         target_x
