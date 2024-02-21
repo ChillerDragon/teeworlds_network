@@ -65,7 +65,7 @@ end
 
 class TeeworldsServer
   attr_accessor :clients
-  attr_reader :hooks, :shutdown_reason
+  attr_reader :hooks, :shutdown_reason, :current_game_tick
 
   def initialize(options = {})
     @verbose = options[:verbose] || false
@@ -448,7 +448,7 @@ class TeeworldsServer
     #       m_GameStartTime + (time_freq()*Tick)/SERVER_TICK_SPEED;
   end
 
-  def do_snapshot
+  def do_snap_empty
     delta_tick = -1
     # DeltaTick = m_aClients[i].m_LastAckedSnapshot;
     data = []
@@ -468,6 +468,30 @@ class TeeworldsServer
 
       @netbase.send_packet(msg_snap_empty, chunks: 1, client:)
     end
+  end
+
+  def do_snap_single
+    builder = SnapshotBuilder.new
+    snap = builder.finish
+    items = snap.to_a
+
+    data = []
+    # Game tick   Int
+    data += Packer.pack_int(@current_game_tick)
+    # Delta tick  Int
+    data += Packer.pack_int(@current_game_tick - delta_tick)
+    # Crc   Int
+    data += Packer.pack_int(snap.crc)
+    # Part size   Int   The size of this part. Meaning the size in bytes of the next raw data field.
+    data += Packer.pack_int(items.size)
+    # Data
+    data += items
+
+    p data
+  end
+
+  def do_snapshot
+    do_snap_empty
   end
 
   def get_player_by_id(id)

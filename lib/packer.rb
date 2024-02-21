@@ -8,6 +8,7 @@ SKIP_START_WHITESPACES = 4
 
 class Packer
   # Format: ESDDDDDD EDDDDDDD EDD... Extended, Data, Sign
+  # @return [Array<int>]
   def self.pack_int(num)
     # the first byte can fit 6 bits
     # because the first two bits are extended and sign

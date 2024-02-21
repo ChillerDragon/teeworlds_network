@@ -19,15 +19,7 @@ require_relative 'events/damage'
 require_relative 'events/death'
 require_relative 'events/hammer_hit'
 require_relative '../packer'
-
-class Snapshot
-  attr_accessor :game_tick, :items
-
-  def initialize(items)
-    @game_tick = 0
-    @items = items
-  end
-end
+require_relative 'snapshot'
 
 class DDNetSnapItem
   attr_accessor :notes, :name
@@ -76,6 +68,7 @@ end
 class SnapshotUnpacker
   def initialize(client)
     @client = client
+    # @type verbose [Boolean]
     @verbose = client.verbose_snap
   end
 
@@ -181,6 +174,7 @@ class SnapshotUnpacker
     invalid = false
     item_type = u.get_int
     id_parsed = u.parsed.last
+    # @type snap_items [Array<SnapItemBase>]
     snap_items = []
     while item_type
       obj = nil
