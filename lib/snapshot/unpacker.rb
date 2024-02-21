@@ -216,6 +216,7 @@ class SnapshotUnpacker
         obj = NetEvent::HammerHit.new(u)
       elsif @verbose
         puts "no match #{item_type}"
+        exit(1)
       end
       obj = unpack_ddnet_item(u, notes) if !obj && item_type.zero?
       if obj

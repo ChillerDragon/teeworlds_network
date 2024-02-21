@@ -14,6 +14,7 @@ require_relative 'packer'
 require_relative 'game_server'
 require_relative 'models/token'
 require_relative 'messages/sv_emoticon'
+require_relative 'snapshot/builder'
 
 class Client
   attr_accessor :id, :addr, :vital_sent, :last_recv_time, :token, :player, :in_game, :authed
@@ -470,10 +471,31 @@ class TeeworldsServer
     end
   end
 
+  require_relative 'snapshot/items/game_data'
+  require_relative 'snapshot/items/game_data_team'
+  require_relative 'snapshot/items/game_data_flag'
+
   def do_snap_single
     builder = SnapshotBuilder.new
+    builder.new_item(0, NetObj::GameData.new(
+                          game_start_tick: 0,
+                          game_state_flags: 1,
+                          game_state_end_tick: 500
+                        ))
+    builder.new_item(0, NetObj::GameDataTeam.new(
+                          teamscore_red: 0,
+                          teamscore_blue: 0
+                        ))
+    builder.new_item(0, NetObj::GameDataFlag.new(
+                          flag_carrier_red: -2,
+                          flag_carrier_blue: -2,
+                          flag_drop_tick_red: 0,
+                          flag_drop_tick_blue: 0
+                        ))
     snap = builder.finish
     items = snap.to_a
+
+    delta_tick = -1
 
     data = []
     # Game tick   Int
@@ -483,15 +505,28 @@ class TeeworldsServer
     # Crc   Int
     data += Packer.pack_int(snap.crc)
     # Part size   Int   The size of this part. Meaning the size in bytes of the next raw data field.
-    data += Packer.pack_int(items.size)
+    header = []
+    header += [0x00] # removed items
+    header += Packer.pack_int(snap.items.count) # num item deltas
+    header += [0x00] # _zero
+    part_size = items.size + header.size
+    data += Packer.pack_int(part_size)
     # Data
+    data += header
     data += items
+    msg = NetChunk.create_header(vital: false, size: data.size + 1) +
+          [pack_msg_id(NETMSG_SNAPSINGLE, system: true)] +
+          data
+    @clients.each_value do |client|
+      next unless client.in_game?
 
-    p data
+      @netbase.send_packet(msg, chunks: 1, client:)
+    end
   end
 
   def do_snapshot
     do_snap_empty
+    # do_snap_single
   end
 
   def get_player_by_id(id)
