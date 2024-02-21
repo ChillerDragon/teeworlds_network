@@ -220,7 +220,13 @@ function check_file() {
 	fi
 }
 
-if check_file TeeworldsClient lib/teeworlds_client.rb # || check_file TeeworldsServer lib/teeworlds_server.rb
+echo "[*] client"
+if check_file TeeworldsClient lib/teeworlds_client.rb
+then
+	exit 1
+fi
+echo "[*] server"
+if check_file TeeworldsServer lib/teeworlds_server.rb
 then
 	exit 1
 fi

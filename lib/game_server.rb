@@ -43,7 +43,7 @@ class GameServer
 
   def on_emoticon(chunk, _packet)
     msg = ClEmoticon.new(chunk.data[1..])
-    return if call_hook(:emote, Context.new(msg, chunk:, packet:)).nil?
+    call_hook(:emote, Context.new(msg, chunk:, packet:)).nil?
   end
 
   def on_info(chunk, packet)
@@ -145,7 +145,7 @@ class GameServer
     return if call_hook(:input, Context.new(msg, chunk:, packet:)).nil?
 
     dir = msg.direction
-    puts "#{packet.client.player.id} tried to move #{dir}"  unless dir.zero?
+    puts "#{packet.client.player.id} tried to move #{dir}" unless dir.zero?
   end
 
   def on_client_drop(client, reason = nil)

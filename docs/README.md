@@ -84,3 +84,29 @@ Version v0.0.6
 [#send_input(input = {})](classes/TeeworldsClient.md#send_input)
 
 [#on_tick(&block)](classes/TeeworldsClient.md#on_tick)
+
+### [TeeworldsServer](classes/TeeworldsServer.md)
+
+[#on_tick(&block)](classes/TeeworldsServer.md#on_tick)
+
+[#on_client_drop(&block)](classes/TeeworldsServer.md#on_client_drop)
+
+[#on_input(&block)](classes/TeeworldsServer.md#on_input)
+
+[#on_enter_game(&block)](classes/TeeworldsServer.md#on_enter_game)
+
+[#on_start_info(&block)](classes/TeeworldsServer.md#on_start_info)
+
+[#on_ready(&block)](classes/TeeworldsServer.md#on_ready)
+
+[#on_info(&block)](classes/TeeworldsServer.md#on_info)
+
+[#on_emote(&block)](classes/TeeworldsServer.md#on_emote)
+
+[#on_shutdown(&block)](classes/TeeworldsServer.md#on_shutdown)
+
+[#on_rcon_cmd(&block)](classes/TeeworldsServer.md#on_rcon_cmd)
+
+[#on_rcon_auth(&block)](classes/TeeworldsServer.md#on_rcon_auth)
+
+[#on_chat(&block)](classes/TeeworldsServer.md#on_chat)

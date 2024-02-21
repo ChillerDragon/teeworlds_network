@@ -7,7 +7,8 @@ require_relative '../packer'
 #
 # Client -> Server
 class ClInput
-  attr_accessor :ack_game_tick, :prediction_tick, :size, :direction, :target_x, :target_y, :jump, :fire, :hook, :player_flags, :wanted_weapon, :next_weapon, :prev_weapon, :ping
+  attr_accessor :ack_game_tick, :prediction_tick, :size, :direction, :target_x, :target_y, :jump, :fire, :hook,
+                :player_flags, :wanted_weapon, :next_weapon, :prev_weapon, :ping
 
   def initialize(hash_or_raw)
     if hash_or_raw.instance_of?(Hash)
