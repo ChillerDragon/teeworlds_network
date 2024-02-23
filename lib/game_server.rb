@@ -18,6 +18,8 @@ class GameServer
 
   def initialize(server)
     @server = server
+    @config = server.config
+    @map_path = nil
     @ack_game_tick = -1
     @pred_game_tick = 0
     @map = Map.new(
@@ -26,6 +28,29 @@ class GameServer
       size: 6793,
       sha256: '491af17a510214506270904f147a4c30ae0a85b91bb854395bef8c397fc078c3'
     )
+  end
+
+  def load_map
+    puts "loading map '#{@config.sv_map}' ..."
+    map_path = nil
+    if File.exist? "data/#{@config.sv_map}.map"
+      map_path = "data/#{@config.sv_map}.map"
+    elsif File.exist? "data/maps/#{@config.sv_map}.map"
+      map_path = "data/maps/#{@config.sv_map}.map"
+    elsif File.exist? "maps/#{@config.sv_map}.map"
+      map_path = "maps/#{@config.sv_map}.map"
+    elsif File.exist? "#{Dir.home}/.teeworlds/maps/#{@config.sv_map}.map"
+      map_path = "#{Dir.home}/.teeworlds/maps/#{@config.sv_map}.map"
+    end
+
+    if map_path.nil?
+      puts "map not found '#{@config.sv_map}'"
+      # TODO: this should error when the feature is done
+      # exit 1
+    else
+      puts "found at #{map_path}"
+      @map_path = map_path
+    end
   end
 
   ##

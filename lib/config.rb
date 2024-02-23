@@ -3,11 +3,12 @@
 class Config
   def initialize(options = {})
     filepath = options[:file] || 'autoexec.cfg'
+    @type = options[:type] || :client
     init_configs
     load_cfg(filepath)
   end
 
-  def init_configs
+  def init_client_configs
     @configs = {
       password: { help: 'Password to the server', default: '' }
     }
@@ -15,6 +16,23 @@ class Config
       echo: { help: 'Echo the text', callback: proc { |arg| puts arg } },
       quit: { help: 'Quit', callback: proc { |_| exit } }
     }
+  end
+
+  def init_server_configs
+    @configs = {
+      sv_map: { help: 'map', default: 'dm1' }
+    }
+    @commands = {
+      shutdown: { help: 'shutdown server', callback: proc { |_| exit } }
+    }
+  end
+
+  def init_configs
+    if @type == :client
+      init_client_configs
+    else
+      init_server_configs
+    end
     @configs.each do |cfg, data|
       self.class.send(:attr_accessor, cfg)
       instance_variable_set("@#{cfg}", data[:default])

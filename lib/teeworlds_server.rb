@@ -11,6 +11,7 @@ require_relative 'chunk'
 require_relative 'net_base'
 require_relative 'models/net_addr'
 require_relative 'packer'
+require_relative 'config'
 require_relative 'game_server'
 require_relative 'models/token'
 require_relative 'messages/sv_emoticon'
@@ -65,14 +66,16 @@ class Client
 end
 
 class TeeworldsServer
-  attr_accessor :clients
+  attr_accessor :clients, :config
   attr_reader :hooks, :shutdown_reason, :current_game_tick
 
   def initialize(options = {})
     @verbose = options[:verbose] || false
     @ip = '127.0.0.1'
     @port = 8303
+    @config = Config.new(file: options[:config], type: :server)
     @game_server = GameServer.new(self)
+    @game_server.load_map
     # @type clients [Hash<Integer, Client>]
     @clients = {}
     @current_game_tick = 0
