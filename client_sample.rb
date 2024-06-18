@@ -81,4 +81,9 @@ Signal.trap('INT') do
 end
 
 # connect and detach thread
-client.connect(args[:ip], args[:port], detach: false)
+client.connect(args[:ip], args[:port], detach: true)
+
+loop do
+  msg = gets.chomp
+  client.send_chat(msg)
+end
