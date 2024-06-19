@@ -78,6 +78,7 @@ end
 
 Signal.trap('INT') do
   client.disconnect
+  exit
 end
 
 # connect and detach thread
