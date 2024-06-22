@@ -85,6 +85,6 @@ end
 client.connect(args[:ip], args[:port], detach: true)
 
 loop do
-  msg = gets.chomp
+  msg = $stdin.gets.chomp
   client.send_chat(msg)
 end
