@@ -451,7 +451,8 @@ class TeeworldsClient
           # in sequence
           @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
         else
-          puts "warning: got chunk out of sequence! seq=#{chunk.seq} expected_seq=#{(@netbase.ack + 1) % NET_MAX_SEQUENCE}"
+          puts 'warning: got chunk out of sequence! ' \
+               "seq=#{chunk.seq} expected_seq=#{(@netbase.ack + 1) % NET_MAX_SEQUENCE}"
           if seq_in_backroom?(chunk.seq, @netbase.ack)
             puts '         dropping known chunk ...'
             next

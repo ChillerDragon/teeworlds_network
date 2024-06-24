@@ -55,10 +55,9 @@ class Packer
     first = "1#{sign}#{num_bits[-6..]}"
 
     num_bits = num_bits[0..-7]
-    bytes = []
-    num_bits.chars.groups_of(7).each do |seven_bits|
+    bytes = num_bits.chars.groups_of(7).map do |seven_bits|
       # mark all as extended
-      bytes << "1#{seven_bits.join.rjust(7, '0')}"
+      "1#{seven_bits.join.rjust(7, '0')}"
     end
     # least significant first
     bytes = bytes.reverse
