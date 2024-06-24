@@ -14,6 +14,7 @@ require_relative 'packer'
 require_relative 'models/player'
 require_relative 'game_client'
 require_relative 'config'
+require_relative 'connection'
 
 class TeeworldsClient
   attr_reader :state, :hooks, :game_client, :verbose_snap
@@ -445,9 +446,19 @@ class TeeworldsClient
     end
     chunks = BigChungusTheChunkGetter.get_chunks(data)
     chunks.each do |chunk|
-      if chunk.flags_vital && !chunk.flags_resend && chunk.msg != NETMSG_NULL
-        @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
-        puts "got ack: #{@netbase.ack}" if @verbose
+      if chunk.flags_vital
+        if chunk.seq == (@netbase.ack + 1) % NET_MAX_SEQUENCE
+          # in sequence
+          @netbase.ack = (@netbase.ack + 1) % NET_MAX_SEQUENCE
+        else
+          puts "warning: got chunk out of sequence! seq=#{chunk.seq} expected_seq=#{(@netbase.ack + 1) % NET_MAX_SEQUENCE}"
+          if seq_in_backroom?(chunk.seq, @netbase.ack)
+            puts '         dropping known chunk ...'
+            next
+          end
+          # TODO: request resend
+          puts '         REQUESTING RESEND NOT IMPLEMENTED'
+        end
       end
       process_chunk(chunk)
     end

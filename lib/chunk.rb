@@ -13,13 +13,14 @@ require_relative 'bytes'
 #
 # https://chillerdragon.github.io/teeworlds-protocol/07/packet_layout.html
 class NetChunk
-  attr_reader :next, :data, :msg, :sys, :flags, :header_raw, :full_raw
+  attr_reader :next, :data, :msg, :sys, :flags, :seq, :header_raw, :full_raw
 
   @@sent_vital_chunks = 0
 
   def initialize(data)
     @next = nil
     @flags = {}
+    @seq = 0
     @size = 0
     parse_header(data[0..2])
     header_size = if flags_vital
@@ -135,8 +136,12 @@ class NetChunk
     size_bytes.map! { |b| b[2..].join }
     @size = size_bytes.join.to_i(2)
 
-    # sequence number
-    # in da third byte but who needs seq?!
+    if @flags[:vital]
+      data = data[0..2].bytes
+      @seq = (data[1] & (0xC0 << 2)) | data[2]
+    else
+      @seq = 0
+    end
   end
 
   # @return [Boolean]
