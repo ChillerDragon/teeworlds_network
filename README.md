@@ -23,7 +23,7 @@ client.on_chat do |_, msg|
   when 'ping' then client.send_chat('pong')
   when 'whoami' then client.send_chat("You are: #{msg.author.name}")
   when 'list' then client.send_chat(client.game_client.players.values.map(&:name).join(', '))
-  else client.send_chat('Unkown command! Commands: !ping, !whoami, !list')
+  else client.send_chat('Unknown command! Commands: !ping, !whoami, !list')
   end
 end
 
