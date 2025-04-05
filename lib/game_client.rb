@@ -138,6 +138,7 @@ class GameClient
     context = Context.new(nil)
     return if call_hook(:connected, context).nil?
 
+    @client.send_iam
     @client.send_msg_start_info
   end
 

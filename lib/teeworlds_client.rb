@@ -5,6 +5,7 @@ require 'socket'
 require_relative 'string'
 require_relative 'array'
 require_relative 'bytes'
+require_relative 'version'
 require_relative 'network'
 require_relative 'packet'
 require_relative 'chunk'
@@ -299,6 +300,21 @@ class TeeworldsClient
     @netbase.send_packet(
       NetChunk.create_header(vital: true, size: data.size + 1) +
       [pack_msg_id(NETMSGTYPE_CL_STARTINFO, system: false)] +
+      data
+    )
+  end
+
+  def send_iam
+    data = []
+    # "i-am-teeworlds_network@chillerdragon.github.io"
+    data += [0x99, 0xd8, 0x0f, 0x9d, 0x13, 0x25, 0x38, 0x12, 0xb1, 0x7b, 0x6e, 0xbd, 0x1b, 0x56, 0x99, 0x89]
+    data += Packer.pack_int(TEEWORLDS_NETWORK_VERSION_NUMBER)
+    data += Packer.pack_str("teeworlds_network=#{TEEWORLDS_NETWORK_VERSION} RUBY_VERSION=#{RUBY_VERSION} RUBY_ENGINE=#{RUBY_ENGINE}")
+    data += Packer.pack_str("https://github.com/ChillerDragon/teeworlds_network")
+
+    @netbase.send_packet(
+      NetChunk.create_header(vital: true, size: data.size + 1) +
+      [pack_msg_id(NETMSG_NULL, system: true)] +
       data
     )
   end

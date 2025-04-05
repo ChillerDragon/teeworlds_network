@@ -17,6 +17,7 @@ then
 	echo "Error: failed to get library version"
 	exit 1
 fi
+version="v$version"
 
 arg_generate_docs=0
 
